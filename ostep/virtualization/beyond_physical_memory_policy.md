@@ -1,0 +1,45 @@
+# Beyond Physical Memory: Policies
+
+- Page-replacement policy
+    - Scan-resistant algorithms are usually LRU-like but also try to avoid the worst-case behavior of LRU, which we saw with the looping-sequential workload
+- Types of cache misses:
+    - **Code-start miss** (**compulsory miss**): cache is empty to begin with, first reference to the item
+    - **Capacity miss**: cache run out of space and had to evict an item to bring a new item
+    - **Conflict miss**: arise in hardware because of limits on where an item can be placed in a hardware cache, due to set-associativity
+        - It does not arise in OS page cache because caches are always fully-associative (i.e. there are no restrictions on where in memory a page can be placed)
+- FIFO: pages were placed in a queue when they enter the system
+    - If cache gets larger, with FIFO, it gets worse! (Belady’s Anomaly)
+    - Might kick out important pages
+- LRU: least recently used
+    - Smaller memory sizes are guaranteed to contain a subset of larger memory sizes
+    - Stack property: smaller cache always subset of bigger
+    - Looping-sequential workload: perform bad
+- Approximate LRU
+    - Require some hardware support (i.e. use bit or reference bit)
+    - Clock algorithm
+        - All pages arranged in a circular list
+        - A clock hand points to some particular page to begin with
+        - When replacement must occur, OS checks the currently-pointed to page P has a use bit of 1 or 0
+            - If 1: P recently used, not good candidate, then its bit to 0, increment to next page
+            - Continues to find a page of
+        - Nice property: not repeatedly scanning through all of memory to look for an unused page
+    - Modification to clock: consider whether a page has been modified or not while in memory
+        - If it has been modified and is thus dirty, must be written back to disk to evict it, which is expensive
+        - If not modified (and is thus clean), the eviction is free
+        - Physical frame can simply be reused for other purposes without additional I/O
+        - Thus some VM systems prefer to evict clean pages over dirty pages
+        - So
+            - HW includes a **dirty bit**, set when a page is written
+- Other VM policy
+    - OS decides when to bring a page into memory (i.e. page selection policy)
+        - Most pages: demand paging, bring in on-demand
+        - Prefetching: i.e. page P is brought into memory, code P + 1 will likely soon be accessed
+    - OS decides how to write pages out to disk
+        - One at a time v.s clustering (or grouping)
+
+### Thrashing
+- Question: what should the OS do when memory is simply oversubscribed, and the memory demands of the set of running processes simply exceeds the available physical memory?
+- In this case, the system will constantly be paging —> **thrashing**
+- Approach: both detect and cope
+    - E.x. **Admission control:** not run a subset of the process, and hope that the working set fit in memory
+    - E.x. **Out-of-memory killer**: run this when memory is oversubscribed, the daemon choose a memory-intensive process and kill it

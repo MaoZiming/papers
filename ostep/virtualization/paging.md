@@ -47,3 +47,4 @@
         - Useful in determine which pages are popular in page replacement
 - we can now index our page table and find which physical frame virtual page 1 resides within. In the page table above the physical frame number (PFN) (also sometimes called the physical page number or PPN) is 7 (binary 111).
   - ![alt text](image-6.png)
+- VPN -> PFN
