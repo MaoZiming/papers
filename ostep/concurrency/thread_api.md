@@ -12,6 +12,7 @@
   - `value_ptr`: a pointer to the return value you expect to get back
 - `pthread_mutex_lock`
 - `pthread_mutex_unlock`
+- Critical region.
 
 ### Condition variable
 - Signalling must take place between threads.
