@@ -96,6 +96,9 @@ Two important cases:
     - Server send a message when it is up and running again
     - Clients check server is alive periodically (via heartbeat)
 
+ For example, imagine there is a short period of time where a server (S) is not able to contact a client (C1), for example, while the client C1 is rebooting. While C1 is not available, S may have tried to send it one or more callback recall messages; for example, imagine C1 had file F cached on its local disk, and then C2 (another client) updated F, thus causing S to send messages to all clients caching the file to remove it from their local caches. Because C1 may miss those critical messages when it is rebooting, upon rejoining the system, C1 should treat all of its cache contents as suspect. Thus, upon the next access to file F, C1 should first ask the server (with a TestAuth protocol message) whether its cached copy of file F is still valid; if so, C1 can use it; if not, C1 should fetch the newer version from the server.
+
+
 - Observation
     - In many cases, performance of each system is roughly the same
         - Note: writing to disk buffered, reading from disk cached
@@ -124,3 +127,12 @@ Two important cases:
 - Tools to enable simpler management of servers for system admins
 
 Sadly, NFS dominates the market place and becomes an open standard. NFSv4 now also adds server state (e.g. an “open” protocol message).
+
+
+Because AFS has a large local disk cache, it will
+access the file from there when the file is accessed again. NFS, in contrast,
+only can cache blocks in client memory; as a result, if a large file (i.e., a file
+bigger than local memory) is re-read, the NFS client will have to re-fetch
+the entire file from the remote server
+
+NFS: flush on close consistency.
