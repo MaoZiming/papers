@@ -34,6 +34,8 @@ Key to fast crash recovery: statelessness
 descriptor I am passing you here”
 - n this example, the file descriptor is a piece of shared state between
 the client and the server (Ousterhout calls this distributed state [O91]).
+It gets even worse when you consider the fact that a stateful server has to deal with client crashes. Imagine, for example, a client that opens a file and then crashes. The open() uses up a file descriptor on the server; how can the server know it is OK to close a given file? In normal operation, a client would eventually call close() and thus inform the server that the file should be closed. However, when a client crashes, the server never receives a close(), and thus has to notice the client has crashed in order to close the file.
+
 ### NFSv2 Protocol
 
 - Crux: how to define the protocol to be both stateless and support POSIX file system API?
@@ -50,6 +52,8 @@ the client and the server (Ousterhout calls this distributed state [O91]).
     - Input: directory file handle and name of a file to look up
     - Output: file handle (or directory) plus its attribute
     - E.x. assume client already has file handle for root dir (`/`) (with **mount protocol**)
+    - Second, you may notice where server interactions occur. When the file is opened for the first time, the client-side file system sends a LOOKUP request message. Indeed, if a long pathname must be traversed (e.g., /home/remzi/foo.txt), the client would send three LOOKUPs: one to look up home in the directory /, one to look up remzi in home, and finally one to look up foo.txt in remzi.
+    Third, you may notice how each server request has all the information needed to complete the request in its entirety. This design point is critical to be able to gracefully recover from server failure, as we will now discuss in more detail; it ensures that the server does not need state to be able to respond to the request.
 - `READ`
     - Input: file handle of the file, along with offset within the file and # of bytes to read
     - `WRITE` is handled similarly
@@ -106,6 +110,7 @@ the client and the server (Ousterhout calls this distributed state [O91]).
         - Problem: flooded with `GETATTR` request
         - Remedy: attribute cache was added to each client; attribute for a particular file were placed in cache when file was first accessed, then would timeout
             - But hard to understand or reason about what exact version of file one was getting
+        - Attribute cache has low TTL. 
 
 ### Implication on server-side write buffering
 
