@@ -4,6 +4,9 @@
 - Mechanisms: more complexity in page-table structure
     - **present bit**
     - **page-fault handler** in OS to service the page fault
+    - Upon page fault, **OS is invoked with page-fault handler**
+        - Find the page, do I/O from swap space (i.e. reserved space on the disk for moving pages back and forth)
+        - Update page table to mark page as present, record in memory location of the new-fetched page, retry
 - All of these actions take place ***transparently*** to the process
     - pages are placed in arbitrary (non-contiguous) locations in physical memory, and sometimes they are not even present in memory, requiring a fetch from disk
 - Before, we assume that address space is unrealistically small and fits into physical memory (i.e. every address space of every running process)

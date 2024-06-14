@@ -24,11 +24,16 @@
         - E.x. four entry (0 —> 3, 1 —> 7, 2 —> 5, 3 —> 2)
     - **VPN:** virtual page number
     - **Offset:** within the page
+
+Page table register (PTBR): contain physical address of starting loc of PT 
+Form address of page table entry: PTE = PTBR + (VPN * sizeof(PTE)) 
   
 ## Where are page tables stored?
 - Page tables can be bigger than small segment tables or base / bounds pairs
 - Too large, not store in on-chip hardware in the MMU
 - Store in memory instead
+
+MMU: stores the base and bound register; as well as TLB.
 
 - **Linear page table** 
     - Array 
@@ -48,3 +53,17 @@
 - we can now index our page table and find which physical frame virtual page 1 resides within. In the page table above the physical frame number (PFN) (also sometimes called the physical page number or PPN) is 7 (binary 111).
   - ![alt text](image-6.png)
 - VPN -> PFN
+
+- Sol #2: **page + segments**
+    - Problem: most of the page table unused, full of invalid entries (e.x. between stack and heap)
+    - Approach: one page table per logical segment
+        - E.x. code, heap, stack
+        - Have base and bound registers in MMU
+            - Base: holds physical address of page table
+            - Bound: holds the end of page table
+
+- The page directory, in a simple two-level table, contains one entry per page of the page table
+    - Page directory entries (PDE)
+        - Has a **valid bit** and a **page frame number**
+        - Valid bit: if PDE is valid, it means that at least one of the pages of the page table that entry points to (via the PFN) is valid
+

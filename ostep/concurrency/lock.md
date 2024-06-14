@@ -27,7 +27,11 @@ void unlock() {
         - I.e. CPU missed the fact that a disk device has finished a read request
     - Inefficient
         - Code that masks or unmasks interrupts tends to be executed slowly
-
+        - 
+- Pros: simplicity
+- Cons
+    - Allow calling thread to perform privileged instructions and trust that it is not abused
+    - On multi-processor, each threads running on different CPUs, and each try to enter the same critical sections, does not matter whether interrupts are disabled
 ## A Failed Attempt: Using Loads / Stores
 
 - Problems:

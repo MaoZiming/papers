@@ -72,6 +72,27 @@
     - Basics of **file allocation table (FAT) file system**
         - I.e. classic old Windows file system
 
+
+### File Allocation Table (FAT)
+
+- **How to design an inodes to point to data blocks?**
+- Baseline: use linked list
+    - One pointer, points to the first block of the file, and add another pointer at the end of that data block, etc. to support large files
+    - Poor performance: random access, or access offset of the file, etc.
+- File Allocation Table
+    - In-memory table of link information instead of storing next pointers with the data blocks
+    - Indexed by address of data block $D$
+    - Content of entry: $D$’s next pointer (i.e. the address of next block in file which follows $D$) d
+        - Marker to indicate EOF and whether a particular block is free
+    - Directory entries
+        - No inode per se
+        - Directory entries that store metadata about a file and refer directly to the first block of said file
+- How does this compare with inode-based structure?
+    - In memory mapping then eliminate the need of traversal
+    - But not in-memory, then inode-structure has much better random read performance
+        - And also inode-structure can have hard links
+        - 
+
 ## Directory Organization
 
 - A directory basically just contains a list of (entry name, inode number) pairs

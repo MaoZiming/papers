@@ -13,3 +13,14 @@ int sem_post(sem_t *s) {
 ```
 
 - Locks are sometimes called a binary semaphore. 
+  
+```c
+
+// A binrary semaphore (i.e. a lock)
+sem_t m;
+sem_init(&m, 0, X); // initialize to X; what should X be?
+sem_wait(&m);
+// critical section here
+sem_post(&m);
+
+```
