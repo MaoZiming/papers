@@ -7,6 +7,8 @@
 - Even though first time when the program access the array, TLB still improves performance due to **spatial locality**
     - If page size bigger, even fewer misses
     - Typical one: page size 4KB
+- - Maintain virtual-to-physical translations that are only valid for the current running process
+    - Flush on context switches
 - **Temporal locality**: the quick re-reference of memory items in time
     - Access some items again
 - **Hardware-managed TLBs**: hardware handles TLB miss entirely

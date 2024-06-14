@@ -88,3 +88,32 @@ Sweep back and forth, from one end of disk other, serving requests as pass that 
 - How long should the system wait before issuing an I/O to disk?
     - **Work-conserving**: immediately issue request to the disk, always try to do work if there’s work to be done
     - **Anticipatory disk scheduling**: wait a bit
+
+
+### HDDs
+
+- Disk has a sector-addressable address space
+    - Array of sectors, each typically 512 bytes (i.e. blocks)
+    - Main operations: reads and writes to sectors
+- Basic geometry
+    - Platter: circular hard surface on which data is stored persistently by including magnetic change to it
+        - 2 sides: each side is a surface
+    - Spindle: platters bound together around spindle (i.e. rotations)
+    - Track: data encoded on each surface in concentric circles of sectors, one circle is a track
+    - Disk head (perform read and write) attached to a single disk arm
+- Performance
+    - Read / write time = seek time (multiple track) + rotation (single track latency) + transfer time
+    - Mechanical and slow
+
+### SSDs
+
+- Basics
+    - A **flash chip** consists of many banks, each of which is organized into **blocks**
+    - Each blocks is further subdivided into some number of **pages**
+    - Blocks are large (128KB - 2MB) and contain many pages of small size (1-8KB)
+- **Organizations**
+    - Some number of flash chips (for persistent storage)
+        - Use multiple flash chips in parallel, reduce write amplifications
+    - Some amount of volatile (i.e. non-persistent) memory (e.g. SRAM)  for caching
+    - Control logic to orchestrate device operation: FTL
+        - Transform reads and writes from a client into reads, erases, and programs to underlying flash chips
