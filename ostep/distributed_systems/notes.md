@@ -42,3 +42,20 @@ For each of the three parts:
         - Each replica is state machine, state is all data it’s stored
             - Go through same sequence of state transitions in the same order
             - Ended up in the same state
+
+
+### Consensus system models
+
+- Paxos, Raft, etc. assume a **partially synchronous, crash-recovery** system model
+- Why not async?
+    - **FLP result**: there is no deterministic consensus algorithm that is guaranteed to terminate in an async crash-stop system model
+    - Paxos, Raft, etc. use clocks only used for timeouts / failure detector to ensure progress. Safety (correctness) does not depend on timing.
+- There are also consensus algorithms for a partially synchronous Byzantine system model (used in blockchains)
+    - More complex! Less efficient
+
+### Leader election
+
+- Multi-paxos, Raft, etc. use a leader to sequence messages
+    - Use a **failure detector** (timeout) to determine suspected crash or unavailability of leader
+    - On suspected leader crash, **elect a new one**
+    - Prevent **two leaders at the same time** (”split-brain”)!
