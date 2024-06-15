@@ -11,6 +11,8 @@
         - The new data block
         - A new version of the data bitmap
     - These dirty writes still sit in main memory (in the **page cache** or **buffer cache**) for some times
+    - Buffers are associated with a specific block device, and cover caching of filesystem metadata as well as tracking in-flight pages. The cache only contains parked file data. That is, the buffers remember what's in directories, what file permissions are, and keep track of what memory is being written from or read to for a particular block device. The cache only contains the contents of the files themselves.
+    - Buffer cache and page cache are unified later in Linux. 
 
 ### One single write succeeds
 
