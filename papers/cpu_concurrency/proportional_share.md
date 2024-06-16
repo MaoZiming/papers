@@ -1,7 +1,7 @@
 # Proportional Share 
 Proportional share scheduler sometimes is referred to as a **fair-share scheduler**. It is based around a simple concept: instead of optimizing for turnaround or response time, a scheduler might instead try to guarantee that each job obtain a certain percentage of CPU time. 
 
-The generla problem with fair-share scheduler is that, these approaches do not particularly mesh well with I/O, i.e. jobs that perform I/O occasionally may not get their fair share of CPU. Also ticket assignment or priority assignment is an open hard problem. 
+The general problem with fair-share scheduler is that, these approaches do not particularly mesh well with I/O, i.e. jobs that perform I/O occasionally may not get their fair share of CPU. Also ticket assignment or priority assignment is an open hard problem. 
 
 But many domains this is not major concern, like in a virtualized data center (i.e. in clouds), where you like to assign 1/4 of CPU cycles to Windows VM and rest to Linux, then proportional sharing is simple and effective. Also you can proportionally share memory in VMWare's ESX server. 
 
