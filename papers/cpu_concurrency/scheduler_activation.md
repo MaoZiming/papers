@@ -112,3 +112,80 @@ Kernel explicitly vectors kernel events to the user-level thread
 via scheduler activation (upcall)
 Extended kernel interface for processor allocation-related events
 Essentially exchanging information
+
+## Baselines
+
+- **Approach 1: processes + shared memory**
+    - Simple, uni-threaded model
+    - Security provided by address space boundaries
+    - But high cost for context switch, limits degree of concurrency
+- **Approach 2: kernel-level threads**
+    - One-to-one
+    - Threads are exported by the kernel
+    - `pthread_create()` (user space) —> traps into kernel through system call
+    - State of a thread maintained in the kernel
+    - Cons: performance limitations, lack of portability and flexibility
+        - Overheads due to general implementation and cost of kernel traps
+            - Context switch time better than process switch time, but still worse than user-level thread
+        - System scheduler unaware of user-thread state, leading to lower utilization
+- **Approach 3: “lightweight” (user-level) threads**
+    - Many-to-one
+    - `pthread_create()` (user space) —> no kernel trap
+    - Thread semantics defined by application
+    - Pros: performance, flexibility
+        - Fast context switch time (i.e. within an order of magnitude of procedure call)
+    - Cons: functionality
+        - Unnecessary blocking (I/O, page faults, etc.)
+            - OS may block entire process if one user-level thread blocks an I/O
+
+## Key Insights
+
+- Applications
+    - Has little knowledge or influence over critical kernel-level events
+- Kernel
+    - Knows little about user-level scheduling information (e.g. parallelism) to make optimal scheduling decisions
+
+## Key Techniques: N to M
+
+- **Solution:** a mechanism that facilitates exchange of information between user- and kernel-level mechanisms
+    - A set of library routines for user-level thread managements
+    - Exposure of relevant kernel events to user-level thread management
+- Some features
+    - Kernel has control over how many physical processors to give to a process’s virtual multi-processor
+        - Map N number of application threads to M number of kernel entities, or “virtual processors”
+    - User-level thread system has control over which threads to run on the allocated v-processors
+    - Kernel notifies the user-level thread system whenever kernel changes # of processors assigned or an I/O event occurs
+    - User-level thread system notifies kernel when it needs more or fewer processors (doesn’t happen very often)
+    - Application programmers sees no difference except perf. when working directly with kernel threads
+- Some issues: kernel might interrupt a user-thread holding a lock —> deadlock
+    - Sol: kernel informs a scheduler that a thread has been preempted, it checks to see if it was in a critical section, if so let it run out then preempt (i.e. user-level context switch)
+- How is it done?
+    - The kernel provides an application with a set of virtual processors (LWPs)
+    - The application can schedule user threads onto an available virtual processor
+    - Four upcall points
+        - Add a processor
+        - Processor preempted
+        - Schedule activation blocked
+        - Schedule activation unblocked
+    - From user to kernel
+        - Add more processors
+        - Processor idle
+    - Upcall: the kernel must inform an application about certain events
+        - handled by thread library with an upcall handler, and this upcall handler must run on a virtual processor
+    - When an application thread is about the block
+        - The kernel makes an upcall to the application informing it that a thread is about to block and identifying the specific thread
+        - The kernel allocates a new virtual processor to the application
+        - The application runs an upcall handler on this new virtual processor, that saves the state of the blocking thread and relinquishes the virtual processor on which the blocking thread is running
+        - Another thread that is eligible to run on the new virtual processor is scheduled then by the upcall handler
+    - Done with blocking
+        - The kernel makes another upcall to the thread library informing it that the previously blocked thread is now eligible to run
+        - A virtual processor is also required for the upcall handler for this event, and the kernel may allocate a new virtual processor or preempt one of the user threads and then run the upcall handler on its virtual processor
+        - The application schedules an eligible thread to run on an available virtual processor, after marking the unblocked thread as eligible to run
+
+## Limitations
+
+- More complex to implement, because both changes to kernel and user-space code are required
+
+## Nice system principals
+
+- **A general system design problem:** communicate information and control across layer boundaries while preserving the inherent advantages of layering, abstraction, and virtualization
