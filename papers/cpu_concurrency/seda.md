@@ -2,6 +2,8 @@
 
 Link: https://sosp.org/2001/papers/welsh.pdf
 
+Read: June 16th, 10:41AM. 
+
 This paper presents staged event-driven architecture (SEDA), a new design for highly concurrent Internet services. SEDA is intended to support massive concurrency demands and simplify constructions of well-conditioned services.
 
 The key innovations include a combination of thread-based and event-based model, and use resource allocators to adapt resources at each stage according to the workloads. 
