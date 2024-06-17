@@ -1,5 +1,7 @@
 # Capriccio: Scalable Threads for Internet Services (2003) 
 
+Read: June 16th, 10pm.
+
 Link: http://capriccio.cs.berkeley.edu/pubs/capriccio-sosp-2003.pdf
 
 This paper proposes Capriccio, a scalable thread package for use with high-concurrency servers. The main proposal is to use **user-level threads** instead of event-based models (i.e. SEDA) to achieve high performance without sacrificing the ease of programming. 
