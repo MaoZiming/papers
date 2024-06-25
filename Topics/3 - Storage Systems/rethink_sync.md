@@ -27,6 +27,7 @@ Example: If a process modifies data but produces no external output based on thi
 
 However, users, not applications, are the true observers of the computer system. Application state is only visible through output sent to external devices such as the screen and network.
 
+Both speculative execution and external synchrony en- force restrictions on when external output may be ob- served. Speculative execution allows output to be ob- served based on correctness; output is externalized af- ter all speculations on which that output depends have proven to be correct. In contrast, external synchrony al- lows output to be observed based on durability; output is externalized after all file system operations on which that output depends have been committed to disk
 
 _**Tracking causal dependencies**_: tracks dependencies between file modifications and external outputs. This ensures the external outputs are reliable and consistent with the sync I/O model. 
 * marking process with dependencies: i.e. cannot externalize any output until some transaction commits
