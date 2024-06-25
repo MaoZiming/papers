@@ -3,6 +3,8 @@ The paper introduces external synchrony, a new model for file I/O. The model com
 
 The central problem addressed by the paper is the tension between **durability** and **performance** in file I/O. While sync I/O offers strong reliability and data durability guarantees, it comes at a performance cost and blocks the caller until the operation is complete. On the other hand, async I/O offers better performance but falls short on reliability, ordering, durability, and ease of programming.
 
+`fsync` commits to external hard drive cache, rather than the dish platter. Sacrificing durability for performance. 
+
 ## Insights 
 The central insight is to define synchronous operations from the viewpoint of an **"external observer"** rather than just from the perspective of the application. This approach ensures that an external entity, be it a **user** or another system, can rely on the committed output without concerns of the output being predicated on uncommitted changes.
 
@@ -14,9 +16,17 @@ The application isn't blocked (like async I/O) but any output (e.x. network, sen
 * It only externalizes (sends to screen, network, etc.) the output after the modification commits
 * Multiple file modifications are grouped together and committed as a single transaction, making the commits atomic.
 
+**Benefits**
+Grouping multiple modifications into one transaction
+buffering screen output.
+- The operating system instead buffers the output and allows the process that generated the out- put to continue execution. After the modifications are committed to disk, the operating system releases the out- put to the device for which it was destined.
+
 _**Output triggered commits**_: data is only committed when there is an external output that depends on the uncommitted data
 
 Example: If a process modifies data but produces no external output based on this modification, the system can delay the commitment of this data to optimize throughput. If output is generated that relies on this modification, the system triggers a commit to minimize latency.
+
+However, users, not applications, are the true observers of the computer system. Application state is only visible through output sent to external devices such as the screen and network.
+
 
 _**Tracking causal dependencies**_: tracks dependencies between file modifications and external outputs. This ensures the external outputs are reliable and consistent with the sync I/O model. 
 * marking process with dependencies: i.e. cannot externalize any output until some transaction commits
