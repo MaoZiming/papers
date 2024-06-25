@@ -32,7 +32,7 @@ Exsiting BFT algorithms assume synchrony for safety, but this is dangerous since
         *  goal: ensure secret keys used by honest is not known to adversay
 
 ### Security techniques
-Goal: Prevent spoofing and elays and corrupting messages
+Goal: Prevent spoofing and delays and corrupting messages
 
 Techniques 
 *   Public-key signature: one cannot impersonate other
