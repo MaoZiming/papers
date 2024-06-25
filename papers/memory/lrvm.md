@@ -1,4 +1,9 @@
 # Lightweight Recoverable Virtual Memory (1993)
+
+Link: https://people.eecs.berkeley.edu/~brewer/cs262/lrvm.pdf
+
+Read: June 25th, 2024.
+
 This paper proposes an efficient, flexible, and ease-to-use implementation of recoverable virtual memory (RVM) to manage persistence for critical data structure. A UNIX programmer thinks of LRVM as just a typical subroutine library. 
 
 ## Lightweight TxN: simplicity over generality 
@@ -41,3 +46,14 @@ This paper proposes an efficient, flexible, and ease-to-use implementation of re
 - Read the disk-based Redo Log in reverse.
 - Apply changes to the External Data Segment.
 - Truncate the log to free up space (only wait until all changes updated in External Data Segment)
+
+- Goal: allow Unix applications to manipulate persistent data structures (such as the meta data for a file sys- tem) in a manner that has clear-cut failure semantics.
+- Existing solutions---such as Camelot---were too heavy-weight. Wanted a "lite" version of these facilities that didn't also provide (unneeded) support for distributed and nested transactions, shared logs, etc.
+- Solution: a library package that provides only recoverable virtual memory
+
+Lessons from Camelot:
+- Overhead of multiple address spaces and constant IPC between them was significant. o Heavyweight facilities impose additional onerous programming constraints.
+- Size and complexity of Camelot and its dependence on special Mach features resulted in maintenance headaches and lack of portability. (The former of these two shouldn't be an issue in a ``production'' system.)
+Camelot had a yucky object and process model. Its componentization led to lots of IPC. It had poorly tuned log trun- cation. Was perhaps too much of an embrace of Mach.
+- However, note that the golden age of CMU Systems learned a lot from the sharing of artifacts: Mach, AFS, Coda...
+- A lot of positive spirit in this paper.
