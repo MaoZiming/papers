@@ -78,13 +78,16 @@ Availability is the major concern
 - ***EMULATION:** Psuedo-server*
     - Client disconnects but acts like it is connected by working on the cached contents
         - Modified objects assume infinite priority
+          - So they are not purged before reintegration.
         - Log operations for later REINTEGRATION
             - Replay log (metadata, HDB) accessed through recoverable virtual memory (RVM)
             - Contains store operations, but not individual writes
             - Removes previous store records on repeated close
             - Should remove stores after unlink or truncate
             - Should remove log records that are inverted
+            - Cacnellation of old log records (e.g. `rmdir`)
 - ***REINTEGRATION***
+    - Perform a volume at a time, where the operations to a volume is suspended. 
     - Propagates changes back to servers (i.e. transfer updates, resolves conflicts)
         - Changes at one end: updates
         - Changes in both end: W/W conflict
