@@ -1,0 +1,2 @@
+# Ciel: A Universal Execution Engine for Distributed Data-Flow Computing
+Ciel introduces dynamic task graphs which are extended at runtime, as opposed to static graphs in earlier models (e.x. MapReduce, Dryad). It allows for more adaptive and flexible task execution. This dynamic approach, coupled with a runtime that can adjust execution strategies based on current conditions, makes it possible to support a wider range of applications efficiently. Examples of usecases include iterative, low-latency chained events like k-means, E-M, PageRank, and so on. 
