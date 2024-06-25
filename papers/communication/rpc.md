@@ -1,4 +1,7 @@
 # RPC Explain 
+
+Read: June 15 2024. 
+
 ## Step-by-step Working of RPC with Direct Memory Execution Mode
 1. **Local Processing** (In User Space)
 * **Marshalling**: The client program initiates the RPC by calling the stub procedure, passing the necessary parameters. The client stub then **marshals (packages) these parameters** into a format suitable for transmission over a network.
