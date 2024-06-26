@@ -1,6 +1,6 @@
 # Capriccio: Scalable Threads for Internet Services (2003) 
 
-Read: June 16th, 10pm.
+Read: June 16th, 10pm, 2024
 
 Link: http://capriccio.cs.berkeley.edu/pubs/capriccio-sosp-2003.pdf
 
