@@ -1,5 +1,13 @@
 # System Architecture Directions for Networked Sensors (2000)
+
+Link: https://pdos.csail.mit.edu/archive/6.097/readings/tinyos.pdf
+
+Read: June 28th, 2024.
+
+
 Traditional OS models were not fit for the constrained resources available on low-power, integrated networked sensor nodes. TinyOS is a tiny **event-driven** operating system that provides support for efficient modularity and **concurrency-intensive** operation that fits for this context. 
+
+ A lot of discussions on the hardware. 
 
 _The key requirements_ under this type of low power wireless communication environment are
 1. _Resource Efficiency_: Sensor nodes are constrained by power, computation, and storage resources
@@ -41,6 +49,7 @@ A component is an independent computational entity that exposes one or more inte
 
 <img width="288" alt="image" src="https://github.com/lynnliu030/os-prelim/assets/39693493/2ecada51-d8c0-4aa5-af93-26958388d6d5">
 
+TinyOS achieves high concurrency by allowing tasks and events to run in small, non-blocking chunks, which allows the system to handle multiple operations 'simultaneously' without needing a heavy-weight OS laye
 
 ## Compared 
 > TinyOS: The problem we must tackle is strikingly similar to that of building efficient network interfaces, which also must maintain a large number of concurrent flows and juggle numerous outstanding events
@@ -48,3 +57,40 @@ A component is an independent computational entity that exposes one or more inte
 * Thread-based model: scheduler activations, cappricio
 * Event-based system like TinyOS: SEDA
 * Monolithic architecture class 
+
+
+## Questions
+
+- How is fine-grained concurrency achieved?
+    - Multi-source of events: sensor reading, network messages, etc.
+    - Event-driven model: appropriate event handler is triggered
+    - Tasks as units of work: when event initiates responses
+    - Command chain: layer by layer (each command is a small piece of the overall operation)
+    - Integration with physical hardware (wrapped in commands and event handlers)
+    - Avoiding blocking operations
+    - Scheduler’s role
+- Why can it be non-blocking?
+- Single-hardware thread? or more than one hardware thread?
+    - Tasks atomic? —> yes
+- Compared to Capriccio?
+    - Thread models with bounded stack size?
+        - Not send the signal and buffer within your stack? —> maybe buffering takes lots of space
+
+The problem we must tackle is strikingly similar to that of building efficient network interfaces, which also must maintain a large number of concurrent flows and juggle numerous out- standing events
+
+A component has four interrelated parts: a set of command handlers, a set of event handlers, an encapsulated fixed-size frame, and a bundle of simple tasks. Tasks, commands, and handlers execute in the context of the frame and operate on its state.
+
+The composition process creates layers of com- ponents where higher level components issue commands to lower level components and lower level components signal events to the higher level components.
+
+Frame allows us to know the memory footprint at compile time; as well as knowing the variable locations statically at compile time rather than accessing state via pointers. 
+
+However, tasks must never block or spin wait or they will prevent progress in other components.
+
+The communication across the com- ponents takes the form of a function call, which has low overhead and provides compile time type checking.
+
+## Limitations
+
+- Scalability and performance
+    - lightweight design and event-driven model may not suit the apps with high-performance requirements or those that need to scale to larger networks
+- Difficult to program
+    - CPU-intensive application can cause a problem (i.e. break it down into N separate computations)
