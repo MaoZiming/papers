@@ -57,3 +57,4 @@ Lessions learned from container-management system
    *  Open Hard problems:
       *  Managing configuraitons: the set of values supplied to applications, rather than hard-coded into them.  
          *  We believe the most effective approach is to accept this need, embrace the inevitability of programmatic configuration, and maintain a clean separation between computation and data.
+      *  Hard to keep dependency information up-to-date. 
