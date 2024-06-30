@@ -24,4 +24,4 @@ Note: this paper has been mentioned by NetSys people a billion times. THought I 
 
 - Partially-stateful data flow model: let operators only maintain a subset of their states. 
 
-- Each oper- ator totally orders all updates and upquery requests it re- ceives for an entry. Thus, if the operator orders update u1 before u2, then every downstream consumer likewise processes updates derived from u1 before those derived from 
+- Each oper- ator totally orders all updates and upquery requests it re- ceives for an entry. Thus, if the operator orders update u1 before u2, then every downstream consumer likewise processes updates derived from u1 before those derived from u2
