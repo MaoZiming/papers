@@ -50,4 +50,14 @@ Monitors collectively coordinate system-wide state, and encapsulate much of the 
 
 A process in Barrelfish is represented by a collec- tion of dispatcher objects, one on each core on which it might execute. Communication in Barrelfish is not ac- tually between processes but between dispatchers (and hence cores).
 
-Barrelfish at present therefore uses a variant of user-level RPC (URPC) [10] between cores: a region of shared memory is used as a channel to transfer cache-line-sized messages point-to-point between single writer and reader cores.  At present, dispatchers poll incoming channels for a predetermined time before blocking, however this can be improved by adaptive strategies similar to those used in deciding how long to spin on a shared-memory spinlock
+Barrelfish at present therefore uses a variant of user-level RPC (URPC) [10] between cores: a region of shared memory is used as a channel to transfer cache-line-sized messages point-to-point between single writer and reader cores.  At present, dispatchers poll incoming channels for a predetermined time before blocking, however this can be improved by adaptive strategies similar to those used in deciding how long to spin on a shared-memory spinlock.
+
+
+All virtual memory management, including allocation and manipulation of page tables, is performed entirely by user-level code
+
+A shared virtual address space can be achieved by ei- ther sharing a hardware page table among all dispatch- ers in a process, or replicating hardware page tables with consistency achieved by message protocols.  the former is typically more efficient, how- ever the latter may reduce cross-processor TLB invali- dations (because it is possible to track which processors may have cached a mapping), and is also the only way to share an address space between cores that do not support the same page table format.
+
+Barrelfish employs a service known as the sys- tem knowledge base (SKB) [60], which maintains knowl- edge of the underlying hardware in a subset of first-order logic
+
+
+As one example, we describe in Section 5.1 how the SKB is used to construct a cache- and topology-aware network for efficient communication within multicore machines.
