@@ -1,4 +1,9 @@
 # seL4: Formal Verification of an OS Kernel (2009) 
+
+Link: http://web1.cs.columbia.edu/~junfeng/09fa-e6998/papers/sel4.pdf
+
+June 29th, 2024. 
+
 This paper presents the experience in performing the formal, machine-checked verification of the seL4 microkernel from an abstract specification down to its C implementation. This is the first formal proof of functional correctness of a complete, general-purpose operating-system kernel; assuming the correctness of the compiler, assembly code, boot code, managements of caches, and the hardware. 
 
 The authors implement the OS first in Haskell to prototype proofs and refine the spec. Then, they implemented it in C and then used the spec to verify their C implementation. This enables high performance while ensuring correctness. Some parts of the verification steps seem to be manual. But it seems to ensure confidence that correctness is preserved.
@@ -11,6 +16,16 @@ The authors implement the OS first in Haskell to prototype proofs and refine the
 > 
 
 This paper presents the experience in performing the formal, machine-checked verification of the seL4 microkernel from an abstract specification down to its C implementation. This is the first formal proof of functional correctness of a complete, general-purpose operating-system kernel; assuming the correctness of the compiler, assembly code, boot code, managements of caches, and the hardware.
+
+> We have created a methodology for rapid kernel de- sign and implementation that is a fusion of traditional operating systems and formal methods techniques. We found that our verification focus improved the design and was surprisingly often not in conflict with achieving performance.
+
+### Verification
+
+> The central artefact is the Haskell proto- type of the kernel. The prototype requires the design and implementation of algorithms that manage the low-level hardware details. To execute the Haskell prototype in a near-to-realistic setting, we link it with software (derived from QEMU) that simulates the hardware platform. Normal user-level execution is enabled by the simulator, while traps are passed to the kernel model which computes the result of the trap. The prototype modifies the user-level state of the simulator to appear as if a real kernel had executed in privileged mode.
+
+Subset of language Huskell that can be translated into the language of the theorem prover we use. 
+
+Translation from Huskell to C as the Huskell runtime is bulky. 
 
 ### Insights
 
@@ -27,7 +42,7 @@ Kernel Design Process
     - Haskell runtime is significant body of code, relies on GC that is unsuitable for real-time environments
 
 - Abstract specification
-    - Isabelle / HOL code
+    - Isabelle / HOL (Higher Order Logic) code
     - Describes what the system does without saying how it is done, like functional behavior of kernel operations
     - Example: scheduling, no scheduler policy is defined at abstract level
     - Make use of non-determinism in order to leave implementation choices to lower levels
@@ -44,6 +59,9 @@ Kernel Design Process
     - The basis of this formal model of the machine is the internal state of the relevant devices, collected in one record machine_state
 
 Proof 
+
+Use a refinement proof. 
+> A refinement proof establishes a correspondence between a high-level (abstract) and a low-level (concrete, or refined) representation of a system.
 
 - Prove by showing formal refinement
 - To show that a concrete state machine $M_2$ refines an abstract one $M_1$, it is sufficient to show that for each transition in $M_2$ that may lead from an initial state $s$  to a set of states $s',$ there exists a corresponding transition on the abstract side from an abstract state $\sigma$ to a set $\sigma'$

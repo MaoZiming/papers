@@ -1,4 +1,7 @@
 # Making Information Flow Explicit in HiStar (2006)  
+
+Link: http://www.scs.stanford.edu/~nickolai/papers/zeldovich-histar.pdf
+
 Secure OS by **restricting information flow**. Private user data is marked as "tainted" and thus is restricted from leaving the computer. Thus data cannot leak from the computer. Only a small core of code need be verified.
 
 Currently OSes have too many aspects that need to be secured (i.e. sloppy code in many places lead to vulnerabilities). HiStar offers a minimalistic kernel that exposes information flow. 
