@@ -1,4 +1,9 @@
 # Practical Byzantine Fault Tolerance (1999) 
+
+Link: https://pmg.csail.mit.edu/papers/osdi99.pdf
+
+Data: June 30th, 2024. 
+
 PBFT is **efficient** replication protocol extended from Viewstamp Replication that allows the group to survice **Byzantine (arbitrary) failures**. By this time, there was a realization that malicious attacks and Byzantine behavior needed to be dealt with.
 
 ## Key Motivation 

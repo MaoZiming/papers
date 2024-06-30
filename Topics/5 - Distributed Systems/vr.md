@@ -35,16 +35,16 @@ _Reasoning_:
 * Primary execute after hear back from $f+1$ ensures that even if $f$ replicas fail, the protocol continues to execute.
 * However, primary itself can fail. So the view change protocol is for masking the failures of the primary. 
 
-| Notion   |     Definition     | 
-|----------| -------------|
-| $c$ |  client-id | 
-| $v$ |  view number | 
-| $m$ |  msg received from client | 
-| _op_ |  operation client wants to run | 
-|_log_ | array of _op-numbers_, contain requests received so far in assigned order | 
-| $n$ |  op-number assigned to request | 
-| $i$ |  replica number | 
-| $l$ |  replica log |
+| Notion | Definition                                                                |
+| ------ | ------------------------------------------------------------------------- |
+| $c$    | client-id                                                                 |
+| $v$    | view number                                                               |
+| $m$    | msg received from client                                                  |
+| _op_   | operation client wants to run                                             |
+| _log_  | array of _op-numbers_, contain requests received so far in assigned order |
+| $n$    | op-number assigned to request                                             |
+| $i$    | replica number                                                            |
+| $l$    | replica log                                                               |
 
 ### #1: Normal Operation Protocol 
 <img width="579" alt="image" src="https://github.com/lynnliu030/os-prelim/assets/39693493/23dcbb8e-c1b2-48ee-ad19-f1405a15bafd">
@@ -63,7 +63,7 @@ _Reasoning_:
 * The correctness condition: every committed operation survives into all subsequent views in the same position in the serial order
 * View change protocol must obtain information from logs of at least $f+1$ replica
     * Ensure all **committed** operations will be known (i.e. recorded in at least one of these logs)
-* Viewstamps: < _view-number_, _op-number_>   
+* **Viewstamps: < _view-number_, _op-number_>** 
     *  ensure operations that are "preparing" but not committed will not get lost
     *  i.e. a new leader may assign a previous used op-number to different operation, causing inconsistency
 *  Once a node advances _view-number_ it no longer accepts messages from old view, instead it informs senders about new view 
@@ -79,7 +79,7 @@ Steps:
        *  $l$ is the new log and $k$ is the _op-number_ of latest committed request
 3. The new primary execute (in order) any committed operations that it hadn't executed previously and send replies to clients, start accepting client request
 4. Other replicas receiving $STARTVIEW$ will
-   *  replace their log with the new log, set their _op-number_, _view-number_, and change their status to _normal_
+   *  **replace their log with the new lo**g, set their _op-number_, _view-number_, and change their status to _normal_
    *  send $PREPAREOK$ messages for uncommitted ops 
 
 ### #3: Recovery Protocol 

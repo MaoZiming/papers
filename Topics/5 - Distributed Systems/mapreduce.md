@@ -1,5 +1,5 @@
 # MapReduce 
-Map Reduce is a simple ata-parallel programming model designed for scalability and fault-tolerance. It provides a limited but general functional API including map, reduce, and sort, and it requires no other synchronization and communication. It achieve fault recovery, and straggler mitigation through retries. 
+Map Reduce is a simple data-parallel programming model designed for scalability and fault-tolerance. It provides a limited but general functional API including map, reduce, and sort, and it requires no other synchronization and communication. It achieve fault recovery, and straggler mitigation through retries. 
 
 ## Key Motivation 
 - Background: MPI (message passing interface)
