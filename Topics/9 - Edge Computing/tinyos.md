@@ -86,7 +86,7 @@ Frame allows us to know the memory footprint at compile time; as well as knowing
 
 However, tasks must never block or spin wait or they will prevent progress in other components.
 
-The communication across the com- ponents takes the form of a function call, which has low overhead and provides compile time type checking.
+The communication across the components takes the form of a function call, which has low overhead and provides compile time type checking.
 
 ## Limitations
 
