@@ -1,4 +1,7 @@
 # Exokernel: An Operating System Architecture for Application-Level Resource Management (1995) 
+
+Link: https://pdos.csail.mit.edu/6.828/2008/readings/engler95exokernel.pdf
+
 Exokernels are an attempt to separate security from abstraction, making non-overrideable parts of the operating system do next to nothing but securely multiplex the hardware.
 
 The goal is to avoid forcing any particular abstraction upon applications, instead **allowing them to use or implement whatever abstractions** are best suited to their task without having to layer them on top of other abstractions which may impose limits or unnecessary overhead. 
