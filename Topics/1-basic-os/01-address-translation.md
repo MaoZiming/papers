@@ -6,8 +6,7 @@
     - Stack
       - Grows due to function calls, etc.
       - The program, while it is running, uses a stack to keep track of where it is in the function call chain as well as to allocate local variables and pass parameters and return values to and from routines.
-    - Heap
-      - heap is used for dynamically-allocated, user-managed memory
+    - Heap: heap is used for dynamically-allocated, user-managed memory
   - Why placing the stack and heap like this?
     - Each wishes to grow
       - ![stack-heap-grow](images/01-address-translation/stack-heap-grow.png)
@@ -25,8 +24,6 @@
 
   - Hardware transforms each memory access (e.g. instruction fetch, load, or store), changing the **virtual address** provided by the instruction to a **physical address** where the desired information is actually located
 - Dynamic (Hardware-based) Relocation, or Base and Bounds
-
-  - "Dynamic relocation": relocation of the address happens at runtime
   - Need two hardware registers within each CPU
     - Hardware structures kept on the chip (one pair per CPU)
       - The part that helps with address translation: **memory management unit (MMU)**
@@ -42,31 +39,26 @@
     - Similarly, if a user program tries to change the values of the (privileged) base and bounds registers, the CPU should raise an exception and run the “tried to execute a privileged operation while in user mode” handler. These instructions require kernel (privileged) mode.
   - When a new process is created, the OS will have to search a data structure (often called a **free list**) to find room for the new address space and then mark it used.
   - The OS must save and restore the base-and-bounds pair when it switches between processes.
-    - In some per-process structure such as process control block (PCB).
+    - In per-process structure such as process control block (PCB).
     - To move a process’s address space, the OS first deschedules the process; then, the OS copies the address space from the current location to the new location; finally, the OS updates the saved base register (in the process structure) to point to the new location.
 - Some inefficiency of base-and-bounds
-
   - **Internal fragmentation** (space inside the allocated unit is not all used)
-
-    - restricted to placing an address space in a fixed-sized slot and thus internal fragmentation can arise
+    - Unallocated space between stack and heap. 
   - Slight generalization of base and bounds: segmentation (next)
 
 # Segmentation
 
 - Summary
   - Segmentation helps us build a more effective virtualization of memory
-    - Fast
-    - Enable code sharing
+    - Enable code sharing (protection bits, later)
     - Better support sparse address spaces
   - Cons
     - External fragmentation: allocate variable-sized segments chop up free memory into odd-sized pieces
     - Not flexible enough to support fully generalized, sparse address space
-      - E.x. sparsely-used heap all in one logical segment, the entire heap must still reside in memory in order to be accessed
       - if our model of how the address space is being used doesn’t match how the segmentation has been designed, segmentation doesn’t work very well
 - Instead of having just one base and bounds pair in MMU, have a base-and-bound pair per **logical segment** of the address space
 - Three logically-different segments: code, stack, and heap
-  - Only used memory is allocated space in physical memory
-- The term segmentation fault or violation arises from a memory access on a segmented machine to an illegal address.
+- The term **segmentation fault** or violation arises from a memory access on a segmented machine to an illegal address.
 - How is it better?
   - Allows OS to place each one of those segments in different parts in physical memory
   - Avoid filling physical memory with unused virtual address space
@@ -77,7 +69,6 @@
 - 3 segments —> 2 bits
 - (01): which segment, bottom 12 bits: offset into the segment (easier for bound checking)
 - Issues
-
   - One bit unused: some system also put code in the same segment as the heap (one bit)
   - Limits use of address space: each segment is limited to a maximum size
 - The next 12 bits will be the offset into the segment.
@@ -103,19 +94,14 @@
 
 - Coarse-grained: a few segments like code, stack, heap
 - Fine-grained: early systems, large # of smaller segments
-
   - Need **segment table** of some kind stored in memory
   - OS Support
 - Context switch?
-
   - Segment registers must be saved and restored
 - OS interaction when segments grow and shrink?
-
   - Heap expansion: update segment size
 - Managing free space in physical memory?
-
   - **External fragmentation**
     - Solution: compact physical memory by rearranging existing segments (i.e. stop process, copy data, change register value, etc.)
+      - But this is expensive.
     - Solution: free-list management algorithm (e.x. best-fit, worst-fit, first-fit, buddy algorithm)
-  - Compaction.
-    - But this is expensive.

@@ -25,10 +25,6 @@ SEDA: Both papers tackle the problem of internet service scalability but approac
 
 Scheduling: Proportional Share - The resource-aware scheduler in Capriccio can be related to proportional share scheduling concepts, especially in how it seeks to allocate resources effectively.
 
-## Summary
-
-This paper proposes Capriccio, a scalable thread package for use with high-concurrency servers. The main proposal is, user-level threads can provide natural abstraction for high concurrency programming, at the same time can achieve the same benefits as event-based systems (i.e. SEDA). 
-
 ## Key Insight
 
 ### Problem
@@ -116,8 +112,6 @@ There are three parts:
                 - Lightweight sync benefit is diminished when multi-processors are allowed
                 - “Scheduler Activation” paper: purely user-level sync are ineffective in face of true concurrency and may lead to starvation
         - Benchmark: Benefits outweigh drawbacks
-- Implementation
-
 - Main thing
     - Cooperative scheduling
     - Async I/O

@@ -1,7 +1,6 @@
 # Paging
 
 - Paging: a new solution to virtualizing memory
-
   - Correspondingly, we view physical memory as an array of fixed-sized slots called page frames; each of these frames can contain a single virtual-memory page.
 - Pros
   - Does not lead to external fragmentation, as it divides memory into fixed-sized units
@@ -10,85 +9,73 @@
   * Slower machine: many extra memory accesses
   * Memory waste: memory filled with page tables instead of useful application data
 - OS takes two approaches to deal with space-management
-
   - Variable-sized pieces: segmentation
     - Cons: space can become fragmented, allocation challenging
   - Fixed-sized pieces: paging
     - Fixed-size unit: **page**
     - Physical memory is an array of fixed-sized slots called **page frames**
-- Challenge
-
-  - How can we virtualize memory with pages, so as to avoid the problems of segmentation?
-  - What are the basic techniques?
-  - How do we make those techniques work well, with minimal space and time overheads?
 - **Page table**
-
   - **Per-process data structure** to record where each virtual page of the address space is placed in physical memory.
   - **VPN:** virtual page number
   - **Offset:** within the page
-  - Page table register (PTBR): contain physical address of starting loc of PT
+  - **Page table register (PTBR)**: contain physical address of starting location of PT
   - Address of page table entry: PTE = PTBR + (VPN * sizeof(PTE))
 
 ## Where are page tables stored?
 
 - Page tables can be bigger than small segment tables or base / bounds pairs
 - Too large, not store in on-chip hardware in the MMU
-- Store in memory instead
-
-MMU: stores the base and bound register; as well as TLB.
+- Stored in memory instead
+- MMU: stores the base and bound register; as well as TLB.
 
 - **Linear page table**
 
   - Array
   - OS indexes the page by VPN, then lookup the page table entry (PTE) at that index to find the PFN
-- PTE
-
-  - ***Valid bit:*** indicate whether the particular translation is valid
-    - E.x. unused space in-between (code, heap, stack) is invalid, will generate a trap to the OS that likely terminate the process
-  - ***Protection bit:*** whether page could be read from, written to, or executed from
-    - Accessing a page in a way not allowed will trap
-  - ***Present bit:*** whether this page is in physical memory or on disk (i.e. it has been swapped out)
-    - E.x. swap parts of addr space to disk to support addr space larger than physical memory
-    - Actually no separate valid and present bit, just valid bit
+  - PTE
+    - ***Valid bit:*** indicate whether the particular translation is valid
+      - E.x. unused space in-between (code, heap, stack) is invalid, will generate a trap to the OS that likely terminate the process
+    - ***Protection bit:*** whether page could be read from, written to, or executed from
+      - Accessing a page in a way not allowed will trap
+    - ***Present bit:*** whether this page is in physical memory or on disk (i.e. it has been swapped out)
+      - E.x. swap parts of addr space to disk to support addr space larger than physical memory
+      - Actually no separate valid and present bit, just valid bit
       - P = 0, might be valid or not, then OS use additional structure
-  - ***Dirty bit:*** whether the page has been modified since it was brought to memory
-  - ***Reference bit:*** track whether a page has been accessed
-    - Useful in determine which pages are popular in page replacement
+    - ***Dirty bit:*** whether the page has been modified since it was brought to memory
+    - ***Reference bit:*** track whether a page has been accessed
+      - Useful in determine which pages are popular in page replacement
 - we can now index our page table and find which physical frame virtual page 1 resides within. In the page table above the physical frame number (PFN) (also sometimes called the physical page number or PPN) is 7 (binary 111).
-
   - ![alt text](images/03-paging/address-translation-process.png)
 - Solution #2: **page + segments**
-- - Problem: most of the page table unused, full of invalid entries (e.x. between stack and heap)
+  - Problem: most of the page table unused, full of invalid entries (e.x. between stack and heap)
   - Approach: one page table per logical segment
     - E.x. code, heap, stack
     - Have base and bound registers in MMU
       - Base: holds physical address of page table
       - Bound: holds the end of page table
 - The page directory, in a simple two-level table, contains one entry per page of the page table
-
   - Page directory entries (PDE)
     - Has a **valid bit** and a **page frame number**
     - Valid bit: if PDE is valid, it means that at least one of the pages of the page table that entry points to (via the PFN) is valid
 - Page Fault
-- ***Page fault handler***- **Page fault:** hen the HW looks in the PTE, it may find that page is *not present* in physical memory
-
+- ***Page fault handler***- **Page fault:** the HW looks in the PTE, it may find that page is *not present* in physical memory
   - Upon page fault, **OS is invoked with page-fault handler**
-    - Find the page, do I/O from swap space (i.e. reserved space on the disk for moving pages back and forth)
-      - **Swap Space**: reserved space on the disk for moving pages back and forth
+    - Find the page, do I/O from swap space (i.e. reserved space on the **disk** for moving pages back and forth)
+      - **Swap Space**: reserved space on the **disk** for moving pages back and forth
         - Assume size of swap space is very large
-      - The first thing we will need to do is to reserve some space on the disk for moving pages back and forth. In operating systems, we generally refer to such space as swap space, because we swap pages out of memory to it and swap pages into memory from it.
+      - The first thing we will need to do is to reserve some space on the disk for moving pages back and forth. In operating systems, **we generally refer to such space as swap space, because we swap pages out of memory to it and swap pages into memory from it.**
         - Thus, we will simply assume that the OS can read from and write to the swap space, in page-sized units. To do so, the OS will need to remember the disk address of a given page.
     - Update page table to mark page as present, record in memory location of the new-fetched page, retry
+- Can TLB hit lead to page fault? No. 
+  - When a page is swapped out, the TLB entry is invalidated. 
 
 ## Advanced
 
 - Trade-off in time and space
 - Memory-constrained system: small structures make sense
-
   - V.s. system with large memory and workloads that use large number of pages, bigger table that speeds up TLB misses might be the right choice
 - Array-based (linear) page tables are too big, taking up too much memory on typical systems
 - Problem: **internal fragmentation**
-
   - Bigger page leads to waste within each page
   - Most system use relatively small page size in common case: 4KB (as in x86), 8KB (as in SPARCv9)
 
@@ -134,76 +121,36 @@ MMU: stores the base and bound register; as well as TLB.
 
 ### TLB
 
-***Translation-lookaside buffer (TLB)***- Part of the chip’s  MMU
+***Translation-lookaside buffer (TLB)***- Part of the chip’s MMU
 
 - Simply a hardware cache of popular virtual-to-physical address translation
 - Maintain virtual-to-physical translations that are only valid for the current running process
-
   - Flush on context switches
 - Can be software-managed or hardware-managed
-
   - Software-managed: HW raises exception on TLB miss, jumps to kernel trap handler
 - **Hardware-managed TLBs**: hardware handles TLB miss entirely
-
 * HW has to know where the page tables are located in memory (via a page table base register) and their exact format
-
   * On TLB miss, HW walks the page table, and update TLB with translation, then **retry**
   * If the page is valid and present in physical memory, the hardware extracts the PFN from the PTE, installs it in the TLB, and retries the instruction, this time generating a TLB hit; so far, so good.
 
 - **Software-managed TLB**
-
   - E.x. RISC
   - On TLB miss, HW raises an exception, which pauses the current instruction stream, raises the privilege level to kernel mode, and jumps to a **trap handler**
   - Note
-
     - Return-from-trap different from syscall
       - Instead of resume execution at instruction after the trap
-      - We want to resume execution at instruction at caused the trap to retry
+      - We want to resume execution at **instruction that caused the trap to retry**
       - HW must save a different PC to resume correctly
     - OS needs to be careful of infinite chain of TLB misses
       - Solution: TLB miss handlers in physical memory, or reserve some entires in the TLB for permanently-valid translations for the handler code
   - Pros
   - Flexibility
-
     - OS can use any data structure it wants to implement the page table without HW
   - Simplicity
-
     - HW doesn’t do much on a miss, just raise an exception and OS TLB miss handler do the rest
-      - A typical TLB might have 32, 64, or 128 entries and be what is called fully associa- tive. Basically, this just means that any given translation can be anywhere in the TLB, and that the hardware will search the entire TLB in parallel to find the desired translation. A TLB entry might look like this:
+      - A typical TLB might have 32, 64, or 128 entries and be what is called fully associative. Basically, this just means that any given translation can be anywhere in the TLB, and that the hardware will **search the entire TLB in parallel** to find the desired translation. A TLB entry might look like this:
     - VPN | PFN | other | bits
-    - To reduce this overhead, some systems add hardware support to en- able sharing of the TLB across context switches. In particular, some hard- ware systems provide an address space identifier (ASID) field in the TLB. You can think of the ASID as a process identifier (PID), but usu- ally it has fewer bits (e.g., 8 bits for the ASID versus 32 bits for a PID)
-
-### VAX / VMS second-chance list
-
-Problem addressed:
-
-1) no reference bit
-2) memory hogs can happen (i.e. programs use a lot of memory and make it hard for other programs to run)
-
-Key features (approximate LRU):
-
-1. Resident set size (RSS): each process allocated a fixed # of page frames, pages are managed in FIFO
-2. Two second-chance list: before completely evicting a page from memory, it is put into two second chance list
-
-- 1) clean-page free list: hold pages that have not been modified since they were last loaded
-     1) One interesting approach that has been around for some time is the use of segregated lists. The basic idea is simple: if a particular application has one (or a few) popular-sized request that it makes, keep a separate list just to manage objects of that size; all other requests are forwarded to a more general memory allocator.
-     2) 
-- 2) dirty-page list: modified
-
-When a process exceeds RSS:
-
-1. the oldest page is taken from process’s FIFO list
-2. if clean, placed at clean-page list, if dirty, go to dirty-page list
-
-When a process need to add a new page
-
-1. first look at free page from clean list
-2. if process faults on a page that was moved to one of the second-chance list, it can reclaim it, avoid disk access
-
-– Intuition: First referenced long time ago, done with it now
-– Advantages: Fair: All pages receive equal residency; Easy to implement
-– Disadvantage: Some pages may always be needed
-
+    - To reduce this overhead, some systems add hardware support to enable sharing of the TLB across context switches. In particular, some hardware systems provide an address space identifier (ASID) field in the TLB. You can think of the ASID as a process identifier (PID), but usually it has fewer bits (e.g., 8 bits for the ASID versus 32 bits for a PID)
 
 ### NRU (Clock Algorithm)
 
@@ -223,29 +170,50 @@ When a process need to add a new page
 * FIFO
 * Second-chance algorithm.
 
-**Conflict miss**: arise in hardware because of limits on where an item can be placed in a hardware cache, due to set-associativity- It does not arise in OS page cache because caches are always fully-associative (i.e. there are no restrictions on where in memory a page can be placed)
-
-
+**Conflict miss**: arise in hardware because of limits on where an item can be placed in a hardware cache, due to set-associativity. It does not arise in OS page cache because caches are always fully-associative (i.e. there are no restrictions on where in memory a page can be placed)
+  - Suppose you have 32KB directly-mapped cache. You have 2 small 8k arrays, but unfortunately they are both aligned and map to the same sets. This means that while they could theoretically fit in the cache (if you fix your alignment), they will not utilize the full cache size and instead compete for the same group of sets and thrash each other. These are conflict misses, since the data could fit, but still collides due to organization. 
 - OS decides when to bring a page into memory (i.e. page selection policy)
   - Most pages: demand paging, bring in on-demand
   - Prefetching: i.e. page P is brought into memory, code P + 1 will likely soon be accessed
 - OS decides how to write pages out to disk
   - One at a time v.s clustering (or grouping)
 
+### VAX / VMS second-chance list
+
+- Problem addressed:
+  - no reference bit
+  - memory hogs can happen (i.e. programs use a lot of memory and make it hard for other programs to run)
+
+- Key features (approximate LRU):
+  - Resident set size (RSS): each process allocated a fixed # of page frames, pages are managed in FIFO
+  - Two second-chance list: before completely evicting a page from memory, it is put into two second chance list
+
+- clean-page free list: hold pages that have not been modified since they were last loaded
+  - One interesting approach that has been around for some time is the use of segregated lists. The basic idea is simple: if a particular application has one (or a few) popular-sized request that it makes, keep a separate list just to manage objects of that size; all other requests are forwarded to a more general memory allocator.
+  - dirty-page list: modified
+
+- When a process exceeds RSS:
+  - the oldest page is taken from process’s FIFO list
+  - if clean, placed at clean-page list, if dirty, go to dirty-page list
+
+- When a process need to add a new page
+  - first look at free page from clean list
+  - if process faults on a page that was moved to one of the second-chance list, it can reclaim it, avoid disk access
+
+– Intuition: First referenced long time ago, done with it now
+– Advantages: Fair: All pages receive equal residency; Easy to implement
+– Disadvantage: Some pages may always be needed
 
 ## Page Allocator
 
 Buddy Managed Heap- ![alt text](images/03-paging/buddy-managed-heap.png)
 
-- By using a buddy system, the allocator can quickly find a free block of memory of a given size, and can also quickly coalesce free blocks of memory when they are freed.
-- - You might have noticed that the interface to free(void *ptr) does not take a size parameter; thus it is assumed that given a pointer, the malloc library can quickly determine the size of the region of memory being freed and thus incorporate the space back into the free list.
-- To accomplish this task, most allocators store a little bit of extra infor- mation in a header block which is kept in memory, usually just before the handed-out chunk of memory.
+- By using a buddy system, the allocator can quickly find a free block of memory of a given size, and can also quickly **coalesce** free blocks of memory when they are freed.
+- You might have noticed that the interface to `free(void *ptr)` does not take a size parameter; thus it is assumed that given a pointer, the malloc library can quickly determine the size of the region of memory being freed and thus incorporate the space back into the free list.
+- To accomplish this task, most allocators store a little bit of extra information in a header block which is kept in memory, usually just before the handed-out chunk of memory.
 - the size of the free region is the size of the header plus the size of the space allocated to the user. Thus, when a user requests N bytes of memory, the library does not search for a free chunk of size N; rather, it searches for a free chunk of size N plus the size of the header.
-
   - Free list will point to the next chunk of free space, e.g.
-- One interesting approach that has been around for some time is the use of segregated lists. The basic idea is simple: if a particular application has one (or a few) popular-sized request that it makes, keep a separate list just to manage objects of that size; all other requests are forwarded to a more general memory allocator.
 - One particular allocator, the slab allocator by uber-engineer Jeff Bonwick (which was designed for use in the Solaris kernel), handles this issue in a rather nice way.
-
   - it allocates a number of object caches for kernel objects that are likely to be requested frequently (such as locks, file-system inodes, etc.); the object caches thus are each segregated free lists of a given size and serve memory allocation and free requests quickly.
 
 ## Others
@@ -256,19 +224,16 @@ Buddy Managed Heap- ![alt text](images/03-paging/buddy-managed-heap.png)
   - Errors
     - *Forget to allocate memory* —> segmentation fault
     - *Not allocating enough memory* —> buffer overflow
-      > Even though it ran correctly once, doesn’t mean it’s correct
-      >
     - *Forgetting to initialize allocated memory*
       - Random
     - *Forgetting to free memory* —> memory leak
     - *Freeing memory before you are done* —> dangling pointer
     - *Freeing memory repeatedly* —> double free, undefined behavior
     - *Calling free() incorrectly* —> invalid frees
-- malloc() and free(). The reason for this is sim- ple: they are not system calls, but rather library calls.
+- malloc() and free(). The reason for this is simple: they are not system calls, but rather library calls.
   - `brk`, which is used to change the location of the program’s break: the location of the end of the heap.
-  - `sbrk:` changethe space of the currently allocated program.
+  - `sbrk:` change the space of the currently allocated program.
   - By passing in the correct arguments, `mmap()` can create an anonymous memory region within your program — a region which is not associated with any particular file but rather with swap space,
-
 
 - Question: what should the OS do when memory is simply oversubscribed, and the memory demands of the set of running processes simply exceeds the available physical memory?
 - In this case, the system will constantly be paging —> **thrashing**
@@ -277,8 +242,7 @@ Buddy Managed Heap- ![alt text](images/03-paging/buddy-managed-heap.png)
   - E.x. **Out-of-memory killer**: run this when memory is oversubscribed, the daemon choose a memory-intensive process and kill it
 
 ## Page Cache
-
-
-The Page Cache- The Linux page cache is unified, keeping pages in memory from three primary sources: memory-mapped files, file data and metadata from de- vices (usually accessed by directing read() and write() calls to the file system), and heap and stack pages that comprise each process (sometimes called anonymous memory, because there is no named file underneath of it, but rather swap space). These entities are kept in a page cache hash table, allowing for quick lookup when said data is needed.
-
-- The page cache tracks if entries are clean (read but not updated) or dirty (a.k.a., modified). Dirty data is periodically written to the back- ing store (i.e., to a specific file for file data, or to swap space for anony- mous regions) by background threads (called pdflush), thus ensuring that modified data eventually is written back to persistent storage.
+- The page cache is used to improve the performance of file system operations. It caches pages of data that have been read from or written to disk files, allowing for faster access on subsequent requests.
+  - When a file is read, the data is stored in the page cache. If the same data is requested again, it can be served from the cache instead of reading from the disk again.
+- The Page Cache. The Linux page cache is unified, keeping pages in memory from three primary sources: memory-mapped files, file data and metadata from devices (usually accessed by directing read() and write() calls to the file system), and heap and stack pages that comprise each process (sometimes called anonymous memory, because there is no named file underneath of it, but rather **swap space**). These entities are kept in a page cache hash table, allowing for quick lookup when said data is needed.
+- The page cache tracks if entries are clean (read but not updated) or dirty (a.k.a., modified). Dirty data is periodically written to the backing store (i.e., to a specific file for file data, or to **swap space** for anonymous regions) by background threads (called pdflush), thus ensuring that modified data eventually is written back to persistent storage.

@@ -1,4 +1,4 @@
-# SEDA: An Architecture for Well-Conditioned, Scalable Internet Services
+# SEDA: An Architecture for Well-Conditioned, Scalable Internet Services (2001)
 
 Link: https://sosp.org/2001/papers/welsh.pdf
 
@@ -41,7 +41,6 @@ Cons of overall event-based system include the difficulty to understand cause-ef
 
 ### Thread-based concurrency
 ![alt text](images/13-seda/thread-based-concurrency.png)
-- E.x. RPC, RCOM
 - Each accepted request consumes a thread to process it, with sync operations protecting shared resources.
 - **Pros:** ease-to-program
 - **Cons**
@@ -76,24 +75,11 @@ Cons of overall event-based system include the difficulty to understand cause-ef
     - Additional challenges
         - Scheduling and ordering of events are hard for application
         - Modularity is difficult to achieve
-            - Code implements each state must be trusted not to block
+            - Code implements each state must be trusted not to **block**
             - Or consume large # of resources that stall the event-handling thread
 - Some better solutions: structured event queues
     - Structure an event-driven application using a set of event queues to improve code modularities and simplify application design
     - E.x. Click, DDS
-
-## Key Techniques
-
-### Goals
-
-1. Support massive concurrency 
-    1. Use event-driven execution whenever possible 
-2. Simplify construction of well-conditioned services 
-    1. Allow modular construction of application 
-3. Enable introspection 
-    1. Applications can analyze request stream to adapt behavior of changing loads 
-4. Support self-tuning resource management 
-    1. Adjust resource management parameters dynamically to meet performance target (i.e. # of threads per stage) 
 
 ### Key Ideas
 
@@ -136,7 +122,7 @@ Cons of overall event-based system include the difficulty to understand cause-ef
 
 ## Discussion
 
-We believe that measurement and control is the key to resource man- agement and overload protection in busy Internet services. This is in contrast to long-standing approaches based on resource containment, which assign fixed resources to each task (such as a process, thread, or server request) in the system, and strive to contain the resources con- sumed by each task.
+We believe that measurement and control is the key to resource management and overload protection in busy Internet services. This is in contrast to long-standing approaches based on resource containment, which assign fixed resources to each task (such as a process, thread, or server request) in the system, and strive to contain the resources con- sumed by each task.
 
 ## Limitations
 

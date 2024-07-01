@@ -1,8 +1,5 @@
 # Synchronization
 
-- Implementation of threads and locks (disabling interrupts and atomic operations like CompareAndSwap)
-- How to use semaphores, locks, and condition variables
-
 ## Threads & Locks
 
 - **Thread:** new abstraction for single running process
@@ -25,18 +22,13 @@
 - **Why it get worse?** Shared data and synchronization
   - Multiple threads executing this code can result in race condition, this code is **critical section**
   - What we want for this code is **mutual exclusion** and “**atomicity**”
-- How to build synchronization?
-  - Use hardware support
-  - With OS help
 - **How to build a lock?**
   - We would like to execute a series of instructions atomically, but due to the presence of interrupts on a single processor (or multi-thread on multi-processor), we couldn’t
   - We deal with this problem directly with the notion of lock
-
     - Programmers annotate source code with locks
     - Putting them around critical sections
     - And ensure that critical section executes as if it were a single atomic instruction
   - **#1: disabling interrupt for critical sections**
-
     - Steps
       - Code inside the critical section will not be interrupted, and will execute as if it were atomic
       - When we finish, reenable interrupts (via hardware instructions)
@@ -45,23 +37,12 @@
       - Allow calling thread to perform privileged instructions and trust that it is not abused
       - On multi-processor, each threads running on different CPUs, and each try to enter the same critical sections, does not matter whether interrupts are disabled
   - **#2: Compare and Swap [hardware support]**
-
     - Basic Idea
       - Test whether the value at the address specified by `ptr` is equal to `expected`
       - If so, update the memory location pointed to by `ptr` with the new value
       - If not, do nothing
       - In either case, return original value at that memory location, allow the code calling this call knows it succeeds or not
-
-    <img width="584" alt="image" src="https://github.com/lynnliu030/os-prelim/assets/39693493/ea5d6eb1-0dd9-4faa-bdd1-53543284876f">
-
     - Pros: more powerful instruction than test-and-set (i.e. in lock-free synchronization) setup
-
-## Locks
-
-- POSIX call lock: mutex
-  - To provide the mutual exclusion
-- Example of lock as below
-  `<img width="624" alt="image" src="https://github.com/lynnliu030/os-prelim/assets/39693493/ea5b04af-772c-4031-9b99-656bc2fb24c1">`
 
 # Lock
 
@@ -72,7 +53,6 @@
 ## Controlling Interrupts
 
 - Earliest solution for single-processor system
-
 ```c
 void lock() {
     disable_interrupts();
@@ -84,7 +64,6 @@ void unlock() {
 
 - Pros: simplicity
 - Cons
-
   - Requires us to allow any calling thread to perform privileged operation (turning interrupts on and off), and trust that this facility is but abused
     - Requires too much trust in applications
   - Does not work in multiprocessors
@@ -95,17 +74,8 @@ void unlock() {
     - Code that masks or unmasks interrupts tends to be executed slowly
 - Pros: simplicity
 - Cons
-
   - Allow calling thread to perform privileged instructions and trust that it is not abused
   - On multi-processor, each threads running on different CPUs, and each try to enter the same critical sections, does not matter whether interrupts are disabled
-
-## A Failed Attempt: Using Loads / Stores
-
-- Problems:
-  - Correctness
-    - Both threads are able to set the flag to 1 and able to enter the critical section
-  - Performance
-    - Spin-waiting: endlessly check the value of the flag
 
 ## Hardware support for locking: Test-And-Set (Atomic Exchange)
 
@@ -130,22 +100,6 @@ void unlock() {
         - Each threads spin for duration of the time slice before giving up the CPU
       - Multi-CPU: works reasonably well if # of threads ~ # of CPUs
 
-## Compare-And-Swap (CAS)
-
-- Test whether the value at the address specified by `ptr` is equal to `expected`
-- If so, update the memory location pointed to by `ptr` with the new value
-- If not, do nothing
-- In either case, return original value at that memory location, allow the code calling this call knows it succeeds or not
-- Pros
-  - More powerful instruction than test-and-set
-
-## Load-Linked and Store-Conditional
-
-- Load-linked: fetch a value from memory and place it in register
-- Store-conditional: succeed if no intervening store to the address has taken place
-  - Success: returns 1 and update value at `ptr` to `value`
-  - Fail: `ptr` is not updated and 0 is returned
-
 ## Fetch-and-Add
 
 - Atomically increments a value while returning the old value at a particular address
@@ -161,12 +115,6 @@ void unlock() {
 - Problem: how can we develop a lock that doesn’t needlessly waste time spinning on the CPU?
   - **Hardware support alone cannot solve the problem**
   - **Need OS support too!**
-
-## Simple Approach: Just Yield
-
-- `yield()`: a sys call that moves the caller from running state to ready state, and promote other thread to run
-  - De-schedules itself
-  - However approach still very costly: run-and-yield for every other thread, and cost of context switch can be substantial
 
 ## Using Queues: Sleeping Instead of Spinning
 
@@ -187,18 +135,11 @@ void unlock() {
   - First phase: spin for a while, hope to acquire the lock
   - Second phase: caller put to sleep, only woken up when the lock becomes free
 
-## Crux: How to add locks to data structures
-
-- When given a particular data structure, how should we add locks to it, in order to make it work correctly?
-- How do we add locks such that data structure yields high performance, enabling many threads to access the structure at once, i.e. concurrently?
-
 ## Condition Variables
 
 - **Condition variable**
   - Def: explicit queue that threads can put themselves on when some state of execution (i.e. some **condition**) is not as desired (by **waiting** on the condition)
   - Some other thread, when it changes said state, can then wake one (or more) of those waiting threads and allow them to continue (by **signaling** on condition)
-
-<img width="621" alt="image" src="https://github.com/lynnliu030/os-prelim/assets/39693493/14618f97-20cc-430d-8a8a-954492efc29c">
 
 ## Semaphore
 
@@ -230,9 +171,6 @@ sem_wait(&m);
 sem_post(&m);
 ```
 
-- Binary semaphore
-  `<img width="611" alt="image" src="https://github.com/lynnliu030/os-prelim/assets/39693493/d88ad80c-2813-4472-83a9-1944e83e4253">`
-
 # Condition Variable
 
 ## Problem: producer / consumer or bounded-buffer problem
@@ -246,22 +184,6 @@ sem_post(&m);
 - A mutex lock **`buffer_lock`** to protect the shared buffer.
 - A condition variable **`not_full`** to signal that the buffer is not full.
 - A condition variable **`not_empty`** to signal that the buffer is not empty.
-
-### **Producer:**
-
-1. Lock **`buffer_lock`**.
-2. While the buffer is full, wait on condition variable **`not_full`**.
-3. Add the item to the buffer.
-4. Signal the **`not_empty`** condition variable to indicate that the buffer now has at least one item.
-5. Unlock **`buffer_lock`**.
-
-### **Consumer:**
-
-1. Lock **`buffer_lock`**.
-2. While the buffer is empty, wait on condition variable **`not_empty`**.
-3. Remove an item from the buffer.
-4. Signal the **`not_full`** condition variable to indicate that the buffer now has at least one empty slot.
-5. Unlock **`buffer_lock`**.
 
 ### Pseudocode
 
@@ -319,8 +241,6 @@ sem_post(&m);
 
 ```
 
-
-
 # Thread API
 
 ## How to create and control threads?
@@ -372,20 +292,9 @@ while (ready == 0)
     ; // spin
 ```
 
-- First, it performs poorly in many cases (spinning for a long time just wastes CPU cycles). Second, it is error prone. As recent research shows [X+10], it is surprisingly easy to make mistakes when using flags (as above) to synchronize between threads; in that study, roughly half the uses of these ad hoc synchroniza- tions were buggy! Don’t be lazy; use condition variables even when you think you can get away without doing so.
-
-
+- First, it performs poorly in many cases (spinning for a long time just wastes CPU cycles). Second, it is error prone. As recent research shows [X+10], it is surprisingly easy to make mistakes when using flags (as above) to synchronize between threads; in that study, roughly half the uses of these ad hoc synchronizations were buggy! Don’t be lazy; use condition variables even when you think you can get away without doing so.
 
 # Event-based Concurrency
-
-- Popular in modern systems, like server-side frameworks (i.e. node.js)
-- Problem it addresses
-  - Managing concurrency correctly in multi-threaded applications can be challenging: dead lock, missing locks, etc.
-  - The developer has little or no control over what is scheduled at a given moment in time
-
-## Basic Idea: An Event Loop
-
-- Basic idea: wait for an event to occur, then check what type of event it is, and do small amount of works it requires
 
 ## API: `select()` or `poll()`
 
@@ -411,4 +320,3 @@ while (ready == 0)
     - Checks whether the request referred to by `aiocbp` has completed
     - Periodically poll the system
     - Interrupt (signals) to inform application when AIO completes, removing needs to repeatedly ask the system
-    - Q: how does this compare to the mechanism of thread-based server?

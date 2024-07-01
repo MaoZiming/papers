@@ -1,13 +1,7 @@
 # Scheduling
 
-- Assumptions:
-  - Each job runs for the same amount of time
-  - All jobs arrive at the same time.
-  - Once started, each job runs to completion.
-  - All jobs only use the CPU (i.e., they perform no I/O)
-  - The run-time of each job is known.
 - Scheduling metrics:
-  - Turnaround time: the time at which the job completes
+  - **Turnaround time**: the time at which the job completes
     - $T_{turnaround} = T_{completion} - T_{arrival}$
     - the time which the job arrived in the system
   - Another metric: fairness, e.g. Jain’s Fairness Index
@@ -22,7 +16,7 @@
       - Any time a new job enters the system, the STCF scheduler determines which of the remaining jobs (including the new job) has the least time left, and schedules that one.
     - Better average turnaround time
       - Given the new assumptions, STCF is provably optimal
-  - Response time: the time from when the job arrives in a system to the first time it is scheduled
+  - **Response time**: the time from when the job arrives in a system to the first time it is scheduled
     - $T_{response} = T_{firstrun} - T_{arrival} $
   - SJF and STCF:
     - Bad for response time
@@ -38,79 +32,34 @@
     - currently-running job won’t be using the CPU during the I/O; it is blocked waiting for I/O completion.
     - The scheduler also has to make a decision when the I/O completes. When that occurs, an interrupt is raised, and the OS runs and moves the process that issued the I/O from blocked back to the ready state. Of course, it could even decide to run the job at that point.
   - ![alt text](images/04-cpu-scheduling/job-scheduling.png)
-    - A common approach is to treat each 10-ms sub-job of A as an independent job. Thus, when the system starts, its choice is whether to schedule a 10-ms A or a 50-ms B. With STCF, the choice is clear: choose the shorter one, in this case A. Then, when the first sub-job of A has completed, only B is left, and it begins running. Then a new sub-job of A is submitted, and it preempts B and runs for 10 ms.
 
 ### MLFQ
 
-Problem: we want to optimize turnaround and minimize response. we don’t know anything about a process (i.e. job length, etc.)
-
-Idea:
-
-- Number of distinct queues with different priority level: higher priority given more CPU time, lower given less
-- Priority adjusted dynamically based on its behavior, use a feedback mechanism
-- Each queue is assigned a time slice determine how much CPU time a process in that queue is allowed to use before pre-empted and moved to a lower level queue
-
-Pros: more flexible, allow different process to move between priorities, prevent starvation by increasing process’s priority
-
-Cons: many tunable knobs: # of queues, time slice per queue, how often should priority be boosted, etc.
+- Problem: we want to optimize turnaround and minimize response. we don’t know anything about a process (i.e. job length, etc.)
+- Idea:
+  - Number of distinct queues with different priority level: higher priority given more CPU time, lower given less
+  - Priority adjusted dynamically based on its behavior, use a feedback mechanism
+  - Each queue is assigned a time slice determine how much CPU time a process in that queue is allowed to use before pre-empted and moved to a lower level queue
+- Pros: more flexible, allow different process to move between priorities, prevent starvation by increasing process’s priority
+- Cons: many tunable knobs: # of queues, time slice per queue, how often should priority be boosted, etc.
 
 ### EDF
 
-Assign priorities to the task according to the absolute deadline. The task whose deadline is closet gets the highest priority.
-
-Pros: efficient in real time system, dynamic
-
-Cons: priority inversion (i.e. a low-priority task can block a higher priority task from being executed, if blocking?)
+- Assign priorities to the task according to the absolute deadline. The task whose deadline is closet gets the highest priority.
+- Pros: efficient in real time system, dynamic
+- Cons: priority inversion (i.e. a low-priority task can block a higher priority task from being executed, if blocking?)
 
 ### Proportional Share (Fair-Share) Scheduler
 
-Instead of optimizing for turnaround or response time, scheduler might instead try to guarantee that each job obtain a certain percentage of CPU time
+- Instead of optimizing for turnaround or response time, scheduler might instead try to guarantee that each job obtain a certain percentage of CPU time
+  - Lottery Ticket: use tickets to represent the share of a resource that a process should receive
+  - Lightweight, randomness
+  - But occasionally not deliver right proportions
+- Stride Scheduling: not use randomness
+  - Stride: **inverse** in proportion to # of tickets it has
+  - use the stride and pass to determine which process to run next; pick process to run that has the lowest pass value so far, when you run a process, increment its pass counter by stride
 
-1. Lottery Ticket: use tickets to represent the share of a resource that a process should receive
-
-- Lightweight, randomness
-- But occasionally not deliver right proportions
-
-1. Stride Scheduling: not use randomness
-
-- Stride: inverse in proportion to # of tickets it has
-- use the stride and pass to determine which process to run next; pick process to run that has the lowest pass value so far, when you run a process, increment its pass counter by stride
-
-1. CFS
-
-- Linux CFS: highly efficient and scalable fair-share scheduler
-- Goal: fairly divide CPU evenly among competing processes
-- use virtual runtime (vruntime), weight with niceness to assign priorities
-- weighted round-robin with dynamic time slices
-- **Priority donation / inheritance**
-
-  - Problem: priority inversion
-
-    - Higher-priority task blocked by lower priority task that holds a needed resource (i.e. lock)
-  - Low priority task inherits the high priority of a task it is blocking
-  - Here's a simple example:
-
-    1. **Low-Priority Task (L)** owns a mutex.
-    2. **High-Priority Task (H)** tries to acquire the same mutex but is blocked because it's owned by **L**.
-    3. **Medium-Priority Task (M)** preempts **L** because **M** has a higher priority than **L** but lower than **H**.
-
-    Now, **H** is waiting for **L** to release the mutex, but **L** itself is waiting for CPU time because it's preempted by **M**. This is priority inversion.
-
-    In a system with Priority Donation/Inheritance:
-
-    1. When **H** is blocked by **L**, the system temporarily elevates the priority of **L** to that of **H**.
-    2. Now, **L** can preempt **M** because it has "inherited" the higher priority.
-    3. **L** quickly finishes its work, releases the mutex.
-    4. **H** can now acquire the mutex and proceed, and **L** returns to its original low priority.
-
-## Deadlock
-
-- Deadlock is a specific condition where two or more processes are unable to proceed because each is waiting for the other to release a resource.
-- Prevention
-  - Resource allocation graph: use directed graph to represent resource allocation, avoid cycles
-  - Timeout: set maximum time for acquiring resources
-
-# Lottery Scheduling
+### Lottery Scheduling
 
 - Instead of optimizing for turnaround or response time, scheduler might instead try to guarantee that each job obtain a certain percentage of CPU time
   - Fairness!
@@ -136,22 +85,42 @@ Instead of optimizing for turnaround or response time, scheduler might instead t
   - Ticket assignment problem remains open
   - ![alt text](images/04-cpu-scheduling/lottery-scheduling.png)
     - We first have to pick a random number (the winner) from the total number of tickets (400). Let’s say we pick the number 300.
-    - First, counter is incremented to 100 to ac- count for A’s tickets; because 100 is less than 300, the loop continues. Then counter would be updated to 150 (B’s tickets), still less than 300 and thus again we continue. Finally, counter is updated to 400 (clearly greater than 300), and thus we break out of the loop with current point- ing at C (the winner).
-- Stride Scheduling
+    - First, counter is incremented to 100 to account for A’s tickets; because 100 is less than 300, the loop continues. Then counter would be updated to 150 (B’s tickets), still less than 300 and thus again we continue. Finally, counter is updated to 400 (clearly greater than 300), and thus we break out of the loop with current pointing at C (the winner).
+
+### Stride Scheduling
   - Deterministic fair-share scheduler
   - Get exactly right at the end of each scheduling cycle
-  - Stride = G / # of tickets
+  - Stride = **G / # of tickets**
   - Example
     - Process: A - 100 tickets, G = 10000, stride value for A = 100.
     - Keep track of each process’ **pass value** (every time process runs). Increment by its stride to track its global process.
     - Scheduler chooses process with **lowest** pass value
     - Increment chosen process’ pass value **by its stride**
-    - ![alt text](images/04-cpu-scheduling/stride.png)
   - Comparing lottery scheduling and stride scheduling, the benefit of lottery scheduling: no global state per process, we simply add a new process with whatever tickets it has, update the single global variable to track how many total tickets we have, and go from there. easier to incorporate new process
-- Linux Completely Fair Scheduler (CFS)
-  - vruntime: virtual runtime
-  - As each process runs, it accumulates vruntime. In the most basic case, each process’s vruntime increases at the same rate, in proportion with physical (real) time. When a scheduling decision occurs, CFS will pick the process with the lowest vruntime to run next.
-  - if CFS switches too often, fairness is increased, as CFS will ensure that each process receives its share of CPU even over miniscule time win- dows, but at the cost of performance (too much context switching); if CFS switches less often, performance is increased (reduced context switching), but at the cost of near-term fairness.
+
+
+### Linux Completely Fair Scheduler (CFS)
+
+- Linux CFS: highly efficient and scalable fair-share scheduler
+- Goal: fairly divide CPU evenly among competing processes
+- use virtual runtime (vruntime), weight with niceness to assign priorities
+- As each process runs, it accumulates vruntime. In the most basic case, each process’s vruntime increases at the same rate, in proportion with physical (real) time. When a scheduling decision occurs, CFS will pick the process with the lowest vruntime to run next.
+- if CFS switches too often, fairness is increased, as CFS will ensure that each process receives its share of CPU even over miniscule time windows, but at the cost of performance (too much context switching); if CFS switches less often, performance is increased (reduced context switching), but at the cost of near-term fairness.
+- weighted round-robin with dynamic time slices
+- **Priority donation / inheritance**
+  - Problem: priority inversion
+    - Higher-priority task blocked by lower priority task that holds a needed resource (i.e. lock)
+  - Low priority task inherits the high priority of a task it is blocking
+  - Here's a simple example:
+    1. **Low-Priority Task (L)** owns a mutex.
+    2. **High-Priority Task (H)** tries to acquire the same mutex but is blocked because it's owned by **L**.
+    3. **Medium-Priority Task (M)** preempts **L** because **M** has a higher priority than **L** but lower than **H**.
+    Now, **H** is waiting for **L** to release the mutex, but **L** itself is waiting for CPU time because it's preempted by **M**. This is priority inversion.
+    In a system with Priority Donation/Inheritance:
+    4. When **H** is blocked by **L**, the system temporarily elevates the priority of **L** to that of **H**.
+    5. Now, **L** can preempt **M** because it has "inherited" the higher priority.
+    6. **L** quickly finishes its work, releases the mutex.
+    7. **H** can now acquire the mutex and proceed, and **L** returns to its original low priority.
   - Control parameters
     - `sched_latency`: determine how long one process should run before switch (fair-share), 48 ms
       - Period of time where CFS should be fair
@@ -175,17 +144,8 @@ Instead of optimizing for turnaround or response time, scheduler might instead t
     - Problem: if a process goes sleeping for long time, then it will monopolize CPU while it catches up.
       - As its `vruntime` will be very far behind
         - Solution: altering the `vruntime` when it wakes up to the minimum value found in the tree; jobs that sleep for short periods of time frequently do not ever get their fair share of CPU
-  - Summary
-    - Proportional-share scheduling: lottery scheduling, stride scheduling, CFS
-      - Lottery: use randomness in clever way
-      - Stride: deterministic
-      - CFS: weighted round-robin with dynamic time slices, most widely used
-    - Problems
-      - do not mesh well with I/O
-        - E.x. jobs that perform I/O occasionally may not get their fair share of CPU
-      - hard problem for ticket or priority assignment
 
-# Multi-Level Feedback Queue
+###  Multi-Level Feedback Queue
 
 - Two problems:
   - It would like to optimize turnaround time
@@ -197,7 +157,7 @@ Instead of optimizing for turnaround or response time, scheduler might instead t
 - MLFQ varies the priority of a job based on its observed behavior
   - “learn” about processes as they run
   - use the “history” to predict “future” behavior
-- Job’s allotment. The allotment is the amount of time a job can spend at a given priority level before the scheduler reduces its priority.
+- **Job’s allotment**. The allotment is the **amount of time** a job can spend at a given priority level before the scheduler reduces its priority.
 - Attempt 1: how to change priority
   - Rule 3: When a job enters the system, it is placed at the highest priority (the topmost queue)
   - Rule 4a: If a job uses up its allotment while running, its priority is reduced (i.e., it moves down one queue)
@@ -223,13 +183,8 @@ Instead of optimizing for turnaround or response time, scheduler might instead t
 
 # Multiprocessor Scheduling
 
-- Multiprocessor systems are increasingly commonplace
-- Multiple CPU cores are packed onto a single chip,
 - The difference between a single-CPU hardware and multi-CPU hardware: centers around the use of hardware caches, and exactly how data is shared across multiple processors
-- Cache: a notion of locality
-  - Temporal locality: when data is accessed, it is likely to be accessed again in near future
-  - Spacial locality: if the program access a data item at address x, it is likely to access data items near x as well
-
+  
 ## Problem #1: Cache Coherence
 
 - Multi-processor problem: cache coherence!
@@ -245,7 +200,7 @@ Instead of optimizing for turnaround or response time, scheduler might instead t
   - Cross-CPU access shared data items or data structures
   - Use mutual exclusion primitives (such as locks) to guarantee correctness
     - But as # of CPUs grow, access to a synchronized shared data structure becomes quite slow
-- Other approaches such as building lock-free data structures, are complex and only used on occasion; see the chapter on deadlock in the piece on concurrency for details
+- Other approaches such as building **lock-free data structures**, are complex and only used on occasion; see the chapter on deadlock in the piece on concurrency for details
 
 ## Problem #3: Cache Affinity
 
@@ -267,8 +222,8 @@ Instead of optimizing for turnaround or response time, scheduler might instead t
       - Lock reduces performance as # of CPUs grows
       - I.e. contention for a single lock increases, the system spends more time in lock overhead
     - **Cache affinity**
-      - Each CPU simply picks the next job to run from globally shared queued, each job ended up bouncing around from CPU to CPU
-  - most SQMS schedulers include some kind of affinity mechanism to try to make it more likely that process will continue to run on the same CPU if possible.
+      - Each CPU simply picks the next job to run from globally shared queued, each job ended up **bouncing around from CPU to CPU**
+  - most SQMS schedulers include some kind of **affinity mechanism** to try to make it more likely that process will continue to run on the same CPU if possible.
 - 3.2 Multi-Queue Scheduling (MQMS)
   - Notion: multiple scheduling queues, one per CPU, scheduled independently
   - When a job enters the system, it is placed on exactly one scheduling queue, according to some heuristics (e.g., random, picking one with fewer jobs)
@@ -285,9 +240,9 @@ Instead of optimizing for turnaround or response time, scheduler might instead t
     - Continuous migration of one or more jobs.
       - Many possible strategies for migration.
     - Basic approach: **work stealing**
-      - A (source) queue that is low on jobs will occasionally peek at another (target) queue, to see how full it is
+      - A (source) queue that is low on jobs will occasionally **peek** at another (target) queue, to see how full it is
       - If target queue is notably more full, then the source steal one or more jobs from the target to help balance load
-      - If you look around at other queues too often,you will suffer from high overhead and have trouble scaling, which was the entire purpose of implementing the multiple queue scheduling in the first place!
+      - If you look around at other queues too often, you will suffer from high overhead and have trouble scaling, which was the entire purpose of implementing the multiple queue scheduling in the first place!
       - Compared to job migraiton:
         - Decentralized approach;
         - Pull mechanism (local queue "pull")
@@ -299,165 +254,8 @@ Instead of optimizing for turnaround or response time, scheduler might instead t
   - O(1) scheduler
     - multi-queue
     - Similar to MLFQ and priority-based
-  - Completely Fair Scheduler (CFS)
-    - Deterministic proportional-share approach (similar to Stride scheduling)
-    - Multi-queue
-    - like stride scheduling.
-  - BF Scheduler (BFS)
-    - Single queue
-    - Proportional-share, with Earliest Eligible Virtual Deadline First (EEVDF) [SA96].
 
-# Proportional Share
-
-Proportional share scheduler sometimes is referred to as a **fair-share scheduler**. It is based around a simple concept: instead of optimizing for turnaround or response time, a scheduler might instead try to guarantee that each job obtain a certain percentage of CPU time.
-
-The general problem with fair-share scheduler is that, these approaches do not particularly mesh well with I/O, i.e. jobs that perform I/O occasionally may not get their fair share of CPU. Also ticket assignment or priority assignment is an open hard problem.
-
-But many domains this is not major concern, like in a virtualized data center (i.e. in clouds), where you like to assign 1/4 of CPU cycles to Windows VM and rest to Linux, then proportional sharing is simple and effective. Also you can proportionally share memory in VMWare's ESX server.
-
-## Lottery Scheduling
-
-Use **tickets** to represent the share of a resource that a process should have. The scheduler picks a winning tkcet (among total # of tickets), and the winning tickets determine which process should run.
-
-
-The benefits of this approach is that it is lightweight and easy to implement, there is no global state. The cons are that the scheduling is non-deterministic, and ticket assignment is a difficult problem.
-
-## Stride Scheduling
-
-Deterministic fair-share scheduler. Each job in the system has a **stride**, which is inverse in proportion to the number of tickets it has. We can compute the stride of each by dividing some large number by the number of tickets each process has been assigned.
-
-At any given time, pick the process to run that has the lowest pass value so far. When run a process, increment its **pass** counter by stride. Pros is deterministic, but cons is need to maintain global state per process.
-
-## Linux: CFS
-
-Completely Fair Scheduler (cfs) implements fair-share scheduling, but does so in a highly efficient and scalable manner.
-
-The basic idea of CFS is to fairly divide a CPU evenly among all competing process, with the use of **virtual runtime** (`vruntime`), which increases in proportion with physical time. CFS pick the process with the lowest `vruntime` to run next.
-
-There are several parameters to determine how long the time slice is (i.e. `sched_latency`, `min_granularity`), enable control over process priority (`nice` and weight) and so on. It uses red-black tree to keep runnable processes to enable efficient scheduling. To avoid starvation, CFS sets the `vruntime` of that job to minimum value found in the tree.
-
-
-
-# CPU Scheduling
-
-- Classic policies: FCFS (First-Come, First-Served), Round Robin, Priorities, SRTF (Shortest Remaining Time First), MLFQ (Multi-Level Feedback Queue), and EDF (Earliest Deadline First)
-- Starvation (including priority donation/inheritance) and deadlock (including prevention techniques)
-- Look at how multi-core scheduling works as well
-
-## Metrics
-
-1. **Turnaround time:** the time at which the job completes - the time which the job arrived
-2. **Response time:** the time from when the job arrives in the system to the first time it is scheduled
-
-## Classic Policies
-
-| Policies                     | Explain                           |
-| ---------------------------- | --------------------------------- |
-| FCFS (FIFO)                  | First in, First Out               |
-| SJF                          | Shortest Job First                |
-| STCF                         | Shortest Time-to-Completion First |
-| RR                           | Round Robin                       |
-| MLFQ                         | Multi-level Feedback Queue        |
-| EDF                          | Earliest Deadline First           |
-| Proportional Share Scheduler | Fair Share                        |
-
-### FCFS (FIFO)
-
-First in, First Out.
-Cons:
-
-- Average turnaround time can be high!
-- Convey effect: a number of relatively-short potential consumers of resource get queued behind a heavyweight resource consumer
-
-### SJF
-
-Improvement on FIFO: run the shortest first job first.
-
-* Pros: optimal scheduling algorithm for turnaround time given assumptions that jobs arriving at the same time.
-* Cons: same convey problem if we relaxed this assumption (i.e. schedule long A, then short B,C arrive).
-
-### STCF
-
-Add preemption to SJF. Any time a new job enters the system, the STCF scheduler determines which of the remaining jobs has the least time left, and schedules that one.
-
-### RR
-
-Instead of running jobs to completion, RR runs a job for a time slice (i.e. scheduling quantum), then switches to next job in the run queue. Note: length of time slice is critical (i.e. shorter, better response time, but higher context switch overhead).
-
-* Pros: built for high response time, fair
-* Cons: perform bad for turnaround time, even worse than FIFO in many cases
-
-### MLFQ
-
-Problem MLFQ tries to solve is that we want to optimize turnaround and minimize response. we don’t know anything about a process (i.e. job length, etc.). The basic ideas:
-
-1. Number of distinct queues with different priority level: higher priority given more CPU time, lower given less
-2. Priority adjusted dynamically based on its behavior, use a feedback mechanism
-3. Each queue is assigned a time slice determine how much CPU time a process in that queue is allowed to use before pre-empted and moved to a lower level queue
-
-* Pros: more flexible, allow different process to move between priorities, prevent starvation by increasing process’s priority
-* Cons: many tunable knobs: # of queues, time slice per queue, how often should priority be boosted, etc.
-
-### EDF
-
-Assign priorities to the task according to the absolute deadline. The task whose deadline is closet gets the highest priority.
-
-* Pros: efficient in real time system, dynamic
-* Cons: priority inversion (i.e. a low-priority task can block a higher priority task from being executed, if blocking?)
-
-### Proportional Share (Fair-Share) Scheduler
-
-Instead of optimizing for turnaround or response time, scheduler might instead try to guarantee that each job obtain a certain percentage of CPU time.
-
-1. _Lottery Ticket_: use tickets to represent the share of a resource that a process should receive
-
-- Lightweight, randomness
-- But occasionally not deliver right proportions
-
-2. _Stride Scheduling_: not use randomness
-
-- Stride: inverse in proportion to # of tickets it has
-- use the stride and pass to determine which process to run next; pick process to run that has the lowest pass value so far, when you run a process, increment its pass counter by stride
-
-3. _CFS_
-
-- Linux CFS: highly efficient and scalable fair-share scheduler
-- Goal: fairly divide CPU evenly among competing processes
-- use virtual runtime (vruntime), weight with niceness to assign priorities
-- weighted round-robin with dynamic time slices
-
-## Starvation
-
-- Starvation occurs when a process is perpetually denied necessary resources.
-- Problem: in MLFQ
-  - If there are “too many” interactive jobs in the system, they will combine to consume all CPU time, thus long running jobs will never receive any CPU time (they starve)
-- **Solution**
-  - MLFQ: priority boost
-    - Problem: Low-priority tasks are ignored
-    - The simple idea here is to periodically boost the priority of all the jobs
-      in system.
-    - **Rule 5:** After some time period S, move all the jobs in the system to the topmost queue.
-  - **Priority donation / inheritance**
-    - Problem: priority inversion
-
-      - Higher-priority task blocked by lower priority task that holds a needed resource (i.e. lock)
-    - Low priority task inherits the high priority of a task it is blocking
-    - Here's a simple example:
-
-      1. **Low-Priority Task (L)** owns a mutex.
-      2. **High-Priority Task (H)** tries to acquire the same mutex but is blocked because it's owned by **L**.
-      3. **Medium-Priority Task (M)** preempts **L** because **M** has a higher priority than **L** but lower than **H**.
-
-      Now, **H** is waiting for **L** to release the mutex, but **L** itself is waiting for CPU time because it's preempted by **M**. This is priority inversion.
-
-      In a system with Priority Donation/Inheritance:
-
-      1. When **H** is blocked by **L**, the system temporarily elevates the priority of **L** to that of **H**.
-      2. Now, **L** can preempt **M** because it has "inherited" the higher priority.
-      3. **L** quickly finishes its work, releases the mutex.
-      4. **H** can now acquire the mutex and proceed, and **L** returns to its original low priority.
-
-## Deadlock
+### Deadlock
 
 - Deadlock is a specific condition where two or more processes are unable to proceed because each is waiting for the other to release a resource.
 - Prevention
