@@ -33,7 +33,7 @@ First, it must demonstrate the benefits of upcalls; second, it must show how to 
 
 No tasks export an intertask communication interface. The only exported interfaces are subroutine calls.
 
-![alt text](image.png)
+![alt text](images/23-upcall/diagram.png)
 
 The resulting system organization is illustrated in Figure 1. Layers of the system, represented by horizontal ovals, span a
 number of tasks as they carry out some integrated function. Individual tasks, represented by vertical boxes, realize a single thread of activity, perhaps on behalf of a single client or single external event, and move up and down between the layers as the natural flow of control dictates. As the figure shows, intertask communication only occurs in a horizontal direction, between the various tasks in a layer, while flow of control between layers is achieved between through subroutine calls, both up and down:

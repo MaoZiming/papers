@@ -1,8 +1,15 @@
-# System Structure 
-## Different types of kernel 
-<img width="1280" alt="image" src="https://github.com/lynnliu030/os-prelim/assets/39693493/325fc7dc-2bd8-466f-838b-2bac23719d7f">
+# Microkernel
 
-The kernel is a computer program at the core of a computer's operating system and generally has complete control over everything in the system. Its responsibilities include disk, memory, CPU, and device management, and it provides an interface between user and hardware components of a system. 
+Resources: https://sel4.systems/About/seL4-whitepaper.pdf
+
+
+![alt text](image-3.png)
+
+In fact, the microkernel provides almost no services: it is just a thin wrapper around hardware, just enough to securely multiplex hardware resources. What the microkernel mostly provides is isolation, sandboxes in which programs can execute without interference from other programs.
+
+And, critically, it provides a protected procedure call mechanism, for historic reasons called IPC. This allows one program to securely call a function in a different program, where the microkernel transports func- tion inputs and outputs between the programs and, importantly, enforces interfaces: the “remote” (contained in a different sandbox) function can only be called at an ex- ported entrypoint, and only by explicitly authorised clients
+
+<img width="1280" alt="image" src="https://github.com/lynnliu030/os-prelim/assets/39693493/325fc7dc-2bd8-466f-838b-2bac23719d7f">
 
 ### Monolithic Kernel 
 Examples of this include Unix, Linux, BSD, and Multics. All OS services operate in kernel space, OS provides scheduling, file management through sys calls. 
@@ -53,5 +60,3 @@ Unikernel is frequently used in the cloud setup, which is basically an exokernel
 * Import functionality into kernel vs expose hardware?
 * Cost of abstrations
 * Monolithic kernels v.s microkernels 
-
-## Flexibility v.s Reliability v.s Security 
