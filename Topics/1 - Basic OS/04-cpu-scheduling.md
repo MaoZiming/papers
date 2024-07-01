@@ -37,7 +37,7 @@
   - Incorperating I/O: overlapping leads to better use of resources.
     - currently-running job won’t be using the CPU during the I/O; it is blocked waiting for I/O completion.
     - The scheduler also has to make a decision when the I/O completes. When that occurs, an interrupt is raised, and the OS runs and moves the process that issued the I/O from blocked back to the ready state. Of course, it could even decide to run the job at that point.
-  - ![alt text](images/job_scheduling.png)
+  - ![alt text](images/04-cpu-scheduling/job-scheduling.png)
     - A common approach is to treat each 10-ms sub-job of A as an independent job. Thus, when the system starts, its choice is whether to schedule a 10-ms A or a 50-ms B. With STCF, the choice is clear: choose the shorter one, in this case A. Then, when the first sub-job of A has completed, only B is left, and it begins running. Then a new sub-job of A is submitted, and it preempts B and runs for 10 ms.
 
 ### MLFQ
@@ -134,7 +134,7 @@ Instead of optimizing for turnaround or response time, scheduler might instead t
     - Temporarily raise or lower the # of tickets it owns
     - Can be applied when group of processes trust one another (doesn't make sense in a non-trusting scenario)
   - Ticket assignment problem remains open
-  - ![alt text](lottery_scheduling.png)
+  - ![alt text](images/04-cpu-scheduling/lottery-scheduling.png)
     - We first have to pick a random number (the winner) from the total number of tickets (400). Let’s say we pick the number 300.
     - First, counter is incremented to 100 to ac- count for A’s tickets; because 100 is less than 300, the loop continues. Then counter would be updated to 150 (B’s tickets), still less than 300 and thus again we continue. Finally, counter is updated to 400 (clearly greater than 300), and thus we break out of the loop with current point- ing at C (the winner).
 - Stride Scheduling
@@ -146,7 +146,7 @@ Instead of optimizing for turnaround or response time, scheduler might instead t
     - Keep track of each process’ **pass value** (every time process runs). Increment by its stride to track its global process.
     - Scheduler chooses process with **lowest** pass value
     - Increment chosen process’ pass value **by its stride**
-    - ![alt text](stride.png)
+    - ![alt text](images/04-cpu-scheduling/stride.png)
   - Comparing lottery scheduling and stride scheduling, the benefit of lottery scheduling: no global state per process, we simply add a new process with whatever tickets it has, update the single global variable to track how many total tickets we have, and go from there. easier to incorporate new process
 - Linux Completely Fair Scheduler (CFS)
   - vruntime: virtual runtime
@@ -319,7 +319,6 @@ But many domains this is not major concern, like in a virtualized data center (i
 
 Use **tickets** to represent the share of a resource that a process should have. The scheduler picks a winning tkcet (among total # of tickets), and the winning tickets determine which process should run.
 
-<img width="729" alt="image" src="https://github.com/lynnliu030/os-prelim/assets/39693493/2634bdfb-5c6e-441f-9dac-8379f3d96e93">
 
 The benefits of this approach is that it is lightweight and easy to implement, there is no global state. The cons are that the scheduling is non-deterministic, and ticket assignment is a difficult problem.
 
@@ -328,8 +327,6 @@ The benefits of this approach is that it is lightweight and easy to implement, t
 Deterministic fair-share scheduler. Each job in the system has a **stride**, which is inverse in proportion to the number of tickets it has. We can compute the stride of each by dividing some large number by the number of tickets each process has been assigned.
 
 At any given time, pick the process to run that has the lowest pass value so far. When run a process, increment its **pass** counter by stride. Pros is deterministic, but cons is need to maintain global state per process.
-
-<img width="464" alt="image" src="https://github.com/lynnliu030/os-prelim/assets/39693493/4d0a6bc7-513e-4e7f-b285-86b265d1becb">
 
 ## Linux: CFS
 
@@ -341,19 +338,11 @@ There are several parameters to determine how long the time slice is (i.e. `sche
 
 
 
-
-
-`<img width="496" alt="image" src="https://github.com/lynnliu030/os-prelim/assets/39693493/656f8ac7-8202-41fc-9931-d17b1a45d99a">`
-
-
-
-
 # CPU Scheduling
 
 - Classic policies: FCFS (First-Come, First-Served), Round Robin, Priorities, SRTF (Shortest Remaining Time First), MLFQ (Multi-Level Feedback Queue), and EDF (Earliest Deadline First)
 - Starvation (including priority donation/inheritance) and deadlock (including prevention techniques)
 - Look at how multi-core scheduling works as well
-  - [Multiprocessor Scheduling (Advanced)](https://www.notion.so/Multiprocessor-Scheduling-Advanced-e41c3d1425e24b5189b9b1866fa14b46?pvs=21)
 
 ## Metrics
 

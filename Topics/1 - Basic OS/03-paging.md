@@ -4,11 +4,9 @@
 
   - Correspondingly, we view physical memory as an array of fixed-sized slots called page frames; each of these frames can contain a single virtual-memory page.
 - Pros
-
   - Does not lead to external fragmentation, as it divides memory into fixed-sized units
   - Quite flexible: enable sparse use of virtual addr space
 - Cons
-
   * Slower machine: many extra memory accesses
   * Memory waste: memory filled with page tables instead of useful application data
 - OS takes two approaches to deal with space-management
@@ -58,7 +56,7 @@ MMU: stores the base and bound register; as well as TLB.
     - Useful in determine which pages are popular in page replacement
 - we can now index our page table and find which physical frame virtual page 1 resides within. In the page table above the physical frame number (PFN) (also sometimes called the physical page number or PPN) is 7 (binary 111).
 
-  - ![alt text](image/image-6.png)
+  - ![alt text](images/03-paging/address-translation-process.png)
 - Solution #2: **page + segments**
 - - Problem: most of the page table unused, full of invalid entries (e.x. between stack and heap)
   - Approach: one page table per logical segment
@@ -120,7 +118,7 @@ MMU: stores the base and bound register; as well as TLB.
       - TLB miss suffers from higher cost with smaller table
   - Complexity
     - Page-table lookups more complicated in order to save valuable memory
-- ![alt text](images/image-8.png)
+- ![alt text](images/03-paging/page-directory-index.png)
 
 ### Inverted Page Tables
 
@@ -132,7 +130,7 @@ MMU: stores the base and bound register; as well as TLB.
 
 ### Linear Page Table vs. Multi-level Page Table
 
-![1719797382747](image/0.6-paging/1719797382747.png)
+![alt text](images/03-paging/multi-level-page-tables.png)
 
 ### TLB
 
@@ -237,7 +235,7 @@ When a process need to add a new page
 
 ## Page Allocator
 
-Buddy Managed Heap- ![alt text](image/image-5.png)
+Buddy Managed Heap- ![alt text](images/03-paging/buddy-managed-heap.png)
 
 - By using a buddy system, the allocator can quickly find a free block of memory of a given size, and can also quickly coalesce free blocks of memory when they are freed.
 - - You might have noticed that the interface to free(void *ptr) does not take a size parameter; thus it is assumed that given a pointer, the malloc library can quickly determine the size of the region of memory being freed and thus incorporate the space back into the free list.
@@ -245,7 +243,6 @@ Buddy Managed Heap- ![alt text](image/image-5.png)
 - the size of the free region is the size of the header plus the size of the space allocated to the user. Thus, when a user requests N bytes of memory, the library does not search for a free chunk of size N; rather, it searches for a free chunk of size N plus the size of the header.
 
   - Free list will point to the next chunk of free space, e.g.
-  - ![alt text](image/image-4.png)
 - One interesting approach that has been around for some time is the use of segregated lists. The basic idea is simple: if a particular application has one (or a few) popular-sized request that it makes, keep a separate list just to manage objects of that size; all other requests are forwarded to a more general memory allocator.
 - One particular allocator, the slab allocator by uber-engineer Jeff Bonwick (which was designed for use in the Solaris kernel), handles this issue in a rather nice way.
 

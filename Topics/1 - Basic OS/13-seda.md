@@ -40,7 +40,7 @@ Cons of overall event-based system include the difficulty to understand cause-ef
     - *Transparent resource virtualization*: vital to managing excessive load
 
 ### Thread-based concurrency
-![alt text](image.png)
+![alt text](images/13-seda/thread-based-concurrency.png)
 - E.x. RPC, RCOM
 - Each accepted request consumes a thread to process it, with sync operations protecting shared resources.
 - **Pros:** ease-to-program
@@ -62,7 +62,7 @@ Cons of overall event-based system include the difficulty to understand cause-ef
         - Cons: unfairness  to clients (i.e. client requests queue up in network)
 
 ### Event-based concurrency
-![alt text](image-1.png)
+![alt text](images/13-seda/event-based-concurrency.png)
 - A server consists of a small # of threads (i.e. one per CPU) that loop continuously, processing events of different types from a queue
 - Processing of each task is a **finite state machine (FSM)**
     - Transition between state in FSM are triggered by events
@@ -106,8 +106,8 @@ Cons of overall event-based system include the difficulty to understand cause-ef
         - The event handler processes each batch of event, and dispatches 0 or more event by queueing them on event queues of other stages
     - Use *dynamic resource throttling*
         - Each stage is managed by a controller that affects scheduling and thread allocation
-- ![alt text](image-2.png)
-- ![alt text](image-3.png)
+- ![alt text](images/13-seda/seda-stage.png)
+- ![alt text](images/13-seda/seda-resource-controllers.png)
 
 ### Details
 

@@ -10,16 +10,14 @@
       - heap is used for dynamically-allocated, user-managed memory
   - Why placing the stack and heap like this?
     - Each wishes to grow
-    - ![alt text](https://file+.vscode-resource.vscode-cdn.net/Users/maoziming/Library/Mobile%20Documents/com~apple~CloudDocs/Berkeley/Summer%202024/Prelim/Topics/0%20-%20Virtualization/images/program_address_space.png)
-  - The heap thus starts just after the code (at 1KB) and grows downward (say when a ser requests more memory via malloc()); the stack starts at 16KB and grows upward (say when a user makes a procedure call).
+      - ![stack-heap-grow](images/01-address-translation/stack-heap-grow.png)
+  - The heap thus starts just after the code (at 1KB) and grows downward (say when a ser requests more memory via `malloc()`); the stack starts at 16KB and grows upward (say when a user makes a procedure call).
 - Goals:
-  - Address space: an easy to use abstraction of physical memory.
   - The address space of a process contains all of the memory state of the running program.
   - Transparency
     - Should behave as if it has its own private physical memory
     - OS does multiplexing among different jobs
-    - ![alt text](https://file+.vscode-resource.vscode-cdn.net/Users/maoziming/Library/Mobile%20Documents/com~apple~CloudDocs/Berkeley/Summer%202024/Prelim/Topics/0%20-%20Virtualization/images/sharing_memory.png)
-- 
+      - ![os-diff-address](images/01-address-translation/os-diff-address.png)
 
 # Address Translation
 
@@ -79,9 +77,9 @@
 - 3 segments —> 2 bits
 - (01): which segment, bottom 12 bits: offset into the segment (easier for bound checking)
 - Issues
+
   - One bit unused: some system also put code in the same segment as the heap (one bit)
   - Limits use of address space: each segment is limited to a maximum size
-- ![alt text](images/image-2.png)
 - The next 12 bits will be the offset into the segment.
 - If a running program wishes to grow a segment (say the heap, or the stack) beyond that maximum, the program is out of luck.
 
@@ -94,7 +92,6 @@
 
 - stack grows backward (towards lower addresses)
 - hardware support: a bit to know which way it grows
-  ![alt text](images/image-3.png)
 
 ### Support for sharing
 

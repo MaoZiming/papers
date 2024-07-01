@@ -44,7 +44,7 @@
 
 ## Process Creation
 
-* ![image](image/process_creation.png)
+* ![image](images/02-processes/process-creation.png)
 
 - In early (or simple) operating systems, the loading process is done eagerly, i.e., all at once before running the program;
 - Lazy loading: loading pieces of code or data only as they are needed during program execution (i.e. paging, swapping)
@@ -66,7 +66,7 @@
   - Purpose: The trap table is used to map different types of traps (such as interrupts, exceptions, and system calls) to their corresponding handler routines. These handlers are special functions that are executed when a specific trap occurs.
 - Direct Execution Protocol (Without Limits)
 
-  - ![image](images/direct_execution_protocol.png)
+  - ![image](images/02-processes/direct-execution-protocol.png)
 - System call:
 
   - trap: jumps to the kernel and raises privileged level to kernel mode
@@ -92,7 +92,7 @@
       - Context switch: save a few register values for current process (onto its kernel stack), and restore a few for the next process
         - To save the context of the currently-running process, the OS will execute some low-level assembly code to save the general purpose registers, PC, and the kernel stack pointer of the currently-running process, and then restore said registers, PC, and switch to the kernel stack for the soon-to-be-executing process.
   - Limited Direct Execution Protocol
-  - ![image](images/limited_direct_execution_protocol.png)
+  - ![image](images/02-processes/limited-direct-execution-protocol.png)
   - Two types of register save / restore
   - - When timer interrupt occurs, user registers of the running process are implicitly saved by the **hardware**, using the kernel stack of that process
     - Switch from A to B, the kernel registers are explicitly saved by the **software** (i.e. the OS), but this time into memory in the process structure of the process
@@ -102,9 +102,6 @@
     - one simple way: disable interrupt during interrupt processing
     - Virtualizing CPU mechanism: limited direct execution (LDE)
   - Idea: let the program run directly on the hardware, but at certain key points in time (i.e. system calls, timer interrupt), arrange so that OS gets involved and makes “right” thing happens
-  - ![alt text](https://file+.vscode-resource.vscode-cdn.net/Users/maoziming/Library/Mobile%20Documents/com~apple~CloudDocs/Berkeley/Summer%202024/Prelim/Topics/0%20-%20Virtualization/images/LDE_at_boot.png)
-  - ![alt text](https://file+.vscode-resource.vscode-cdn.net/Users/maoziming/Library/Mobile%20Documents/com~apple~CloudDocs/Berkeley/Summer%202024/Prelim/Topics/0%20-%20Virtualization/images/image.png)
-  - ![alt text](https://file+.vscode-resource.vscode-cdn.net/Users/maoziming/Library/Mobile%20Documents/com~apple~CloudDocs/Berkeley/Summer%202024/Prelim/Topics/0%20-%20Virtualization/images/image-1.png)
 
 ## Process States
 
@@ -114,7 +111,7 @@
 - Being moved from ready to running means the process has been scheduled; being moved from running to ready means the process has been descheduled.
 - Once a process has become blocked (e.g., by initiating an I/O operation), the OS will keep it as such until some event occurs (e.g., I/O completion); at that point, the process moves to the ready state again (and potentially immediately to running again, if the OS so decides).
 - These need a OS scheduler.
-  - ![image](image/process_state_transitions.png)
+  - ![image](images/02-processes/process-state-transitions.png)
 - Register context: hold the contents of its registers; when the process is stopped, its registers will be saved to this memory location
 - Zombie: when the process has exited but has not yet been cleaned up
 - When finished, the parent will make one final call (e.g., `wait()`) to wait for the completion of the child, and to also indicate to the OS that it can clean up any relevant data structures that referred to the now-extinct process.
