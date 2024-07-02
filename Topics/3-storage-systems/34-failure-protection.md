@@ -42,17 +42,12 @@
 ### Detecting corruption: the checksum
 
 - Primary mechanism in modern storage system to preserve data integrity is called the **checksum**
-    - Simply the result of a function that takes a chunk of data as input and computes a function over the data, producing a small summary of the contents of the data
-    - Goal: enable a system to detect if data has somehow been corrupted or altered by storing the checksum with data and then confirming upon later access that the data’s current checksum matches the original storage value
-- Recovery similar to before!
 - **Common checksum function:** vary in strength and speed
     - XOR: XOR’ing each chunk of the data block being checksumed, produce a single value that represents the XOR of the entire block
         - Cons: If, for example, two bits in the same position within each checksummed unit change, the checksum will not detect the corruption
     - Addition
         - Pros: fast, 2’s complement addition
         - It can detect many changes, but not good if the data, e.x., is shifted
-    - Fletcher checksum
-    - Cyclic redundancy check (CRC)
 - It is possible two data blocks with non-identical contents will have identical checksums, something referred to as a **collision**
     - We want to find one that minimize the chance of collisions
 - How should checksum be stored in disk?
@@ -68,7 +63,7 @@
 - **How to detect?**
     - Adding a physical identifier (physical ID) to each checksum
     - E.x. stored information contains the checksum and both the disk and sector number of the block
-- ![alt text](image-26.png)
+- ![alt text](images/34-failure-protection/misdirected-writes.png)
 
 ## One last problem: lost writes
 
