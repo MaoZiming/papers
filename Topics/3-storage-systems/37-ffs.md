@@ -133,3 +133,25 @@ First disk-aware file system
 - Smart allocation policy
 
 Inspired modern file system, including ext2 and ext3
+
+### Fast File System (FFS)
+
+First disk-aware file systems: 
+
+- Motivation
+    - Old UNIX file system structure has bad performance (i.e. data spread all over the place, data blocks away from inode)
+    - File system get fragmented, free list ended up pointing to bunch of blocks spread across the disk
+    - Original block size too small
+- The idea was to design the file system structures and allocation policies to be “disk aware” and thus improve performance
+- Organizing structure: cylinder group (i.e. locality groups)
+    - Use group across disks
+        - Groups are ranges of cylinders
+    - Keep related stuff together: allocate inodes and data blocks in the same group
+        - File inodes are allocate in the same group with directory
+        - Directory inodes are allocated in new group with fewer used inodes than average group
+        - First data blocks allocate near inodes
+        - Other data blocks allocated near previous blocks
+- Usability
+    - Long file names
+    - Atomic rename
+    - Symbolic links
