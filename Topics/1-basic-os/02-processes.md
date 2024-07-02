@@ -12,6 +12,7 @@
   - Stack pointer: tracks the top of the stack in memory
   - Frame pointer: points to a fixed location within the stack frame of the current function. The stack frame contains the function’s local variables, parameters, and return address.
     - Redundant (can just use stack pointer + offset? save one extra register. )
+    - Useful when getting stack trace. 
 - Information about I/O.
   - persistent storage devices: I/O information for a list of files the process currently has open
 - Process API:

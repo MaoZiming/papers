@@ -8,22 +8,15 @@ This paper proposes Capriccio, a scalable thread package for use with high-concu
 
 Its approach is three-fold: 
 
-1. **Scalability**: Capriccio uses user-level threads coupled with cooperative scheduling to manage many threads efficiently. User-level threads are preferred over kernel threads for their flexibility and performance advantages, like reduced synchronization overhead.
+1. **Scalability**: Capriccio uses user-level threads coupled with cooperative scheduling to manage many threads efficiently. User-level threads are preferred over kernel threads for their flexibility and performance advantages,
 
-2. **Linked Stack**: Traditional stack allocation methods are not suitable for programs managing many threads. Capriccio uses a dynamic stack allocation technique that employs linked chunks, which are managed through compile-time analysis and runtime checks.
+2. **Linked Stack**: Traditional stack allocation methods are not suitable for programs managing many threads. Capriccio uses a dynamic stack allocation technique that employs **linked chunks**, which are managed through compile-time analysis and runtime checks.
 
-3. **Resource-aware Scheduler**: The scheduler views the application as a sequence of stages, separated by blocking points, forming a "blocking graph". This graph is used to make application-specific scheduling decisions to maximize resource utilization without reaching bottlenecks.
+3. **Resource-aware Scheduler**: The scheduler views the application as a sequence of stages, separated by blocking points, forming a "**blocking graph**". This graph is used to make application-specific scheduling decisions to maximize resource utilization without reaching bottlenecks.
 
 ## Limitations 
 * Does not completely eliminate kernel crossings.
 * Performance not necessarily better than event-based systems.
-
-## Connections 
-Scheduler Activations: Capriccio’s use of user-level threads echoes the sentiment in this paper about effective kernel support for user-level management of parallelism.
-
-SEDA: Both papers tackle the problem of internet service scalability but approach it differently - Capriccio uses user-level threads while SEDA employs an event-based architecture.
-
-Scheduling: Proportional Share - The resource-aware scheduler in Capriccio can be related to proportional share scheduling concepts, especially in how it seeks to allocate resources effectively.
 
 ## Key Insight
 
@@ -44,9 +37,9 @@ Same motivation as SEDA: Internet services have ever-increasing scalability dema
     - Threads are hard to program (deadlocks, synchronization)
     - Poor thread support (portability, debugging)
 - Cons
+    - Many event systems invoke a method in another module by sending a "call" event and waiting for a "return" event in response
     - Readability is a huge thing!
-        - Programmer has difficulty to understand cause-effect when examining source code and when debugging
-        - Event systems hide the control flow through an application, making it difficult to understand cause and effect relation- ships when examining source code and when debugging.
+        - Programmer has difficulty to understand cause-effect ("call", "return pairs) when examining source code and when debugging, and these "call" and "return" are in different parts of the code. 
     - Stack ripping
         - Creating these call/return pairs require the programmer to manually save and restore live state
 
@@ -89,7 +82,7 @@ There are three parts:
                     - E.x. kernel async I/O mechanisms can be used without changing the applications
                 - Address application-specific needs
                     - Increase flexibility of thread scheduler
-                - Kernel threads cannot tailor the scheduling algorithm to fit a specific application. Fortu- nately, user-level threads do not suffer from this limitation. Instead, the user-level thread scheduler can be built along with the application.
+                - Kernel threads cannot tailor the scheduling algorithm to fit a specific application. Instead, the user-level thread scheduler can be built along with the application.
             - ***Performance***
                 - Greatly reduce overhead of thread synchronization
                     - E.x. single CPU, neither user threads nor thread scheduler can be interrupted during a critical section
@@ -97,7 +90,7 @@ There are three parts:
                     - V.s. kernel thread: kernel crossing for every sync operation
                 - Memory management is more efficient
                     - V.s. kernel thread
-                        - require data structure that eat up kernel addr space
+                        - require data structure (TCB) that eat up kernel addr space
                         - decrease available space for I/O buffers, file descriptors, and other resources
         - Cons
             - Some times more kernel crossings
@@ -108,9 +101,6 @@ There are three parts:
                 - The actual I/O call is identical to the non-blocking version.
             - Must introduce a wrapper layer that translate blocking I/O to non-blocking ones, which leads to overhead
                 - E.x. overhead significant for quick operations like in-cache reads
-            - More difficult to take advantage of multi-processors
-                - Lightweight sync benefit is diminished when multi-processors are allowed
-                - “Scheduler Activation” paper: purely user-level sync are ineffective in face of true concurrency and may lead to starvation
         - Benchmark: Benefits outweigh drawbacks
 - Main thing
     - Cooperative scheduling
@@ -123,50 +113,44 @@ There are three parts:
     - Abstraction of unbounded call stack for each thread
     - While in reality stack bounds are chosen conservatively large
     - E.x. 1GB virtual memory with just 500 threads
-      - For example, LinuxThreads allocates two megabytes per stack by default; with such a conservative allocation scheme, we consume 1 GB of virtual memory for stack space with just 500 threads. 
-- Fortunately, most threads consume only a few kilobytes of stack space at any given time, although they might go through stages when they use considerably more. This observation suggests that we can significantly reduce the size of virtual memory dedicated to stacks if we adopt a dynamic stack allocation policy wherein stack space is allocated to threads on demand in relatively small increments and is deallocated when the thread requires less stack space.
+      - For example, LinuxThreads allocates two megabytes per stack by default; 
+- Most threads consume only a few kilobytes of stack space at any given time
+  - Significantly reduce the size of virtual memory dedicated to stacks if we adopt a dynamic stack allocation policy wherein stack space is allocated to threads on demand in relatively small increments and is deallocated when the thread requires less stack space.
 - Idea: dynamic stack allocation with linked chunks
     - Alleviates VM pressure and improve paging behavior
 - Method: compile-time analysis and checkpoint injection
-    - Small non-contiguous stack chunks grow and shrink at runtime
+    - **Small non-contiguous stack chunks** grow and shrink at runtime
     - Compiler analysis and runtime checks
         - Goal: place a reasonable bound on stack space consumed by each thread
         - Generate a ***weight directed call graph***
-        
     - Features
         - Each node is a call site annotated with max stack space for that call
         - Edges: function calls in-between nodes
         - Path: sequence of stack frame (length = sum of weights of all nodes)
         - Checkpoints are inserted at edges (call sites)
-            - A checkpoint is a small piece of code that determines whether there is enough stack space left to reach the next checkpoint without causing stack overflow. If not enough space remains, a new stack chunk is allocated, and the stack pointer is adjusted to point to this new chunk. When the function call returns, the stack chunk is unlinked and returned to a free list.
-            - Determine whether to allocate a new stack chunk
-            - Inserted at each recursive frame and well-spaced call site
+            - A checkpoint is a small piece of code that determines whether there is enough stack space left to reach the next checkpoint without causing stack overflow. 
+            - If not enough space remains, a new stack chunk is allocated, and the stack pointer is adjusted to point to this new chunk. 
+            - When the function call returns, the stack chunk is unlinked and returned to a free list.
             - Checkpoint placement
                 - Break cycles (i.e. recursive frame)
                 - Scan nodes to ensure path between checkpoints within desired bound (set as compile-time parameter)
-        - Challenging cases
-            - Function pointers are only determined at runtime
-            - External function calls require conservative stack allocation
-                - Some solutions: allow annotations, or use larger stack chunks for external functions
-        - To demonstrate the benefit of our approach with respect to paging, we created a microbenchmark in which each thread repeatedly calls a function bigstack(), which touches all pages of a 1 MB buffer on the stack. Threads yield between calls to bigstack(). Our compiler analysis inserts a check- point at these calls, and the checkpoint causes a large stack chunk to be linked only for the duration of the call. Since bigstack() does not yield, all threads share a single 1 MB stack chunk; without our stack analysis, we would have to give each thread its own individual 1 MB stack.
 
 ### #3: Resource-aware Scheduler
 
 - Propose: application-specific scheduling for thread-based applications
 - Key abstraction: ***blocking graph***
+    - ![alt text](images/13-capriccio/blocking-graph.png)
+    - Each node is a *location* in the program that is *blocked*. 
     - View applications as sequence of stages separated by blocking points
     - Generated at runtime
-        
     - Nodes: program locations where threads block
-        - Annotated by weighted outer edge value
-            - I.e. expected time to traverse next edge from a node
     - Edges: consecutive blocking points
         - Annotated by
             - Average time taken to traverse an edge
             - Change in resource usage like memory, stack space, sockets
 - General idea: schedule threads s.t. for each resource, utilization is increased until max throughput and then throttled back
     - Determine which resources are near their limits.
-    - Predict the impact on resources if threads at a particular node were scheduled.
+    - Predict the impact on resources if threads at a *particular node* were scheduled (since edges are annotated)
     - Prioritize nodes (and thus threads) based on resource needs and availability.
 - Implement using separate run queues for each node
     - Periodically determine relative priorities of each node
