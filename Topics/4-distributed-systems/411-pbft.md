@@ -5,7 +5,7 @@ Link: https://pmg.csail.mit.edu/papers/osdi99.pdf
 Data: June 30th, 2024. 
 
 - PBFT is **efficient** replication protocol extended from Viewstamp Replication that allows the group to survice **Byzantine (arbitrary) failures**. By this time, there was a realization that malicious attacks and Byzantine behavior needed to be dealt with.
-- Asynchronous environment. Prior works are either too efficient to be used in practice, or assumes synchrony (relying on known bounds on message delays and process speed). Synchrony assumption is dangerous, as delaying non-faulty nodes or the communication between them until they are tagged as faulty and excluded from the replica group. 
+- Asynchronous environment (no timeouts). Prior works are either too efficient to be used in practice, or assumes synchrony (relying on known bounds on message delays and process speed). Synchrony assumption is dangerous, as delaying non-faulty nodes or the communication between them until they are tagged as faulty and excluded from the replica group. 
 - Describes the first state-machine replication protocol that correctly survives Byzantine faults in asynchronous networks.
 - A key assumption is that: we assume independent node failures. Each node should run different implementations, etc. Adversary is able to coordinate and delay correct nodes, but they cannot delay correct nodes indefinitely. Adversary are computationally bound so that it is unable to subvert cryptographic techniques. 
 > The algorithm does not rely on synchrony to provide safety. Therefore, it must rely on synchrony to provide liveness; otherwise it could be used to implement consensus in an asynchronous system, which is not possible.
@@ -33,7 +33,7 @@ Data: June 30th, 2024.
 
 * The set of replicas is $|R|$. 
 * View $v$.
-* The primary of a view is replica $p$ such that $p = v \mod |R|$.
+* The **primary** of a view is replica $p$ such that $p = v \mod |R|$.
 * The algorithm goes as follows:
   * A client executes a request to invoke a service operation to the primary.
   * Primary multicasts the request to the backups.
@@ -45,13 +45,20 @@ Data: June 30th, 2024.
 
 * pre-prepare, prepare and commit. 
 * Pre-prepare (**FROM the primary**):
-  * The request is assigned a sequence number $n$ in view $v$.
+  * The request is assigned a **sequence number** $n$ in **view** $v$ (This is the same as viewstamp replication).
   * add a sequence numebr $n$ to the request; **but do not attach the actual message.**
   * If the backup/replica accepts the pre-pare message, it enters *prepare* state and multicasts the prepare message to all other replicas including the message sent by the primary. 
+  * This is important as the message contained is used as a proof later if the primary is revealed to be faulty. 
+* Prepare phase starts. Each backup node multicasts a `PREPARE` type message to all the other nodes and adds both the `PRE-PREPARE` and `PREPARE` message to its local log.
 * A replica $i$ becomes **prepared**:
+  * Check signature and view number first. 
   * If the replica $i$ has received the request $m$, a pre-pare for $m$ in view $v$ with sequence number $n$, and $2f$ prepares for $m$ in view $v$ that match the pre-pare
   * The pre-pare and prepare phases of the algorithm guarantees that non-faulty replicas agree on a total order for the requests within a view. 
-* After a replica is prepared, it multicasts a commit message to all other replicas.
+* After a replica is prepared, it multicasts a `COMMIT` message to all other replicas.
+* Each replica ensures that prepare phase was successful and it has accepted 2f + 1 ‘COMMIT’ type messages from different replicas that match the pre-prepare for the request. If everything so far is successful, then the replica executes (or computes) the request. The commit phase now ends.
+* A replica sends the ‘REPLY’ type message to the client. The message contains (1) information of view number (similar to block height), (2) timestamp, (3) result of executing the requested operation, and (4) the unique number of replica who sends this message.
+* The client waits for f+1 valid replies from different replicas before finally accepting the result of the operation.
+
 * ![alt text](images/411-pbft/normal-case.png)
 
 > $committed(m,v,n)$ is true if and only if $prepared(m,v,n,i)$ is true for all $i$ in some set of $f+1$ non-faulty replicas; and $committed-local(m,v,n,i)$ is true if and only if $prepared(m,v,n,i)$ is true and has accepted $2f+1$ commits (possibly including its own) from different replicas that match the pre-prepare for $m$;
@@ -63,6 +70,8 @@ Checkpoint:
 Once a checkpint with a proof becomes stable and the replica disards all pre-pare, prepare, and commit messages with sequence number less than or equal to $n$ from its log. The checkpoint protocol is used to advance the low and high water marks (which limit what messages will be accepted). The low-water mark is equal to the sequence number of the last stable checkpoint. The high water mark , where is big enough so that replicas do not stall waiting for a checkpoint to become stable. 
 
 ### View Change Protocol
+
+- But what if the primary replica is a Byzantine node? It would take forever to make a consensus if the primary stops multicasting any messages. This is totally possible in an asynchronous network setting where infinite message delay is acceptable behavior. As we know already, PBFT introduces time-out i.e., synchrony to solve this critical problem to the liveness property: distributed system eventually achieves consensus.
 
 > If the timer of backup expires in view $v$, the backup starts a view change to move the system to view $v+1$. It stops accepting messages (other than checkpoint, view-change, and new-view messages) and multicasts a $VIEW-CHANGE, v+1, i$  message to all replicas.
 
@@ -107,4 +116,5 @@ Techniques
       *  Consists of the PREPREPARE message from primary and $2f$ PREPARE message all for the same request( i.e. represented as the message digest) from the same viewstamp. 
 
 ### Limitations 
-Drawback: all-to-all communication with $O(n^2)$ 
+- Drawback: all-to-all communication with $O(n^2)$ 
+  - There is one more weakness in the PBFT algorithm: heavy network consumption. To finalize a single view, the system requires roughly three phases that need for the message multicast. One-to-many messaging protocol consumes network bandwidth exponentially even though the number of participant nodes grows linearly
