@@ -12,15 +12,13 @@ GFS is a scalable distributed file system for large distributed data-intensive a
    *  many large, sequential writes; none random writes
 
 ## Architecture 
-<img width="1001" alt="image" src="https://github.com/lynnliu030/os-prelim/assets/39693493/69c02a7e-a550-4d22-a384-95cc4dfc5f6f">
-
+![gfs-architecture](images/38-gfs/gfs-architecture.png)
 
 * Control plane: single **master**
     *  Store metadata: namespace mapping
     *  Control: garbage collection, chunk migration, chunkserver states  
 * Data plane: multiple **chunk servers**
     *  Store chunks on local disks as Linux files
-    *  Store 3 replicas
       
 ## Fault tolerance & scalability: Replication 
 **Chunks**: are replicated 3-way to handle faults
@@ -36,7 +34,7 @@ GFS is a scalable distributed file system for large distributed data-intensive a
 **Master**: replicated logs and checkpoints, has a shadow master 
 
 ## Relaxed consistency 
-GFS deploys a relaxed consistency model: data is appented **_atomically_ _at least once_**. GFS assumes that client applications can handle the inconsistent state: i.e. filter out occasional padding and duplicate using checksums. This also helps improving performance. 
+GFS deploys a relaxed consistency model: data is appended **_atomically_ _at least once_**. GFS assumes that client applications can handle the inconsistent state: i.e. filter out occasional padding and duplicate using checksums. This also helps improving performance. 
 
 ## Limitations 
 Only one GFS master might become the single point of bottleneck for metadata operations. 
