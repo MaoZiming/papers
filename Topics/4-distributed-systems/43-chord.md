@@ -27,12 +27,11 @@ Keys close to 0 would be assigned to A. Keys close to 42 would be assigned to B.
     *  To locate the server for a particular object by going clockwise
     *  Pros: adding and removing new server only requires redistribution of a fraction of the keys
 *  **Implement consistency hashing?** (to find a key location) 
-    *  Option 1: every node knows location of every other node - lookup O(1), tables O(N)
-    *  Option 2: every node only knows successor - Table O(1), Lookup O(N)   
+    *  Option 1: every node knows location of every other node - lookup O(1), table space O(N)
+    *  Option 2: every node only knows successor - Table space O(1), Lookup O(N)   
 * **Finger table**: store only a few information about other nodes in each node for efficient lookup
     *  Every node knows M other nodes in the ring  
     *  Lookup efficiency in $N$ node network: $O(log N)$
     *  The $ith$ entry in the finger table at node $n$ contains the identity of the first node $s$ that succees $n$ by at least $2^i$
+    *  ![Finger Table](images/43-chord/finter-table.png)
 
-### Example w/ finger table 
-With a finger table, instead of only knowing its successor, Node A might also know about Node C. So when looking for key 12, instead of having to ask each node in turn, it can skip directly to a node that it knows is closer to the key's location. In the optimal configuration, this can reduce lookup time to $O(logN)$, striking a balance between the maintenance overhead of option 1 and the slow lookups of option 2.

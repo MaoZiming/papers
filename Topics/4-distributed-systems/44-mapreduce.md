@@ -37,7 +37,7 @@ Map Reduce is a simple data-parallel programming model designed for scalability 
  
 ## Fault Tolerance 
 - **If a task crashes**
-    - Retry on another node (note: inputs can still be read bc of replication)
+    - Retry on another node (note: inputs can still be read because of replication)
     - If the same task repeatedly fails, end the job
 - **If a node crashes**
     - Detect failure via periodic heartbeats
@@ -46,11 +46,11 @@ Map Reduce is a simple data-parallel programming model designed for scalability 
 - **If master failures**
     - Checkpoints and retry the job
     - Probability of master failing is low
-- If a task is going slowly
+- **If a task is going slowly**
     - Straggler: a machine takes an unusually long time to complete one of the last few map or reduce task in the computation
     - Launch second copy of task on another node
     - Take the output of whoever finishes first
 
 ## Limitations 
-- Not every program can be expressed via this model (i.e. iterative, low-latency chained events like PageRank, conjugate gradient, etc.)
+- Not every program can be expressed via this model (i.e. **iterative**, **low-latency chained events** like PageRank, conjugate gradient, etc.)
 - Failures of master aborts the computation, up to the client app to issue the retry

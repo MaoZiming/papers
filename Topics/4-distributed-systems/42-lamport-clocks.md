@@ -6,7 +6,7 @@
 * Synchronizing physical clocks cannot solve the problem due to issues like clock drift and network latency. 
 
 ## Summary 
-Lamport presents the classic paper about how to define ordering of events in system of colleciton of nodes. 
+Lamport presents the classic paper about how to define ordering of events in system of collections of nodes. 
 
 An event is something happening at one node (i.e. sending or receiving messsage, or local execution step). The key idea about this paper is the concept about **"happened-before" relationship**, which gives us a way to compare two events from potentially different processes.
 - We only have **partial order** in the system
@@ -28,7 +28,6 @@ The paper offers a simple algorithm for advancing the logical clocks in a way th
 1. Each node maintains a counter $t$, incremented on local event $e$
 2. When the node sends the message, attach current $t$ to messages sent over the network
 3. Recipients move its clock forward to timestamp in the message (if greater than the local counter), then increments 
-<img width="567" alt="image" src="https://github.com/lynnliu030/os-prelim/assets/39693493/7c3c8436-f802-4ad7-95d5-9b59811884db">
 
 
 **Partial ordering** with lamport clock is useful to establish causation of messages. To produce a **total ordering**, Lamport introduces the notion of tie-breaking based on the deterministic ordering of processes. 
