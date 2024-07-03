@@ -146,24 +146,6 @@
         - And also inode-structure can have hard links
 
 
-## Replication for Durability: RAID
-
-### RAID: redundant array of inexpensive disk
-
-- RAID: a faster, larger, and more reliable disk system
-    - One logical disk built from many physical disk
-    - Workloads: R/W, fail-stop fault model
-- RAID-0: data striping
-    - Optimize for capacity, no redundancy
-    - ![RAID-0](https://www.stationx.net/wp-content/uploads/2024/02/RAID-0-vs-RAID-1.png)
-- RAID-1: data mirroring
-    - Keep mirrored copies of the data
-- RAID-4: use a parity disk
-    - Parity: allow reconstruction of missing or corrupted data
-    - Small write problem: parity disk is the bottleneck
-- RAID-5: rotating parity
-    - Random write improves!
-    - ![RAID-5](https://www.stationx.net/wp-content/uploads/2024/02/What-is-RAID-5.png)
 
 ## Transactions as a means for reliability: journaling file systems and redo logging
 

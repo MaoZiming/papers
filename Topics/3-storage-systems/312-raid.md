@@ -1,5 +1,22 @@
 # Redundant Array of Inexpensive Disks
 
+## Summary 
+- RAID: a faster, larger, and more reliable disk system
+    - One logical disk built from many physical disk
+    - Workloads: R/W, fail-stop fault model
+- RAID-0: data striping
+    - Optimize for capacity, no redundancy
+    - ![RAID-0](https://www.stationx.net/wp-content/uploads/2024/02/RAID-0-vs-RAID-1.png)
+- RAID-1: data mirroring
+    - Keep mirrored copies of the data
+- RAID-4: use a parity disk
+    - Parity: allow reconstruction of missing or corrupted data
+    - Small write problem: parity disk is the bottleneck
+- RAID-5: rotating parity
+    - Random write improves!
+    - ![RAID-5](https://www.stationx.net/wp-content/uploads/2024/02/What-is-RAID-5.png)
+
+
 ## Metrics
 
 Assume:
@@ -22,8 +39,6 @@ Assume:
           - Larger chunk size
               - Reduce intra-file parallelism
               - But reduce positioning time
-  - ![alt text](image-3.png)
-
   - Capacity: $N \times C$
   - Reliability: $0$
       - No redundancy or resiliency
@@ -35,7 +50,6 @@ Assume:
 
 ## RAID-1: Mirroring 
 
-![alt text](image-4.png)
 - Capacity: $\frac{N}{2} * C$
 - Reliability: $1$
     - At least, some times more than 1 failure is okay (up to $\frac{N}{2}$ if lucky)
@@ -54,7 +68,6 @@ Assume:
 - Use **parity** disk
     - Can use XOR to compute: fast to implement, prevent overflow, easy to invert
 
-![alt text](image-5.png)
 - **Additive Parity**
     - Read C0, C1, C2, C3 in parallel
         - Assign C3 a new value
@@ -68,11 +81,6 @@ Assume:
         - Even though the data disk can be accessed in parallel, the parity disk prevents any parallelism from materializing
         - All writes to the system will be serialized because of the parity disk
         - Parity disk performs two I/Os per logical operation: one read, one write
-- **Subtractive Parity**
-  
-![alt text](Untitled-5.png)
-    - Read C3, P0
-    - Write P_new, C3_new
 
 Analysis
 
@@ -117,5 +125,3 @@ Analysis
         - Sequential reads: $(N-1) * S$
         - Random writes: $\frac{N}{4} * R$
             - Each RAID-5 write still generate 4 total I/O operation, which is simply the cost of using parity-based RAID
-
-![alt text](Untitled-6.png)

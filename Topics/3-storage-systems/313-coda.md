@@ -11,7 +11,7 @@ To make disconnected operation transparent, each client keep a cached copy of re
 ## Key Motivation: Availability 
 Coda wants to support **disconnected operation**, i.e. enables a client to continue accessing critical data during temporary failures. Availability is achieved by replication and disconnected operation with cache
 
-caching can be used to improve both performance and availability. 
+Caching can be used to improve both performance and availability. 
 
 Venus is the cache manager.
 The set of replication sites for a volume is its volume storage group (VSG). The subset of a VSG that is currently accessible is a client’s accessible VSG (AVSG).
@@ -24,9 +24,8 @@ While disconnected, Venus services file system requests by relying solely on the
     -  client continues to work from local cache when disconnected 
 -   **Optimistic replica control** to make it all work
     -  allow copies to diverge, detect, and resolve conflicts 
--  
 
-For scalability, it uses **callback-based cache coherence**, and **whole-file caching**; as well as placing of functionalities on clients.
+For scalability, it uses **callback-based cache coherence**, and **whole-file caching** (similar to AFS); as well as placing of functionalities on clients.
 
 ### Design Goal
 
@@ -54,9 +53,6 @@ Availability is the major concern
 
 ### Architecture
 
-- The architecture is almost the same as AFS
-    - Place functionality on clients for scalability (e.x. callbacks, whole-file caching, name resolution, …)
-
 - ***HOARDING:*** Pre-caching for disconnected information access
     - Client is connected and actively downloaded files from server and keep a cache locally
     - Balance current working set v.s. future needs
@@ -73,7 +69,7 @@ Availability is the major concern
         - Purge files, symlinks immediately
         - Delay directory operations
 
-![alt text](image-2.png)
+![alt text](images/313-coda/hoarding-state-machine.png)
 
 - ***EMULATION:** Psuedo-server*
     - Client disconnects but acts like it is connected by working on the cached contents
@@ -97,7 +93,7 @@ Availability is the major concern
         - Perform data transfer (back-fetching)
         - Commit transaction, unlock all objects
         - On error, abort and create replay file
-      - 
+  
 ## Disconnected operations: state transition 
 * **Hoarding**: pre-caching 
   * client is connected and actively downloaded files from server and keep a cache locally 
