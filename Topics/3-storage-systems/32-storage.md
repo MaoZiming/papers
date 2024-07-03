@@ -202,11 +202,16 @@
         2. **Journal commit:** Write the transaction commit block (containing **TxE**) to the log; wait for write to complete; transaction is said to be **committed**.
         3. **Checkpoint:** Write the contents of the update (metadata and data) to their final on-disk locations.
     - Steps (metadata journalling)
+        - Problem behind **data** journaling is that we are writing data to disk twice, which is a heavy price to pay. 
         1. **Data write:** Write data to final location; wait for completion (the wait is optional; see below for details).
         2. **Journal metadata write:** Write the begin block and metadata to the log; wait for writes to complete.
         3. **Journal commit:** Write the transaction commit block (containing TxE) to the log; wait for the write to complete; the transaction (including data) is now committed.
         4. **Checkpoint metadata:** Write the contents of the metadata update to their final locations within the file system.
         5. **Free:** Later, mark the transaction free in journal superblock.
+    - ![alt text](images/32-storage/data-journaling.png)
+      - (Data Journaling)
+    - ![alt text](images/32-storage/metadata-journaling.png)
+      - (Metadata Journaling)
     - The key about the above steps
         - Forcing data write to complete is not required for correctness
         - It will be fine to concurrently issue writes to data, the transaction begin log and journaled metadata
@@ -305,3 +310,89 @@ Sweep back and forth, from one end of disk other, serving requests as pass that 
             - Consult the log table
             - If logical block is not found there, then consult the data table then access
         - Key: keeping the # of log blocks small (i.e. examine log blocks and switch them into blocks)
+
+# Crash Consistency: FSCK and Journaling 
+
+## Example: append
+
+- Append operation
+    - Open the file
+    - `lseek()` to move the file offset to end of the file
+    - Issue a 4KB write to the file before closing it
+    - This needs to update
+        - The inode (which must point to new block and record the new larger size due to append)
+        - The new data block
+        - A new version of the data bitmap
+    - These dirty writes still sit in main memory (in the **page cache** or **buffer cache**) for some times
+    - Buffers are associated with a specific block device, and cover caching of filesystem metadata as well as tracking in-flight pages. The cache only contains parked file data. That is, the buffers remember what's in directories, what file permissions are, and keep track of what memory is being written from or read to for a particular block device. The cache only contains the contents of the files themselves.
+    - Buffer cache and page cache are unified later in Linux. 
+
+### Solution #1: File System Checker (FSCK)
+
+- Basic idea: let inconsistency happen, fix them later
+- FSCK: a UNIX tool to check and repair a disk partition exist on different systems
+    - Runs before the file system is mounted and made available
+    - Once finished, should be consistent and made accessible
+- Summary
+    - Superblock: sanity check (i.e. FS size > # of blocks allocated)
+    - Free blocks: scan inodes, indirect blocks, to understand which blocks are currently allocated within FS. Inconsistency between bitmaps and inodes are resolved by trusting **inodes**.
+    - Inode state: checked for corruption, check valid type field
+    - Inode links: scan through directory tree, build link counts for every file, if mismatch between new calculated count and inode, correct action by fixing count within inode
+    - Duplicates: two inodes point to the same block
+    - Bad blocks: if pointer points to something outside valid range (i.e. refer to block greater than partition size)
+    - Directory checks: integrity check to make sure “.” and “..” are first entries, etc.
+- Problem
+    - Complicated knowledge about FS
+    - Way too slow!!
+        - search-the-entire-house-for-keys recovery algorithm
+
+### 2.1 Data Journaling (i.e. in Linux ext3) 
+
+1. **Journal write:** Write the contents of the transaction (including TxB, metadata, and data) to the log; wait for these writes to complete.
+2. **Journal commit:** Write the transaction commit block (containing TxE) to the log; wait for write to complete; transaction is said to be **committed**.
+3. **Checkpoint:** Write the contents of the update (metadata and data) to their final on-disk locations.
+
+### 2.2 Recovery
+
+- Main thing: use contents of journal to **recover** from a crash
+- Steps
+    - Before journal write: pending update is simply skipped
+    - After commit, before checkpoint completes: recover update by replay the log (i.e. **redo logging**)
+        - Might have redundant writes, but okay!
+
+### 2.3 Batching log updates
+
+- Buffer all updates in a global transaction
+- E.g. Write two files in the same directory. 
+- Avoid excessive write traffic
+
+### 2.4 Making the log finite
+
+- Log may become full
+    - Larger log, longer recovery
+    - When log is full, no further transactions can be committed to disk, making FS useless
+- JFS: treat log as a circular data structure (i.e. circular log)
+    - Journal superblock: record enough information to know which transactions have not yet been checkpoint, thus reduce recovery time and enable re-use of log in circular fashion
+- ![alt text](images/32-storage/journal-superblock.png)
+
+### 2.6 Tricky Case: Block Reuse 
+- Create, delete, and create the same file reusing the same block, the newly-written data in block 1000 is not journaled
+- Crash occurs, with this log, reply
+    - Write of directory data in block 1000, overwrite user data with old directory contents!
+- Solution: **revoke**
+    - Deleting the directory would cause a revoke record to be written to the journal
+    - When replaying the journal, the system first scans for such revoke records
+    - Any such revoked data is never replayed, thus avoiding the problem mentioned above
+
+## Solution #3: other approaches
+1. **Copy-on-write (COW), like LFS** 
+    1. Technique: never overwrite files or directories in place 
+    2. Instead: places new updates to previous unused locations on disk 
+    3. After a number of updates completed, COW file system flips the root structure of the file system to include pointers to newly updated structures 
+2. **Backpointer-based consistency (BBC)**
+    1. No ordering is enforced between writes
+    2. Back pointer is added to every block in the system 
+    3. Determine consistency by checking if the forward pointer points to a block that refers back to it 
+3. **Optimistic crash consistency** 
+    1. Issues as many writes to disk as possible by using a generalized form of **transaction checksum**
+
