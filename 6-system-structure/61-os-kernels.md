@@ -29,6 +29,7 @@
     - Cons
         - Bad performance: lots of system calls (i.e. IPC) and context switches
     - File read —> communicate with the file system service residing in the user space through IPC. This involves a series of message exchanges and possibly more context switches
+    - ![alt text](images/61-os-abstraction/comparison.png)
 
 - **Hybrid kernel**
     - E.x. Windows, Android
@@ -53,6 +54,11 @@
 
 - **Unikernel** = Exokernel + Containers
     - Goal: link application with just enough OS functionality to allow it to execute
+        * Instead of OS on top of VMM, use simple library kernel that get's optimized into a application specific binary
+        * Dead code elimination so code size is smaller and simpler
+        * Strongly typed library OS leads to fewer bugs and increased security
+        * Faster overall since system calls become procedure calls over the VMM abstraction
+        * Result: faster OS with less code and 50ms boot times
     - Key idea: run one application per VM, one process per application
         - Everything compiled into a VM image
     - Pros

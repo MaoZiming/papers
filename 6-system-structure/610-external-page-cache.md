@@ -18,15 +18,15 @@ Read: June 30th, 2024.
     2. It cannot control physical pages it is allocated 
 2. A program cannot efficiently control the contents of physical memory allocated to it 
 3. A program cannot easily control the **read-ahead**, **writeback**, and discarding of pages within its physical memory 
-   1. A  default process-level manager provides page-cache management for applications that do not want to manage their virtual memory. 
+   1. A default process-level manager provides page-cache management for applications that do not want to manage their virtual memory. 
 
 ## Main Idea
-Virtual memory system provides application with one or more physical page caches that the application can manage external to the kernel. In particular, it can know the exact size of the cache in page frames, control which page is selected for replacement, and how data is transferred in and out of the cache. It also has information about physical addresses to implement schemes like page coloring and physical placement control. 
+Virtual memory system provides application with one or more physical page caches that the application **can manage external to the kernel**. In particular, **it can know the exact size of the cache in page frames**, control which page is selected for replacement, and how data is transferred in and out of the cache. It also has information about physical addresses to implement schemes like page coloring and physical placement control. 
 
 ## Main techniques
 Kernel Modifications: Simple extensions to the kernel to allow user-level code to manage the page cache.
 
-APIs for Memory Control: A set of application programming interfaces (APIs) that let the application instruct the kernel on how to manage the page cache.
+APIs for Memory Control: A set of application programming interfaces (APIs) that **let the application instruct the kernel** on how to manage the page cache.
 
 User-level Page Fault Handling: The paper argues that the cost of a page fault is too high to be abstracted away by the kernel, so user-level fault handling might be incorporated to decrease this time.
 
