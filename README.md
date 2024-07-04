@@ -1,6 +1,6 @@
 # Papers
 
-This is a repo consisted of paper-reading notes for Berkeley OS prelim exam. 
+This is a repo consisted of paper-reading notes for Berkeley OS prelim exam. I will try to read some papers everyday! :)
 
 ## Table of Contents
 - List: [List](list.md)
