@@ -4,26 +4,22 @@ Link: https://www3.nd.edu/~dthain/courses/cse66771/summer2014/papers/kerberos.pd
 
 Read on: June 26th, 2024
 
-Kerberos is an authentication network protocol developed by MIT to provide robust and **secure authentication system in an open network** where **users at workstations** wish to access **services on network servers**. Open networks are susceptible to various kinds of attacks, such as eavesdropping, replay attacks, and impersonation. 
+- Kerberos is an authentication network protocol developed by MIT to provide robust and **secure authentication system in an open network** where **users at workstations** wish to access **services on network servers**. Open networks are susceptible to various kinds of attacks, such as eavesdropping, replay attacks, and impersonation. 
 
-The protocol is based on generating tickets 🎫.
+- The protocol is based on generating tickets 🎫.
 
-The authenti- cation server provides a properly authenticated user with a way to prove her/his identity to servers scattered across the network.
+- The authentication server provides a properly authenticated user with a way to prove her/his identity to servers scattered across the network.
 
 
-Kerberos keeps a database of its clients and their private keys. The private key is a large number known only to Kerberos and the client it belongs to. In the case that the client is a user, it is an encrypted password.
+- Kerberos keeps a database of its clients and their private keys. The private key is a large number known only to Kerberos and the client it belongs to. In the case that the client is a user, it is an encrypted password.
 
-The primary name is the name of the user or the service. The instance is used to distinguish among variations on the primary name.
-- For example, the rlogin service has different instances on different hosts
-- `rlogin.priam` is the rlogin server on the host named priam.
-
-A Kerberos ticket is only good for a single named server. As such, a separate ticket is required to gain access to different instances of the same service.
+- A Kerberos ticket is only good for a single named server. As such, a separate ticket is required to gain access to different instances of the same service.
 
 ## Goal
 * Security: To protect sensitive data in open networks.
 * Transparency: To facilitate straightforward authentication for users without the cumbersome need for repeated logins.
 
-There are three phases to authentication through Kerberos . In the first phase, the user obtains credentials to be used to request access to other services. In the second phase, the user requests authentication for a specific service. In the final phase, the user presents those credentials to the end server.
+* There are three phases to authentication through Kerberos . In the first phase, the user obtains credentials to be used to request access to other services. In the second phase, the user requests authentication for a specific service. In the final phase, the user presents those credentials to the end server.
 
 ## Key Techniques: Ticket  
 There are three components in Kerberos transactions: 
@@ -64,10 +60,10 @@ There are three components in Kerberos transactions:
     * If matches, send back service authenticator encrypted by TGS session key
     * Confirming authentication success and establish secure session
 
-![alt text](image.png)
+5. ![keberos](images/56-keberos/keberos-auth-protocol.png)
 
 * KDBM Server
-  *  The KDBM server accepts requests to add principals to the database or change the pass- words for existing principals. This service is unique in that the ticket-granting service will not issue tickets for it. Instead, the authentication ser- vice itself must be used (the same service that is used to get a ticket-granting ticket).
+  *  The KDBM server accepts requests to add principals to the database or change the passwords for existing principals. This service is unique in that the ticket-granting service will not issue tickets for it. Instead, the authentication service itself must be used (the same service that is used to get a ticket-granting ticket).
      *  Otherwise: if an administrator left her/his workstation unguarded, a passerby could change any password in the sys- tem.
 
 
@@ -76,4 +72,4 @@ Trust is incrementally built through a series of encrypted ticket exchanges, and
 
 1. Mutual Trust via Third Party: The AS and TGS act as trusted third parties. The mutual trust between a user and a service is established indirectly via trust in these servers.
 
-2. Scalability: Because users don't interact directly with service servers for authentication (but go through TGS instead), the system is more scalable. Each service doesn’t need to implement its authentication logic; it just needs to be able to decrypt a message from the TGS.
+2. Scalability: Because users don't interact directly with service servers for authentication (but go through TGS instead), **the system is more scalable**. Each service doesn’t need to implement its authentication logic; it just needs to be able to decrypt a message from the TGS.

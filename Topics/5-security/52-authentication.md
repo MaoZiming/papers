@@ -1,6 +1,7 @@
 # Authentication
 
 - **Principal**
+    - A principal in computer security is an entity that can be authenticated by a computer system or network.
     - I.e. party asking for something
     - Security-meaningful entities that can request access to resources, such as groups of users, or complex software systems
     - Different OS have used different types of identity for principals
@@ -15,7 +16,6 @@
 - Passwords and PIN
     - System stores the **hash** of the password, not the password itself
         - **Cryptographic hashes**: infeasible to use the hash to figure out what the password is
-    - Not too careful with how you store the authentication information
     - By nature, can’t reverse hashing algorithms
     - **Dictionary attack:** try lists of names and words before random strings ****
         - Shut off access to an account when too many wrong guesses
@@ -30,7 +30,7 @@
 
 ### Scenario 1: Designing a Secure Authentication Mechanism for a Distributed System
 
-Question:
+> Question:
 You're tasked with designing a secure authentication mechanism for a distributed system. Can you walk me through how you would accomplish this, and what technologies or methodologies you would leverage?
 
 ### Sample Answer:
@@ -42,7 +42,7 @@ I would opt for a Kerberos-like architecture to provide strong authentication. A
 
 ### Question:
 
-Given your expertise in various security paradigms like protection rings, Kerberos authentication, and explicit information flow, how would you design a system that incorporates all of these?
+> Given your expertise in various security paradigms like protection rings, Kerberos authentication, and explicit information flow, how would you design a system that incorporates all of these?
 
 ### Sample Answer:
 

@@ -13,7 +13,7 @@ All of Unix implemented on top of these few abstractions, and new applications c
 ## Main Idea
 The main idea is to use **a small kernel that controls information flow**: explicit access checks on information flows can prevent data leaks. For example if AV code is malicious and it can communicate code over Internet, the kernel can simply not allow AV to send info anywhere. 
 
-To track information flow, HiStar associate a label with the data, where label follows data when it moves around and determine what you can do with the data. HiStar will only allow kernel objects to interact (information to flow) if two kernel obejcts have "consistent" labels. 
+To track information flow, HiStar associate a label with the data, where label follows data when it moves around and determine what you can do with the data. HiStar will only allow kernel objects to interact (information to flow) if two kernel obejcts have "**consistent**" labels. 
 
 
 ### Scenario 3: Designing a System with Explicit Information Flow

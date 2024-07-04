@@ -38,4 +38,4 @@ $$
 ## Cryptographic Hash
 
 - Cryptographic hashes: do not allow reversal of the cryptography and do not require the use of keys
-- No one should be able to obtain the original bit pattern from the hash
+- No one should be able to obtain the **original bit pattern from the hash**
