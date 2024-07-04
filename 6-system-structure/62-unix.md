@@ -1,9 +1,6 @@
 # UNIX Implementation (1978) 
-Reference: https://github.com/parasj/papers/blob/master/os_structures/unix.md?plain=1 
 
 * **Key idea:** File-system interface that enables use by multiple users, a simplified device interface, and a user-shell with composable programs
-* Written in C (simple to use)
-* Can administer system within the system, as well as write new programs
 * Key features:
   1) File-system (interface to persistent storage) 
      * Ordinary files, directories and `/dev`

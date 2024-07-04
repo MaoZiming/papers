@@ -1,5 +1,6 @@
 # The Structure of the "THE" Multiprogramming System (1967)
-Reference: http://saurabhjha.github.io/2017/11/11/paper-review-the-structure-of-the-THE-multiprogramming-system.html
+
+Link: https://www.eecs.ucf.edu/~eurip/papers/dijkstra-the68.pdf
 
 ”THE” Multiprogramming System was an operating system developed by Dijkstra. The operating system was designed to be a single user while executing concurrent programs. 
 

@@ -1,19 +1,16 @@
 # Plan 9 from Bell Labs (1990)
-Reference: https://github.com/parasj/papers/blob/master/os_structures/plan9.md?plain=1
 
-The Plan 9 paper addressed the challenge of managing computing resources and facilitating inter-process communication (IPC) in a networked environment. It looked at the difficulties in administering multiple self-maintained machines and the challenges posed by distributed systems.
-
-Plan 9 is a distributed operating system, designed to make a network of heterogeneous and geographically separated computers function as a single system. In a typical Plan 9 installation, users work at terminals running the window system rio, and they access CPU servers which handle computation-intensive processes. Permanent data storage is provided by additional network hosts acting as file servers and archival storage
+Plan 9 is a distributed operating system, designed to make a network of heterogeneous and **geographically** separated computers function as a single system. In a typical Plan 9 installation, users work at terminals running the window system rio, and they access CPU servers which handle computation-intensive processes. Permanent data storage is provided by additional network hosts acting as file servers and archival storage
 
 **Key ideas**:
-1. Everything is a file (incl. hardware, window manager)
+1. **Everything is a file** (incl. hardware, window manager)
 2. Central server with clients rendering windows. This centralizes administration while allowing users to customize their workspace.
 3. Integrated backups each day
 4. **Per process namespaces**
    1. A single path name may refer to different resources for different processes.
 5. **A simple message-oriented file system protocol.**
-   1. processes can offer their services to other processes by providing virtual files that appear in the other processes' namespace. The client process's input/output on such a file becomes inter-process communication between the two processes.
-   2. Service-as-a-file: A process can offer a service by providing a file that other processes can read/write to.
+   1. processes can offer their services to other processes by providing virtual files that appear in the other processes' namespace. The client process's input/output on such a file becomes *inter-process* communication between the two processes.
+   2. Service-as-a-file: A process can offer a service by providing a *file* that other processes can read/write to.
    3. Sharing device across network can be accomplished by mounting the corresponding directory tree to the target machine.
 
 ## Motivation

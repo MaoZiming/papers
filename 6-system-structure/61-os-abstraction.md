@@ -1,7 +1,4 @@
 # OS Concept 
-- Kernels, process, threads, address spaces, and hardware privilege level (also known as dual-mode operation)
-- APIs in a UNIX-like environment for using processes (fork, exec, and wait), threads (pthreads), and files (open, read, etc.)
-
 
 - **Types of kernel**
     - **Monolithic kernel: speed!**
@@ -18,7 +15,8 @@
 - **Microkernel**: **modularity and reliability**
     - E.x. L4
     - Minimalistic approach
-        - Kernel only keep: basic IPC, virtual memory, scheduling
+        - Kernel only keep: **basic IPC, virtual memory, scheduling**
+          - Exokernel: only exposes resources.
         - Put other services run in user space
             - Libraries running on user space
             - E.x. device drivers, networking, file system, etc.
@@ -37,6 +35,7 @@
     - Combine best of both worlds
         - Speed and simple design of a monolithic kernel
         - Modularity and stability of a microkernel
+        - User-mode services: Some components, such as  subsystems (e.g., user-mode drivers and environment subsystems like the Windows Subsystem for Linux), run in user space. This separation helps improve system robustness and security.
     - Pros: still similar to monolithic kernel
         - With disadvantages similar
 
@@ -44,13 +43,13 @@
     - Follow end-to-end principals
         - Extremely minimal: extreme version of microkernel
         - Fewest hardware abstractions as possible
-        - Just allocates physical resources to apps
+        - Just allocates **physical resources** to apps
     - Pros: minimal and simple
     - Cons
         - More work for application developer
         - Poor isolation: each application implements own LibOS
             - Libraries accessing directly the HW, don’t have isolations
-        - Hardware compatibility: need to change LibOS depends on HW interfaces
+        - Hardware compatibility: need to change LibOS depending on HW interfaces
 
 - **Unikernel** = Exokernel + Containers
     - Goal: link application with just enough OS functionality to allow it to execute
@@ -61,7 +60,7 @@
         - customizable
         - better isolation
     - Cons
-        - Recompile, each libraries untrusted
+        - Recompile, each libraries are untrusted
 
 ### 1.2 Hardware Privilege Level
 
@@ -73,7 +72,7 @@
 - Connections
     - Kernel mode: typically high hardware privilege level (e.g., Ring 0)
     - User mode: typically low hardware privilege level (e.g., Ring 3).
-  - 
+  
 ## Process: abstraction for CPU
 
 - CPU abstraction of *a running program*
@@ -89,7 +88,7 @@
     - E.x. creation
         - Allocate memory for runtime stack and heap
         - Lazy loading: loading pieces of code and data
-        - Start at entry point (i.e. main()), transfer control of CPU to the process, execute
+        - Start at entry point (i.e. `main()`), transfer control of CPU to the process, execute
     - UNIX-like environment API
         - `fork()`: creates a new process, creator is parent, newly created process is child, child process is nearly identical copy of parent
         - `exec`: allows a child to break free from similarity to its parent and execute an entirely new program
@@ -108,20 +107,6 @@
             - When raised
                 - The current running process is halted
                 - A pre-configured interrupt handler in the OS run
-
-### 1.1 Kernel
-An overview to different types of kernel is [here](https://github.com/lynnliu030/os-prelim/tree/main/system_structure). 
-
-### 1.2 Hardware Privilege Level
-
-- Setting managed by the CPU to restrict types of operations that can be executed
-- X86: four privilege levels
-    - **Ring 0:** highest privilege level, generally used for most trusted functions of OS kernel
-    - **Ring 1, Ring 2:** seldom use
-    - **Ring 3:** lowest privilege levels, typically used for user-mode
-- Connections
-    - Kernel mode: typically high hardware privilege level (e.g., Ring 0)
-    - User mode: typically low hardware privilege level (e.g., Ring 3).
 
 ## Thread: new abstraction for single running process
 
@@ -167,10 +152,3 @@ An overview to different types of kernel is [here](https://github.com/lynnliu030
         - Code: where instructions live
         - Stack: contains local variables arguments to routines, return values, etc.
         - Heap: contains malloc’d data, dynamic data structure
-
-## File API
-
-- `open`
-- `read`
-- `write`
-- `close`
