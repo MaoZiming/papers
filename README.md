@@ -2,6 +2,8 @@
 
 This is a repo consisted of paper-reading notes for Berkeley OS prelim exam. 
 
+- List: [List](list.md)
+
 * Prelim [reading list](https://ucbosprelim.samkumar.org/reading.html)
 * Basic OS materials (🙌 to Remzi and Andrea): [OSTEP](https://pages.cs.wisc.edu/~remzi/OSTEP/)
 * Practice exams
