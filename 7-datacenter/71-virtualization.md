@@ -1,8 +1,6 @@
 # Virtualization 
 Virtualization allows multiple guest OSes (and their applications) to share the hardware resources of a single physical server. 
 
-Reference: https://learn.udacity.com/courses/ud923/lessons/1df60659-fbbb-4dee-85fc-6c70af48f3dc/concepts/39d66818-78e5-4a49-b382-7aafc9b6c202
-
 ## Challenges: trap-and-emulate 
 * Guest instructions executed directly by hardware
     * Non-privileged operations: hardware speed
@@ -10,7 +8,7 @@ Reference: https://learn.udacity.com/courses/ud923/lessons/1df60659-fbbb-4dee-85
 * Hypervisor determines what needs to be done
     * Emulates the behavior the guest OS expects from the hardware
 
-Commodity hardware has more than 2 protection levels. E.g. X86 has 2 protection levels (rings) and 2 protection modes (root and non-root) recently. 
+Commodity hardware has more than 2 protection levels. E.g. **X86 has 2 protection levels (rings) and 2 protection modes (root and non-root) recently.**
 
 For X86 pre 2005, if trap-and-emulate: 
 * 4 rings, hypervisor in ring 0, guest OS in ring 1 
@@ -21,20 +19,20 @@ For X86 pre 2005, if trap-and-emulate:
 
 ## CPU Virtualization
 
-<img width="890" alt="image" src="https://github.com/lynnliu030/os-prelim/assets/39693493/45d1a8e1-ca3f-4feb-904e-31b40f94d483">
-
+![alt text](images/71-virtualization/virtualization-comparison.png)
 
 ### Full virtualization: binary translation and direct execution
 *  Goal: full virtualization == guest OS not modified
 *  Main idea: rewrite VM binrary to never issue those 17 instructions 
 *  Approach: dynamic binary translation
-    1) hypervisor inspect code to be executed by the guest OS 
-    2) if needed, translate to alternate instruction sequence
+    1) hypervisor inspects code to be executed by the guest OS 
+    2) if needed, translate to alternative instruction sequence
        - e.g. to emulate desired behavior, possibly even avoiding trap
     3) otherwise, run at hardware speeds
        - cache translated blocks to amortize translation costs 
 *  Pros: best isolation and security, excellent compatibility
 *  Cons: performance 
+
 ### Paravirtualization: hypercalls
 *  Goal: performance, give up on unmodified guest
 *  Approach: paravirtualization == modify guest OS so that
@@ -53,24 +51,22 @@ For X86 pre 2005, if trap-and-emulate:
    *  E.x. Intel-VT (~2005) 
 *  Pros: excellent compatibility
 *  Cons: some performance issues
-   
-
 
 ## Memory Virtualization 
 
-<img width="426" alt="image" src="https://github.com/lynnliu030/os-prelim/assets/39693493/07f5f4b2-ff73-4834-913f-30373f6ef170">
+- ![memory-virtualization](images/71-virtualization/memory-virtualization.png)
 
 ### Full virtualization 
 The guests expect contiguous physical memory, start at 0 (just like it owns the machine). We should distinguish virtual v.s physical v.s machine addresses and page frame numbers, and still leverages hardware MMU and TLB. 
 
-Option 1: expensive on every single memory reference 
+**Option 1:**: expensive on every single memory reference 
 - guest page table: VA => PA
 - hypervisor: PA => MA 
 
 **Option 2:**
 - guest page table: VA => PA
 - hypervisor shadow PT: VA => MA
-- hypervisor maintains consistence between guest PT and hypervisor shadow PT 
+- hypervisor maintains consistency between guest PT and hypervisor shadow PT 
     - e.g. invalidate on context switch, write-protect guest PT to track new 
 
 ### Paravirtualization
@@ -83,13 +79,12 @@ When we look at CPU and memory, there is a significant level of standardization 
 
 For devices, there is higher diversity, and there is lack of specificaiton of device interface and behavior (e.x. what is the behavior when a particular call is invoked on a device). There are three key models for device virtualization (prior to virtualization even exists). 
 
-<img width="865" alt="image" src="https://github.com/lynnliu030/os-prelim/assets/39693493/91f86049-bd5c-4e69-a938-adf1d36552f3">
-
+![alt text](images/71-virtualization/device-driver.png)
 
 1. Passthrough model: VMM-level driver configures device access permissions
      *  Pros
          *  VM provided with exclusive access to device
-         *  VM can directly access the device (VMM-bypass)
+         *  VM can directly access the device (**VMM-bypass**)
      *  Cons
          *  device sharing difficult
          *  VMM must have exact type of device as what VM expects
@@ -109,13 +104,10 @@ For devices, there is higher diversity, and there is lack of specificaiton of de
      *  front-end driver in guest VM (device API)
      *  back-end driver in service VM (or host)
      *  modified guest drivers
-         *  i.e. limited to paravirtualized guests
+         *  i.e. limited to **paravirtualized** guests
      *  Pros
          *  eliminate emulation overhead, explicitly tell what guest VM requires
          *  allow for better management of shared devices     
-
-# Isolation and Resource Management 
-Resources are often **shared** among multiple users, applications, or services. The need for isolation arises to ensure that these entities do not interfere with each other, either intentionally or unintentionally, in terms of security, resource utilization, performance, and fault tolerance. 
 
 ## List of Questions 
 1. What is virtualization? how are they used today?
@@ -127,14 +119,6 @@ Resources are often **shared** among multiple users, applications, or services. 
    - what are some problems associated with containers? 
 3. What are the trade-offs between virtulization and container?
 4. How does exokernel compared to hypervisors?
-
-## Virtualization 
-[Virtualization](https://github.com/lynnliu030/os-prelim/blob/main/cluster_computing/virtualization.md) allows multiple guest OSes (and their applications) to share the hardware resources of a single physical server. 
-
-* Virtual resources: each OS thinks that it owns the hardware resources
-* Virtual machine: OS + applications + virtual resources
-* Virtualization layer: management of physical hardware (e.x. VMM, hypervisor)
-    *  emulate the behavior the guest OS expects from the HW  
 
 ## Containers 
 * Containers are lightweight, encapsulated environments that run applications and their dependencies.
@@ -148,12 +132,10 @@ Resources are often **shared** among multiple users, applications, or services. 
 
 ## Virtualization v.s Containers
 * VM: virtualize hardware
-* Containers: virtualie OS, contains only the application and its libraries and dependencies
+* Containers: virtualize OS, contains only the application and its libraries and dependencies
 * LightVM paper discusses the trade-offs between containers and VMs in terms of performance and security (isolation) guarantees
 
 ## Isolation and Fault tolerance 
-**Isolation**: keeping different parts of a system separated such that a failure, error, or security breach in one part does not propagate to other parts. This segregation can be in terms of memory, processing, or even network communication.
-
 It is important for fault tolerance because:
 * Prevent a single point of failure from bringing down the entire system
 * Limit the spread of security vulnerabilities
@@ -166,4 +148,4 @@ For example, UNIX provides isolation:
    *  i.e. containers  
 
 ## Exokernel v.s Hypervisor 
-Exokernels and hypervisors have many similarities, in that they multiplex and protect hardware with minimal abstraction. Comparisons are [here](https://github.com/lynnliu030/os-prelim/blob/main/cluster_computing/exokernel_vs_hypervisor.md). 
+Exokernels and hypervisors have many similarities, in that they multiplex and protect hardware with minimal abstraction.
