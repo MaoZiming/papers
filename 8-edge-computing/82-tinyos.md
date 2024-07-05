@@ -47,9 +47,8 @@ A component is an independent computational entity that exposes one or more inte
    * background computation, not time critical 
    * task scheduler: FIFO  
 
-<img width="288" alt="image" src="https://github.com/lynnliu030/os-prelim/assets/39693493/2ecada51-d8c0-4aa5-af93-26958388d6d5">
 
-TinyOS achieves high concurrency by allowing tasks and events to run in small, non-blocking chunks, which allows the system to handle multiple operations 'simultaneously' without needing a heavy-weight OS laye
+TinyOS achieves high concurrency by allowing tasks and events to run in small, non-blocking chunks, which allows the system to handle multiple operations 'simultaneously' without needing a heavy-weight OS layer
 
 ## Compared 
 > TinyOS: The problem we must tackle is strikingly similar to that of building efficient network interfaces, which also must maintain a large number of concurrent flows and juggle numerous outstanding events
@@ -76,17 +75,9 @@ TinyOS achieves high concurrency by allowing tasks and events to run in small, n
     - Thread models with bounded stack size?
         - Not send the signal and buffer within your stack? —> maybe buffering takes lots of space
 
-The problem we must tackle is strikingly similar to that of building efficient network interfaces, which also must maintain a large number of concurrent flows and juggle numerous out- standing events
+- Frame allows us to know the memory footprint at compile time; as well as knowing the variable locations statically at compile time rather than accessing state via pointers. 
 
-A component has four interrelated parts: a set of command handlers, a set of event handlers, an encapsulated fixed-size frame, and a bundle of simple tasks. Tasks, commands, and handlers execute in the context of the frame and operate on its state.
-
-The composition process creates layers of com- ponents where higher level components issue commands to lower level components and lower level components signal events to the higher level components.
-
-Frame allows us to know the memory footprint at compile time; as well as knowing the variable locations statically at compile time rather than accessing state via pointers. 
-
-However, tasks must never block or spin wait or they will prevent progress in other components.
-
-The communication across the components takes the form of a function call, which has low overhead and provides compile time type checking.
+- The communication across the components takes the form of a function call, which has low overhead and provides compile time type checking.
 
 ## Limitations
 

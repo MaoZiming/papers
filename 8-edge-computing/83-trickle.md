@@ -6,11 +6,9 @@ Read: June 28th, 2024,
 
 Trickle is an algorithm designed to efficiently update code across a network of sensor nodes. It aims to save bandwidth and power by smartly deciding when a node should broadcast updates.
 
-It particularly aims to resolve the paradox where the cost of figuring out if new code is needed overwhelms the actual cost of sending that code. The focus is thus to efficiently decide when a sensor node (mote) should propagate code.
-
 A large number of small, resource constrained computing nodes ("motes"). Motes come and go, due to temporary disconnections, failure, and net- work repopulation.
 
-To reduce energy costs, motes can transmit metadata to determine when code is needed. Even for binary images, this periodic metadata exchange overwhelms the cost of transmitting code when it is needed. Sending a full TinyDB binary image (≈ 64 KB) costs approximately the same as trans- mitting a forty byte metadata summary once a minute for a day. In Mate ́, Tiny Diffusion, Tiny DB, and similar sys- tems, this tradeoff is even more pronounced: sending a few metadata packets costs the same as sending an entire program.
+To reduce energy costs, motes can transmit metadata to determine when code is needed. Even for binary images, this periodic metadata exchange overwhelms the cost of transmitting code when it is needed. Sending a full TinyDB binary image (≈ 64 KB) costs approximately the same as transmitting a forty byte metadata summary once a minute for a day. 
 
 This is an important property in wireless networks, where the channel is a valuable shared resource. Additionally, reducing transmissions in dense networks conserves system energy. Wireless 17Kbit/s
 
@@ -27,8 +25,7 @@ Simulator includes the packet loss rate along the links.
 2. **Polite Gossip**: Nodes listen before they speak. If they hear enough neighbors (i.e. $k$) already talking about the same update, they keep quiet.
 3. Adaptive Timing: If nothing new is happening, nodes gradually wait longer before making announcements.
 4. Quick Reset: If a node hears about a newer update from a neighbor, it resets its timer to speed up the update process.
-
-Silent listening period before gossiping. 
+5. Silent listening period before gossiping. 
 
 Configurable:
 Two main settings: $k$, which tells us how many neighbors should be talking before a node keeps quiet, and $T$, which is our main time window for announcements.
