@@ -8,9 +8,6 @@ DRF **allocates resources according to agents’ proportional demands, in a way 
 - **DRF approach:** equalize the dominant share of users
 - **Algorithm:** whenever there are available resources, schedule a task to the user with the smallest dominant share
 
-<img width="473" alt="image" src="https://github.com/lynnliu030/os-prelim/assets/39693493/8d831a98-01a2-4239-b674-7d8c48ff637c">
-
-
 ### Properties 
 - **Sharing incentive**: user is no worse off than a cluster with 1 / n resources
 - **Strategy proof**: user should not benefit by lying about demands
@@ -18,9 +15,6 @@ DRF **allocates resources according to agents’ proportional demands, in a way 
 - **Envy free**: user should not desire the allocation of another user
 
 ### Examples
-<img width="449" alt="image" src="https://github.com/lynnliu030/os-prelim/assets/39693493/58ebc99d-051e-434a-a40a-51e2c55890b3">
-
-
 
 - System resources = <9, 18>
 - Task A requires <1, 4>, and Task B requires <3, 1>

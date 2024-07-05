@@ -7,17 +7,12 @@ June 28th, 2024
 Lessions learned from container-management system 
 * Borg: built to manage long-running services and batch jobs
   * Even so, the Borg container image is not quite as
-  airtight as it could have been: applications share a so-called
-  base image that is installed once on the machine rather than
-  being packaged in each container. This base image contains
-  utilities such as tar and the libc library, so upgrades to
-  the base image can affect running applications and have
-  occasionally been a significant source of trouble.
+  airtight as it could have been: applications share a so-called base image that is installed once on the machine rather than being packaged in each container. This base image contains utilities such as tar and the libc library, so upgrades to the base image can affect running applications and have occasionally been a significant source of trouble.
 * Omega: improve the software engineering of Borg ecosystem
   * Omega stored the state of the cluster in a centralized Paxos-based transaction-oriented store that was accessed by the different parts of the cluster control plane (such as schedulers), using optimistic concurrency control to handle the occasional conflicts
   * Decoupling allows Borg's functionality to be broken into peers, rather than funneling every change through a centralized Borg master.
 * K8s: open-source, tool for developers
-  * Like Omega, Kubernetes has at its core a shared persistent store, with components watching for changes to relevant objects. In contrast to Omega, which exposes the store directly to trusted control-plane components, state in Kubernetes is accessed exclusively through a domain-specific REST API that applies higher-level versioning, validation, semantics, and policy, in support of a more diverse array of clients.
+  * Like Omega, Kubernetes has at its core a shared persistent store, with components watching for changes to relevant objects. In contrast to Omega, which exposes the store directly to trusted control-plane components, state in **Kubernetes is accessed exclusively through a domain-specific REST API** that applies higher-level versioning, validation, semantics, and policy, in support of a more diverse array of clients.
   * Focuses on the experience of users.
   * A modern container is more than just an isolation mechanism: it also includes an image—the files that make up the application that runs inside the container. Within Google, MPM (Midas Package Manager) is used to build and deploy container images
   * **runtime isolation** and **image**
@@ -26,7 +21,6 @@ Lessions learned from container-management system
 ## Containerization 
 * Runtime isolation (`cgroup`) and image (i.e. data)
 * Transfrom DC from machine-oriented to app-oriented
-    *  encapsulate app environment, abstract OS and machine 
     *  container as a unit of management
         *  flexibility on OS / HW updates
         *  better application monitoring
