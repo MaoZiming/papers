@@ -145,7 +145,16 @@
     - But not in-memory, then inode-structure has much better random read performance
         - And also inode-structure can have hard links
 
-
+### Set associativity
+- Direct Mapped
+  - Memory address $\rightarrow$ [Tag, Index, Offset]
+    - A cache block can only go in one spot in the cache. It makes a cache block very easy to find, but it‛s not very flexible about where to put the blocks.
+- 2-Way Set Associative
+  - This cache is made up of sets that can fit two blocks each. The index is now used to find the set, and the tag helps find the block within the set.
+- 4-Way Set Associative
+  - Each set here fits four blocks, so there are fewer sets. As such, fewer index bits are needed.
+- Fully Associative
+  - No index is needed, since a cache block can go anywhere in the cache. Every tag must be compared when finding a block in the cache, but block placement is very flexible!
 
 ## Transactions as a means for reliability: journaling file systems and redo logging
 
