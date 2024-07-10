@@ -35,9 +35,9 @@ For X86 pre 2005, if trap-and-emulate:
 
 ### Paravirtualization: hypercalls
 *  Goal: performance, give up on unmodified guest
-*  Approach: paravirtualization == modify guest OS so that
-     - it knows it's running virtualized
-     - it makes explicit calls to the hypervisor (hypercalls)
+*  Approach: **paravirtualization** == **modify guest OS so that**
+     - **it knows it's running virtualized**
+     - **it makes explicit calls to the hypervisor (hypercalls)**
 *  Hypercalls (~system calls)
      - package context info
      - specify desired hypercall
