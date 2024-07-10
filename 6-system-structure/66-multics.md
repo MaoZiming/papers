@@ -1,7 +1,36 @@
 # Virtual Memory, Processes, and Sharing in MULTICS (1967) 
-This paper presents the design of MULTICS, including its concepts of processes, address space, and virtual memory, and the use of paging and segmentation. It talks about how users may share procedures and data, and the mechanisms to dynamically transform symbolic references into VM address. 
+
+Link: https://www.andrew.cmu.edu/course/15-440/assets/READINGS/daley1968.pdf
+
+Read: July 9th, 2024
+
+This paper presents the design of MULTICS, including its concepts of processes, address space, and virtual memory, and the use of **paging** and **segmentation**. It talks about how users may share procedures and data, and the mechanisms to dynamically transform symbolic references into VM address. 
 
 This is basically the segmentation + paging techniques discussed in OSTEP. 
+
+The concepts of "process" and "address space" are defined, the mechanism by which "dynamic linking" is accomplished is explained. 
+
+* Process: Each process runs in its own address space, which is established independently of other address spaces.
+  * The address space consists of a large number ($2^14$) of segments, each consisting of as many as 2^18 36-bit words.
+  * Each segment is a logically distinct unit of information having attributes of length and access privilege and may grow or shrink independently of other segments in the system. For present purposes, we consider two segment types: (1) data, and (2) procedure. A segment is treated as procedure if it is intended to be accessed for instruction fetch by a processor. Other segments (including, e.g., a source program file) are considered to be data.
+  * Directory structure is a hierarchical arrangement of directories that associate at least one symbolic name with each segment.
+  * ![alt text](images/66-multics/virtual-memory.png)
+* Complete generalized address (segment number + word number)
+
+* Indirect addressing seems to be similar to pointers. 
+
+* Addressing by generalized address
+  * ![alt text](images/66-multics/addressing-by-generalized-address.png)
+  * The descriptor base register is used by the processor to locate the descriptor segment of the process in execution.
+  * Switching a processor from one process to another involves little more than swapping processor register status and substituting a new descriptor base. 
+  * Some segments will be identified with different segment numbers in different processes. 
+    * Since segment number is per-process, we additionally have a segment reference name. 
+* Paging and page tables. 
+* Linkage segment
+  * Linking. From segment P to segment D you need $L_\alpha$, where $\alpha$ is the process. 
+  * Honestly too complicated. 
+  * When process $α$, in executing procedure $P$, transfers control to procedure $Q$, the value of linkage pointer must be changed to the generalized address of the linkage section for procedure $Q$. 
+  
 
 ## Problem 
 Before MULTICS there were no existing OS capable of providing users with a large machine-independent virtual memory. So the objectives of MULTICS are 
