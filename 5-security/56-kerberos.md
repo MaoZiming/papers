@@ -4,6 +4,8 @@ Link: https://www3.nd.edu/~dthain/courses/cse66771/summer2014/papers/kerberos.pd
 
 Read on: June 26th, 2024
 
+Mechanism explained: https://www.youtube.com/watch?v=5N242XcKAsM&t=94s
+
 - Kerberos is an authentication network protocol developed by MIT to provide robust and **secure authentication system in an open network** where **users at workstations** wish to access **services on network servers**. Open networks are susceptible to various kinds of attacks, such as eavesdropping, replay attacks, and impersonation. 
 
 - The protocol is based on generating tickets 🎫.
@@ -24,9 +26,11 @@ Read on: June 26th, 2024
 ## Key Techniques: Ticket  
 There are three components in Kerberos transactions: 
 * **KDC (key distribution center)**
-  *  Store a copy of all keys (i.e. client keys, service key, and TGS keys) for encryption and decryption purposes
+  *  Store a copy of all keys (i.e. client keys, **service key**, and TGS keys) for encryption and decryption purposes
   *  **Authentication server (AS)**: Validates users when they log in
+     *  Issue granting ticket.  
   *  **Ticket granting server (TGS)**: Issues tickets for users to access different services
+     *  Issue service ticket. 
 * **Client**: The user who wants to access a service.
 * **Service**: The network resources like files servers or databases that the client wants to access.
  
@@ -35,37 +39,46 @@ There are three components in Kerberos transactions:
     * Client sends login details to Authentication Server (AS)
     * The user is prompted for her/his username. Once it has been entered, a request is sent to the authentication server containing the user’s name and the name of a special service known as the ticket-granting service.
     * AS replies with two messages
-       * Ticket Granting Ticket (TGT) encrypted with TGS secret key
-       * M1: TGS **session** key encrypted with client's secret key
+       * Ticket Granting Ticket (TGT) encrypted with **TGS secret key**. TGT contains **TGS session key**
+       * M1: TGS **session** key encrypted with **client's secret key**
 2. **Request for Service Ticket**:
-    * Decrypt M1 with client secret key
-      * Once the response has been received by the client, the user is asked for her/his password. The password is converted to a DES key and used to decrypt the response from the authentication server. 
-    * Request access ot a service by taking to TGS
-        * Send back TGT
-        * Encrypt user authentication (authenticator?) with TGS session key
+    * The client decrypt M1 with its client secret key
+      * In this process, the user is asked for her/his password. The password is used to decrypt the response from the authentication server. 
+      * **IMPORTANTLY**: TGT encrypted with **TGS secret key** is not decrypted by the client, as it does not have the **TGS secret key**
+    * Request access to a service by taking to TGS. Send three messages: 
+        * Send back **TGT**
         * M2: <service ID, request lifetime>
-        * In order to gain access to the server, the application builds an authenticator containing the client’s name and IP address, and the current time. The authenticator is then encrypted in the session key that was received with the ticket for the server. The client then sends the authenticator along with the ticket to the server in a manner defined by the individual application.
-    * TGS receives
+        * Authenticator: containing the client’s name and IP address, and the current time. The authenticator is then encrypted in the **TGS session key**.
+    * TGS receives above three messages.
         * check service is valid
-        * decrypt TGT with session key, and decrypt user authentication
+        * decrypt TGT with **TGS secret key**. TGT contains **TGS session key**. 
+        * **TGS session key** is used to decrypt the user authenticator.
+        * Validate all the messages. Compare user IDs, timestamps, and IP addresses. 
+        * TGS maintains a **cache**: adding the authenticator to the cache. It will check if the authenticator is already in the cache, which prevents replay attacks. 
     * TGS sends back
-        * M3: Service session key encrypted by TGS session key
-        * Service ticket (ST): encrypted by TGS secret key
+        * M3: **Service session key** encrypted by **TGS session key**
+        * **Service ticket (ST)** (also containing the **service session key**): encrypted by TGS secret key
     * It is assumed that clocks are synchronized to within several minutes. If the time in the request is too far in the future or the past, the server treats the request as an attempt to replay a previous request.
 3. **Accessing the service**:
-    * User decrypt M3 and get servie session key
-    * Use it to encrypt user authentication and send back service ticket
-4. **Verification**
-    * Service decrypt ST to get session key and decrypt user auth
-    * If matches, send back service authenticator encrypted by TGS session key
+    * User decrypt M3 with **TGS session key** and get **service session key**
+    * Use **Service session key** to encrypt user authentication and send back service ticket
+    * Send two messages to the service:
+      * Service ticket
+      * User authenticator message. 
+4. Service **Verification**
+    * **Service decrypt ST** with the **service secret key** get **service session key** and decrypt user auth with **service session key**
+    * If matches, send back **service authenticator** encrypted by **service session key**
     * Confirming authentication success and establish secure session
-
-5. ![keberos](images/56-keberos/keberos-auth-protocol.png)
+    * Just like TGS, service maintains a cache of user authenticators. 
+5. User decrpts the service authenticator with the **service session key**
+   1. User now verifies the service is the expected one to talk to. 
+   2. User maintains own cache. 
+6. ![keberos](images/56-kerberos/keberos-auth-protocol.png)
+7. Default authentication package for Windows. Also built into MacOS. 
 
 * KDBM Server
   *  The KDBM server accepts requests to add principals to the database or change the passwords for existing principals. This service is unique in that the ticket-granting service will not issue tickets for it. Instead, the authentication service itself must be used (the same service that is used to get a ticket-granting ticket).
      *  Otherwise: if an administrator left her/his workstation unguarded, a passerby could change any password in the sys- tem.
-
 
 ## Notes 
 Trust is incrementally built through a series of encrypted ticket exchanges, and authentication is validated at several stages through encrypted, timestamped tickets
