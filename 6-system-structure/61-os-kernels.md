@@ -17,6 +17,10 @@
     - Minimalistic approach
         - Kernel only keep: **basic IPC, virtual memory, scheduling**
           - Exokernel: only exposes resources.
+          - Microkernel: mostly consists of IPC (Interprocess communication)
+            - Services (like FS, Processes, even user progrmas) communicates to the microkernel through IPC.
+            - Still has some ideas of processes and memory. 
+        - MacOS (BSD Unix + Mach): monolithic on top of microkernel. Hybrid kernel. 
         - Put other services run in user space
             - Libraries running on user space
             - E.x. device drivers, networking, file system, etc.

@@ -14,6 +14,8 @@ Reference:
 
 Mach is an early **predecessor** of **microkernel**, providing the functionality of UNIX when desired but is generally lighter weight. It is a object-oriented semi-user-extensible memory system. 
 
+MacOS has ideas from microkernels (MacOS is a hybrid kernel)
+
 In Mach, memory is viewed as **"abstract objects"** comprising collections of bytes with actions. It is easier for developers to extend system functionalities. For instance, file systems are managed through these "memory objects," and operations like reading and writing files are performed via these objects. **File systems are managed through memory objects.** 
 
 ![alt text](images/65-mach/mach-basic-abstraction.png)

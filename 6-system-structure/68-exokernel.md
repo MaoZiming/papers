@@ -6,16 +6,20 @@ Read: June 29th, 2024.
 
 Exokernels are an attempt to separate security from abstraction, making non-overrideable parts of the operating system do next to nothing but securely multiplex the hardware.
 
-**In the exokernel architecture, a small kernel securely exports all hardware resources through a low- level interface to untrusted library operating systems.**
+Applications can deal with scheduling, saving and restoring for context switches, deal with page faults. 
+
+**In the exokernel architecture, a small kernel securely exports all hardware resources through a low-level interface to untrusted library operating systems.**
 
 - The goal is to avoid forcing any particular abstraction upon applications, instead **allowing them to use or implement whatever abstractions** are best suited to their task without having to layer them on top of other abstractions which may impose limits or unnecessary overhead. 
 
 - Substantial evidence exists that applications can benefit greatly from having more control over how machine resources are used to implement higher-level abstractions.
 
-- This is done by **moving abstractions into untrusted user-space libraries** called "library operating systems" (libOSes), which are linked to applications and call the operating system on their behalf.
+- This is done by **moving abstractions into untrusted user-space libraries** called "library operating systems" **(libOSes)**, which are linked to applications and call the operating system on their behalf.
 
 - Virtual machines have severe performance penalities. 
 it exports hardware resources rather than emulating them, which allows an efficient and simple implementation.
+- Exokernel exposes CPUs, memory, and disk. Allocation and revocation. 
+- Expose naming. Give you physical page numbers. Give you CPU cores. 
 - Applications can securely bind to machine resources and handle events. 
 - Applications participate in resource revocation protocol. 
 - Exokernel can break the binding of uncooperative applications by force. 

@@ -21,6 +21,7 @@ The concepts of "process" and "address space" are defined, the mechanism by whic
 
 * Addressing by generalized address
   * ![alt text](images/66-multics/addressing-by-generalized-address.png)
+  * **36 bits in total**: divided among segment number and word number. 
   * The descriptor base register is used by the processor to locate the descriptor segment of the process in execution.
   * Switching a processor from one process to another involves little more than swapping processor register status and substituting a new descriptor base. 
   * Some segments will be identified with different segment numbers in different processes. 
@@ -30,7 +31,14 @@ The concepts of "process" and "address space" are defined, the mechanism by whic
   * Linking. From segment P to segment D you need $L_\alpha$, where $\alpha$ is the process. 
   * Honestly too complicated. 
   * When process $α$, in executing procedure $P$, transfers control to procedure $Q$, the value of linkage pointer must be changed to the generalized address of the linkage section for procedure $Q$. 
-  
+
+* Instruction format
+  * ![alt text](images/66-multics/instruction-format.png)
+  * **Addressing Mode** (Last 2 bits): pick among {Argument Pointer, Base Pointer, Linkage Pointer, Stack Pointer}. 
+  * The *address* will get turn into the generalized address.
+  * Segment number comes from the segment tag. 
+  * Only program that can set the segment number has to be run in ring 0. 
+  * Switching a process only requires changing the segment number.  
 
 ## Problem 
 Before MULTICS there were no existing OS capable of providing users with a large machine-independent virtual memory. So the objectives of MULTICS are 
