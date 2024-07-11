@@ -31,12 +31,17 @@ Downside of VM:
   * The **Tinyx** build system takes two inputs: an **application** to build the image for (e.g., **nginx**) and the **platform** the image will be running on (e.g., a **Xen VM**).
   * A middle path between a highly specialized unikernel, requiring porting applications to a minimalistic OS, and a full-fledged general purpose OS VM that supports a large number of applications out of the box but incurs performance overhead. 
 * An image that are **a few MBs** in size.
+* Insight: typically a VM runs one application, and that application is only using a small subset of libraries and services. (We can shrink the size of the VM to only those services and libraries
+* The time to get unikernel to work is quite staggering. 
 
 ![alt text](images/72-lightvm/xenstore-vs-noxs.png)
+- Xen runs the special VM `dom0` that is in charge of managing the machine. 
+- XenStore is talked to by all VMs, and used to store configuration data and synchronize virtual machines. 
 
 1. Lightweight guest: TinyX 
    *  automate **creations of trimmed-down Linux VMs** just enough to run the applications
-   *  take standard Linux Distro and make it smaller 
+   *  take standard Linux Distro and make it smaller.
+   *  Fast instantiation, destruction and migration, 10s of milliseconds or less.  
 2. Re-architect toolstack
    *  re-architect Xen's toostack (i.e. control plane)
        *  **get rid of Xenstore**: store data, guest comm, sync
@@ -44,7 +49,11 @@ Downside of VM:
        *  use shared memory and event channel for communication     
        *  using instead a lean driver called **noxs** that addresses the scalability problems of the XenStore by enabling direct communication between the frontend and backend drivers via **shared memory** instead of relaying messages through the XenStore
           *  Shared memory reduces the number of software interrupts and domain crossing for VM operations.
+          *  Shared memory used to store data and commuicate between guests. Synchronized using Xen event channels. 
        *  Separate VM creation functionality into a prepare and execute phase.
+          *  The insight for the prepare phase is that: first few steps (hypervisor reservation, compute allocation, memory reservation, memory preparation) are common to all VMs. 
+          *  VM creation calls are done by this split toolstack. 
+          *  run a VM just becomes starting an empty shell. 
    *  optimized to offer fast boot-times that scale to large # of VMs  =
    *  Hypervisor **creates special device memory pages** for each VM. Only `Dom0` can request modifications. 
    *  **Hypercall to write to and read from this memory page.**
@@ -60,6 +69,7 @@ Downside of VM:
 ![alt text](images/72-lightvm/xenstore-bottleneck.png)
 
 * Protocol is expensive. Each operation requires sending a message and receiving an acknowledgement; each triggers a software interrupts. 
+  * When the toolstack wants to talk to backend (`dom0`) or the front end VM, it needs to cross the Xen Hypervisor. 
 * As we increase the number of VMs, so does the load on this protocol. 
 * one fundamental problem with the XenStore is its centralized, filesystem-like API which is simply too slow for use during VM creation and boot, requiring tens of inter- rupts and privilege domain crossings.
 
@@ -69,7 +79,7 @@ Downside of VM:
 
 LightVM does not use the XenStore for VM creation or boot anymore, using instead a lean driver called noxs that addresses the scalability problems of the XenStore by enabling direct communication between the frontend and backend drivers via shared memory instead of relaying messages through the XenStore. Because noxs does not rely on a message passing protocol but rather on shared pages mapped in the guest’s address space, reducing the number of software interrupts and domain crossings needed for VM operations (create/save/resume/migrate/destroy). 
 
-
+- Chaos: provides a toolstack optimized for paravirtualized guests. 
 
 ## Use cases 
 JIT service instantiation in mobile edge computing, lightweight compute services like AWS Lambda 
