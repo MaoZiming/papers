@@ -9,7 +9,7 @@ Read: July 12th, 2024
 However:
 > Without fault tolerance,large arrays of expensive disks are too unreliable to be useful.
 
-Hence: Redundant Array of Inexpensive Disks
+Hence: Redundant Array of Inexpensive Disks vs. Single large expensive disk. 
 
 **MTTR**: Mean time to repair a failed disk. 
 
@@ -17,22 +17,44 @@ Hence: Redundant Array of Inexpensive Disks
 - RAID: a faster, larger, and more reliable disk system
     - One logical disk built from many physical disk
     - Workloads: R/W, fail-stop fault model
+    - Can be either in software or hardware. 
 - RAID-0: data striping
     - Optimize for capacity, no redundancy
     - ![RAID-0](https://www.stationx.net/wp-content/uploads/2024/02/RAID-0-vs-RAID-1.png)
 - RAID-1: data mirroring
     - Keep mirrored copies of the data
-- RAID-2: Hamming Code for ECC
+    - Writes slow down (have to wait for both)
+    - Read: split between two disks. Read improves. 
+- RAID-2: Hamming Code for ECC (Error correcting code)
+  - Assumes: disk can fail by returning bogus data. 
+  - Identify the disk has failed and recover. 
+  - Both reads and writes have to be from whole disk.
+    - Read has to check for error correction. 
   - Adding check disk for error correction.
+  - ![alt text](images/312-raid/raid-2.png)
 > For a group size of 10 data disks (G) we need 4 check disks in total, and if G=25, then C=5. 
 - RAID-3: 
+  - **Don't have to identify disk failures. Only need to correct!**
   - Most disk controllers an already detect if a disk failed. 
   - RAID-3 relies on that. 
+  - Check bit. Use the check bit to determine the lost bit. 
+  - **Byte-level striping** with a dedicated parity disk. 
+  - Cannot use more than 1. 
+  - bytes distributed across the disks. Reading blocks require touching all the disks. 
   - Reducing check disk to 1 per group. 
+  - ![alt text](images/312-raid/raid-3.png)
 - RAID-4: use a parity disk. (a single check disk)
+  - **block-level striping**
+    - All parity block stored one disk.
+    - read: only read block once. 
+    - modify: two disks.
     - Parity: allow reconstruction of missing or corrupted data
     - Small write problem: parity disk is the bottleneck
+    - ![alt text](images/312-raid/raid-4.png)
+    - RAID 3's byte-level striping can result in better performance for large, continuous data transfers but may not be as efficient for small random I/O operations.
+    - RAID 4's block-level striping allows for independent access to data blocks, making it more efficient for random read operations but can still face write performance bottlenecks due to the single parity disk.
 - RAID-5: rotating parity
+  - Block-level stripipng with distributed parity. 
     - Random write improves!
     - ![RAID-5](https://www.stationx.net/wp-content/uploads/2024/02/What-is-RAID-5.png)
 
