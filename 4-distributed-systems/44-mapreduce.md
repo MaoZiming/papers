@@ -1,4 +1,9 @@
 # MapReduce 
+
+Link: https://static.googleusercontent.com/media/research.google.com/en//archive/mapreduce-osdi04.pdf
+
+Read: April 16th, 2024. 
+
 Map Reduce is a simple data-parallel programming model designed for scalability and fault-tolerance. It provides a limited but general functional API including map, reduce, and sort, and it requires no other synchronization and communication. It achieve fault recovery, and straggler mitigation through retries. 
 
 ## Key Motivation 

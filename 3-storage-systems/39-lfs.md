@@ -1,26 +1,46 @@
 # The Design and Implementation of a Log-Structured File System (1991) 
+
+Link: https://people.eecs.berkeley.edu/~brewer/cs262/LFS.pdf
+
+Read: July 11th, 2024
+
 LFS is a copy-on-write (COW) based file system that introduces **a new approach of writing** to disk: instead of overwriting file in place, **LFS buffers all updates into in-memory segment and write them out together sequentially**. LFS performs garbage collection periodically to reclaim free segments.  
+
+Compared to FFS: disk bandwidth is getting better. Computers are having more memory. Disk seek is still **really slow**. We can use some of the memory as buffer cache (help with the reads but not the writes).
+
+> In this paper we present a solution based on large extents called segments, where a segment cleaner process continually regenerates empty segments by compressing the live data from heavily fragmented segments. 
 
 ## Motivation: optimize writes 
 1. System memories are growing, can be used for cache
 2. Existing FS perform poorly on common workloads: small-write problem 
     *  FFS performs many writes to create a small file (5 writes)
+    *  Too many small writes. 
+> When writing small files in such a system, less than 5% of the disk’s potential bandwidth is used for new data; the rest of the time is spent seeking.
+
+   * Another problem is synchronous writes. 
+> Unix FFS writes file data blocks asynchronously, file system metadata structures such as directories and inodes are written synchronously
+
+* a log-structured file system converts the many small synchronous random writes of traditional file systems into large asynchronous sequential transfers that can utilize nearly 100% of the raw disk bandwidth.
 
 The crux is: how can a file system tranform all writes into sequential writes? how to read data, and how to free space? 
 
+
 ## How it works 
+
+Sprite LFS outputs index structures in the log to permit random-access retrievals.
 
 ### 1.4 Inode map
 
 Problem: finding inode is hard in LFS 
 
 - FFS finding inode: easy, organized, put at fixed location
+  - This is really nice!
 - LFS: scatter the inodes all throughout the disk! Worse, we never overwrite in place, and thus the latest version of an inode (i.e., the one we want) keeps moving.
 
-Solution: inode map 
+Solution: **inode map**
 
 - Inode map: takes an inode number as input and produce disk address of most recent address of the inode
-- Inode map: persistent
+- Inode map: **persistent**
     - Keep track of locations of inodes across crashes
     - Chunks of inode map is placed right next to where it is writing all of the other new information
 
@@ -30,7 +50,7 @@ Unfortunately, as it gets updated frequently, this would then require updates to
 ### 1.5 Checkpoint Region
 
 - FS have fixed and known location on disk to begin file lookup: **checkpoint region (CR)**
-- Contains pointers to the latest pieces of the inode map
+- Contains **pointers to the latest pieces of the inode map**
 - Updated periodically (~30s) or so
 
 - LFS should perform the same amount of I/O as a typical file system during read
@@ -48,23 +68,34 @@ LFS uses write buffering to keep track of updates in memory before writing to di
           *  Read the entire inode map, and cache in memory
           *  Read: same I/Os as the typical file system
       *  Steps to read
-          *  Read CR
-          *  Read inode map and cache the inode map in memory.
+          *  Read **CR**
+          *  Read **inode map and cache the inode map in memory.**
           *  Given inode #
               *  Look up inode map, read inode
               *  Read block
        *  ![checkpoint-region](images/39-lfs/checkpoint-region.png)
-
+* ![alt text](images/39-lfs/lfs_vs_ffs.png)
   
-## Garbage collection 
+## Garbage collection
+
+* Threading vs. Copying
+  * Threading: leave the live data in place and
+thread the log through the free extents.
+  * Copying: copy live data out of the log in order to leave large free extents for writing.
+
 *  Segment-level cleaning
+   *  LFS uses both threading and copying in larger units of segments. 
+   *  The log is threaded on a segment-by-segment basis; 
     *  LFS read in # of partially used segments, determine which blocks are live
     *  Compact: write out new set of segments with just live blocks
 *  Policies
     *  Clean cold segments sooner and hot segments later   
     *  Free up old ones for writing
 *  Determine block liveness with _segment summary block_
-    *  SS[Data Block] = (inode #, offset)
+    *  Segment summary block is part of each segment. 
+    *  For each file data block the summary block contains the file number and block number for the block.
+   *  Cleaner is **very** workload dependent. 
+      *  LFS forsakes read locality. 
       
 ## Crash consistency 
 *  LFS organizes writes in a **log**

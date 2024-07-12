@@ -1,5 +1,7 @@
 # Parameter Server
 
+Link: https://www.usenix.org/system/files/conference/osdi14/osdi14-paper-li_mu.pdf
+
 Read: July 3rd 2024. 
 
 The **asynchronous** parallel optimization recently received many successes and broad attention in machine learning and optimization. It is mainly due to that the asynchronous parallelism largely reduces the system overhead comparing to the synchronous parallelism. The key idea of the asynchronous parallelism is to allow all workers work independently and have no need of synchronization or coordination. The asynchronous parallelism has been successfully applied to speedup many state-of-the-art optimization algorithms including stochastic gradient descent

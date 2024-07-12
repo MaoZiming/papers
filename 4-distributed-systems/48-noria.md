@@ -1,5 +1,9 @@
 # Noria: dynamic, partially-stateful data-flow for high-performance web applications
 
+Link: https://www.usenix.org/system/files/osdi18-gjengset.pdf
+
+Read: June 22th, 2024.
+
 Note: this paper has been mentioned by NetSys people a billion times. THought I include it here.
 
 - A Noria application supplies a relational schema and a set of parameterized queries, which Noria compiles into a data-flow program that pre-computes results for reads and incrementally applies writes. 

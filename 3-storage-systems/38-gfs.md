@@ -1,4 +1,9 @@
 # The Google File System (2003) 
+
+Link: https://static.googleusercontent.com/media/research.google.com/en//archive/gfs-sosp2003.pdf
+
+Read: Dec 25th, 2023. 
+
 GFS is a scalable distributed file system for large distributed data-intensive applications. It provides fault tolerance running on inexpensive commodity hardware, and it delivers high aggregate performance to large number of clients. 
 
 ## Motivation 

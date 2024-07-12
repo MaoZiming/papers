@@ -1,4 +1,9 @@
 # Rethink the Sync (2006) 
+
+Link: https://www.usenix.org/legacy/event/osdi06/tech/nightingale/nightingale.pdf
+
+Read: June 25th, 2024
+
 The paper introduces external synchrony, a new model for file I/O. The model combines the reliability and simplicity of sync I/O with performance levels close to that of async I/O, being only 8% slower. 
 
 The central problem addressed by the paper is the tension between **durability** and **performance** in file I/O. While sync I/O offers strong reliability and data durability guarantees, it comes at a performance cost and blocks the caller until the operation is complete. On the other hand, async I/O offers better performance but falls short on reliability, ordering, durability, and ease of programming.

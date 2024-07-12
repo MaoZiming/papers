@@ -1,5 +1,7 @@
 # Dryad: Distributed Data-Parallel Programs from Sequential Building Blocks
 
+Link: http://www.michaelisard.com/pubs/eurosys07.pdf
+
 Read: July 3rd, 2024
 
 Dryad is designed to allow developers to build distributed data-parallel programs using sequential programming constructs. Dryad represents data-parallel computations as **directed acyclic graphs (DAGs)**, and the runtime dynamically optimizes execution plans based on available resources and other factors. This approach allows for a flexible and powerful programming model that can be optimized at runtime.

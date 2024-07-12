@@ -1,5 +1,9 @@
 # Time, Clocks, and the Ordering of Events in a Distributed System
 
+Link: https://lamport.azurewebsites.net/pubs/time-clocks.pdf
+
+Read: Jan 23th, 2024. 
+
 ## Motivation: Event Ordering 
 * Event ordering is crucial for various aspects of system functionalities such as data consistency, debugging, and coordination.
 * There is no single, universally-agreed-upon time or clock that all processes can refer to.

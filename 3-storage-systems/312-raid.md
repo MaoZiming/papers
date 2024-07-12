@@ -1,5 +1,18 @@
 # Redundant Array of Inexpensive Disks
 
+Link: https://www.cs.cmu.edu/~garth/RAIDpaper/Patterson88.pdf
+
+Read: July 12th, 2024
+
+> Building I/O Systems as arrays of expensive disks. 
+
+However:
+> Without fault tolerance,large arrays of expensive disks are too unreliable to be useful.
+
+Hence: Redundant Array of Inexpensive Disks
+
+**MTTR**: Mean time to repair a failed disk. 
+
 ## Summary 
 - RAID: a faster, larger, and more reliable disk system
     - One logical disk built from many physical disk
@@ -9,7 +22,14 @@
     - ![RAID-0](https://www.stationx.net/wp-content/uploads/2024/02/RAID-0-vs-RAID-1.png)
 - RAID-1: data mirroring
     - Keep mirrored copies of the data
-- RAID-4: use a parity disk
+- RAID-2: Hamming Code for ECC
+  - Adding check disk for error correction.
+> For a group size of 10 data disks (G) we need 4 check disks in total, and if G=25, then C=5. 
+- RAID-3: 
+  - Most disk controllers an already detect if a disk failed. 
+  - RAID-3 relies on that. 
+  - Reducing check disk to 1 per group. 
+- RAID-4: use a parity disk. (a single check disk)
     - Parity: allow reconstruction of missing or corrupted data
     - Small write problem: parity disk is the bottleneck
 - RAID-5: rotating parity
