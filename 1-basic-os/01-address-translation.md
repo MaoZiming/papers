@@ -10,6 +10,8 @@
   - Why placing the stack and heap like this?
     - Each wishes to grow
       - ![stack-heap-grow](images/01-address-translation/stack-heap-grow.png)
+      - Stack: Local Variables, Function Call Information
+      - Data: Global Variables, Static Variables
   - The heap thus starts just after the code (at 1KB) and grows downward (say when a ser requests more memory via `malloc()`); the stack starts at 16KB and grows upward (say when a user makes a procedure call).
 - Goals:
   - The address space of a process contains all of the memory state of the running program.
@@ -24,6 +26,7 @@
 
   - Hardware transforms each memory access (e.g. instruction fetch, load, or store), changing the **virtual address** provided by the instruction to a **physical address** where the desired information is actually located
 - Dynamic (Hardware-based) Relocation, or Base and Bounds
+  - PA = VA + base. VA + base has to compare with bounds. 
   - Need two hardware registers within each CPU
     - Hardware structures kept on the chip (one pair per CPU)
       - The part that helps with address translation: **memory management unit (MMU)**

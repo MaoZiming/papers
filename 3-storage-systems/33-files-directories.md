@@ -8,6 +8,8 @@
 - **File name** needs to be unique within a directory
 - Store **path-to-inode mappings** in each directory
     - Reading for getting final inode is called “traversal”
+- `open`, `read`, `write`, `close` system calls
+- `ioctl` for custom configuration that doesn't quite fit. 
 
 ## File Descriptor (FD)
 
@@ -29,6 +31,8 @@ struct proc {
 }
 ```
 - the `file` array is indexed by the file descriptor. 
+> Question: Why give user an integer instead of a pointer to the file description in kernel?
+- Pointer is in the kernel space. User space process should not be able to access the file directly (kernel space address). 
 
 ## Interface
 ```c
@@ -39,8 +43,39 @@ close(int fd);
 ```
 - If an attempted `read()` past the end of the file returns zero, it indicates to the process that it has read the file in its entirety.
 
-## Reading And Writing, But Not Sequentially
+## Other APIs
 
+```c
+char x = ‘c’;
+FILE* f1 = fopen(“file.txt”, “wb”);
+fwrite(“b”, sizeof(char), 1, f1);
+fflush(f1);
+FILE* f2 = fopen(“file.txt”, “rb”);
+fread(&x, sizeof(char), 1, f2);
+```
+
+## High-level and low-level file operation
+
+```c
+printf("Beginning of line ");
+sleep(10); // sleep for 10 seconds
+printf("and end of line\n");
+```
+Print out everything at once. Write in the application buffer. 
+```c
+write(STDOUT_FILENO, "Beginning of line ", 18);
+sleep(10);
+write("and end of line \n", 16);
+```
+Outputs "Beginning of line" 10 seconds earlier than “and end of line”
+
+> Why Buffer in Userspace? Overhead!
+> Syscalls are 25x more expensive than function calls (~100 ns)
+> 
+
+## Reading And Writing, But Not Sequentially
+Reposition file offset within kernel (this is independent of any position held by high-level
+FILE descriptor for this file)!
 ```c
     off_t lseek(int fildes, off_t offset, int whence);
 ```
@@ -77,8 +112,28 @@ struct {
 
 - `fork`: increments the reference count. Parent and child shares the file.
 - For example, if you create a number of processes that are cooperatively working on a task, they can write to the same output file without any extra coordination.
-- ![alt text](images/33-storage-systems/sharing-files.png)
+- ![alt text](images/32-storage-systems/sharing-files.png)
 - The `dup()` call allows a process to create a new file descriptor that refers to the same underlying open file as an existing descriptor.
+  - `dup2()`
+- Open file description remains alive until no file descriptors in any process refer to it
+
+## Should never call `fork` in a multi-threaded process.
+* Other threads just vanish (what if these threads are holding a lock).
+* It’s safe if you call `exec()` in the child
+  * Replacing the entire address space
+
+## Avoid mixing FILE* and File descriptor
+
+```c
+char x[10];
+char y[10];
+FILE* f = fopen(“foo.txt”, “rb”);
+int fd = fileno(f);
+fread(x, 10, 1, f); // read 10 bytes from f
+read(fd, y, 10); // assumes that this returns data starting at offset 10
+```
+The `fread()` reads a big chunk of file into user-level buffer.
+Might be all of the file
 
 ## FSYNC: communicating requirements
 

@@ -146,6 +146,8 @@
         - `pthread_create()` and `pthread_join()`: create a thread
         - `pthread_mutex_lock()` and `pthread_mutex_unlock()`: lock
         - `pthread_cond_wait()`, `pthread_cond_signal()`: condition variables
+    - POSIX: Portable Operating System Interface (for uniX?)
+      - “everything is a file”
     
 
 ## Address Space: abstraction for memory

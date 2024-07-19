@@ -147,6 +147,12 @@ void unlock() {
   - `sem_wait()`
   - `sem_post()`
 
+- From the 162 lecture
+- Down() or P(): an atomic operation that waits for semaphore to become positive,
+then decrements it by 1 
+- Up() or V(): an atomic operation that increments the semaphore by 1, waking up a
+waiting P, if any
+
 ```c
 // initialize a semaphore 
 #include <semaphore.h> sem_t s;
@@ -246,6 +252,7 @@ sem_post(&m);
 ## How to create and control threads?
 
 - `pthread_create`
+  - Creates a new user-thread!
   - `thread`: pointer to a data structure `pthread_t`
   - `attr`: specify any attributes this thread might have, e.x. stack size, scheduling priority
   - `start_routine`: function pointer
@@ -256,6 +263,29 @@ sem_post(&m);
 - `pthread_mutex_lock`
 - `pthread_mutex_unlock`
 - Critical region.
+
+### Signal
+
+- Register a `SIGINT` signal handler
+- For each signal, there is a default handler
+  
+```c
+void signal_callback_handler(int signum) {
+  printf(“Caught signal!\n”);
+  exit(1);
+}
+int main() {
+  struct sigaction sa;
+  sa.sa_flags = 0;
+  sigemptyset(&sa.sa_mask);
+  sa.sa_handler = signal_callback_handler;
+  sigaction(SIGINT, &sa, NULL);
+  while (1) {}
+}
+```
+- `SIGINT` - Control-C
+- `SIGTERM` - default for `kill` shell command
+- `SIGSTP` - Control-Z (stop process)
 
 ### Condition variable
 
@@ -320,3 +350,10 @@ while (ready == 0)
     - Checks whether the request referred to by `aiocbp` has completed
     - Periodically poll the system
     - Interrupt (signals) to inform application when AIO completes, removing needs to repeatedly ask the system
+
+## Monitior
+
+* A lock plus one or more condition variables
+* – Always acquire lock before accessing shared data
+* – Use condition variables to wait inside critical section
+* - Three Operations: Wait(), Signal(), and Broadcast()

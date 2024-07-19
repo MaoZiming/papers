@@ -1,15 +1,22 @@
 # Process
 
+- Instruction Set Architecture (ISA): 
+  -  ISA defines the supported instructions, data types, registers, the hardware support for managing main memory (such as the memory consistency, addressing modes, virtual memory), and the input/output model of implementations of the ISA.
+     -  E.g. x86, developed by Intel, CISC
+     -  ARM, developed by ARM Holdings, RISC
 - Process
   - Processor (Von Neumann model of computing):
   - Fetch an instruction from memory
   - Decode the instruction (Figure out what instruction it is)
+    - During decoding, the processor needs to: determine what instruction is represented by the opcode so that the instruction can be issued to the correct execution unit and that the correct operation is performed correctly interpret the arguments, prefixes, and other values attached to the instruction and pass the relevant information to the relevant circuitry (in most modern processor designs) break the instruction down into its corresponding micro-operations With modern processors, this can be a complex operation that requires multiple stages in the pipeline. To speed this process up, a dedicated cache may be used to store micro-operations for frequently-executed instructions.
   - Execute the instruction
   - Contents of memory is in its address space.
 - Contents of CPU registers (including the program counter and stack pointer).
   - program counter (PC), or instruction pointer (IP): which instruction will execute next
   - stack pointer & frame pointer: manage the stack for function parameters, local variables, and return addresses
   - Stack pointer: tracks the top of the stack in memory
+    - Stack holds temporary results
+    - Permit recursive execution
   - Frame pointer: points to a fixed location within the stack frame of the current function. The stack frame contains the function’s local variables, parameters, and return address.
     - Redundant (can just use stack pointer + offset? save one extra register. )
     - Useful when getting stack trace. 
@@ -42,6 +49,10 @@
 - Lazy loading: loading pieces of code or data only as they are needed during program execution (i.e. paging, swapping)
 - Before running the process: allocate memory for the program’s run-time stack (C programs use the stack for local variables, function parameters, and return addresses), also for the program’s heap (for explicitly requested dynamically-allocated data; other initialization related to I/O ). In Unix systems, each process by default has three open file descriptors, for standard input, output, and error [stored in heap.]
 - Start the program at the entry point: `main()` routine, OS transfers control of CPU to the process, begin execution
+- Interrupt vector, indexed by interrupt number. 
+  - Entry of the vector contains the address and properties of each interrupt handler. 
+- RTU: Return to user. 
+- Give control to process: put the program counter from UPC to PC. 
 
 # Limited Directed Execution
 
@@ -119,3 +130,31 @@
 * Signals
   * Process control is available in the form of signals, which can cause jobs to stop, continue, or even terminate.
   * a process should use the signal() system call to “catch” various signals; doing so ensures that when a particular signal is delivered to a process, it will suspend its normal execution and run a particular piece of code in response to the signal.
+
+### IPC
+
+* Consider an in-memory queue.
+* Data written by process A is held in memory until process B reads it. 
+  * – If producer (A) tries to write when buffer full, it blocks (Put sleep until space)
+  * If consumer (B) tries to read when buffer empty, it blocks (Put to sleep until data)
+* Pipes are an abstraction of a single queue
+  * Used for communication between multiple processes on one machine
+* Sockets are an abstraction of two queues, one in each direction
+  * Used for communication between multiple processes on different machines
+
+### Context Switch
+
+* Switching between processes is significantly slower than switching between threads. 
+  * Switching between processes: 3-4 μsec.
+  * Switching between processes: 3-4 μsec.
+  * PCB is much bigger than TCB. 
+  * Even faster, switch threads (in user space. `yield`).
+    * User-level thread libraries. 
+    * `yield` calls the library. Just a function call!
+    * Many (user-level threads) to one (kernel-level thread). 
+
+### Hyperthreading
+* Two threads on the same core. 
+* `vCPU` is a hyperthread.
+* Intuition: one instruction doesn't use all components of the core. 
+* Take advantage of that and to put a second thread. 
