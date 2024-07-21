@@ -10,6 +10,8 @@
   - SJF: If all jobs arrive at the same time, SJF is an **optimal** scheduling algorithm
     - However, if jobs arrive at different time:
       - Same convey problem
+  - FCFS:
+    - First-come-first-serve. 
   - STCF:
     - If we do not requite all jobs to run to completion:
     - Add **preemption**
@@ -20,6 +22,9 @@
     - $T_{response} = T_{firstrun} - T_{arrival} $
   - SJF and STCF:
     - Bad for response time
+  - SRTF (Shortest Remaining Time First):
+    - SJF/SRTF are the best you can do at minimizing average response
+time
   - Round Robin (Good for response time.)
     - Runs the job for a time slice (or a scheduling quantum); switch to the next job in the run queue.
     - The shorter the time is, the better performance of RR under response time metric
@@ -32,6 +37,9 @@
     - currently-running job won’t be using the CPU during the I/O; it is blocked waiting for I/O completion.
     - The scheduler also has to make a decision when the I/O completes. When that occurs, an interrupt is raised, and the OS runs and moves the process that issued the I/O from blocked back to the ready state. Of course, it could even decide to run the job at that point.
   - ![alt text](images/04-cpu-scheduling/job-scheduling.png)
+  - *Work-conserving* scheduler is the one that does not leave the CPU idle when there is work to do. 
+  - Starvation is not deadlock. (The former can be resolved under right condition, the latter cannot)
+  - ![alt text](images/04-cpu-scheduling/scheduling-comparison.png)
 
 ### MLFQ
 
@@ -48,6 +56,7 @@
 - Assign priorities to the task according to the absolute deadline. The task whose deadline is closet gets the highest priority.
 - Pros: efficient in real time system, dynamic
 - Cons: priority inversion (i.e. a low-priority task can block a higher priority task from being executed, if blocking?)
+  - LP task acquired a lock. 
 
 ### Proportional Share (Fair-Share) Scheduler
 

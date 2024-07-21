@@ -48,6 +48,11 @@
   - **Internal fragmentation** (space inside the allocated unit is not all used)
     - Unallocated space between stack and heap. 
   - Slight generalization of base and bounds: segmentation (next)
+  - Missing support for sparse address space
+    - Would like to have multiple chunks/program (Code, Data, Stack, Heap, etc)
+  - Hard to do inter-process sharing
+    - Want to share code segments when possible
+    - Want to share memory between processes
 
 # Segmentation
 
@@ -55,6 +60,9 @@
   - Segmentation helps us build a more effective virtualization of memory
     - Enable code sharing (protection bits, later)
     - Better support sparse address spaces
+  - Segment map resides in processor
+    - Segment table has protection. 
+    - E.g. Code segment should be read-only. Data and stack would be read-write (stores allowed)
   - Cons
     - External fragmentation: allocate variable-sized segments chop up free memory into odd-sized pieces
     - Not flexible enough to support fully generalized, sparse address space

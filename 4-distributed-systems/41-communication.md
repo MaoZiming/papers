@@ -176,3 +176,22 @@ For each of the three parts:
     - It should be noted that TLS does not secure data on end systems. It simply ensures the secure delivery of data over the Internet, avoiding possible eavesdropping and/or alteration of the content.
     - TLS is normally implemented on top of TCP in order to encrypt Application Layer protocols such as HTTP, FTP, SMTP and IMAP, although it can also be implemented on UDP, DCCP and SCTP as well 
     - However, SSL is an older technology that contains some security flaws. Transport Layer Security (TLS) is the upgraded version of SSL that fixes existing SSL vulnerabilities.
+
+### Two Phased commits
+
+![alt text](images/41-communication/2pc.png)
+
+### Layering
+
+![alt text](images/41-communication/five-layers.png)
+
+– Physical: send bits
+– Datalink: Connect two hosts on same physical media
+– Network: Connect two hosts in a wide area network
+– Transport: Connect two processes on (remote) hosts
+– Applications: Enable applications running on remote hosts to interact
+
+* TCP Flow control
+  * – Avoid the sender over-flowing the receiver buffer
+  * – Receiver only reads in-sequence data, and acks with the next sequence number is waiting for
+  * – Sender never sends more data than the receiver can hold in its buffer 

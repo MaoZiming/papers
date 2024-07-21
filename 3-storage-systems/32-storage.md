@@ -36,6 +36,19 @@
 - R/W
     - Read: issue read with an address and length
     - Write: client erase the entire block, then client can program each page exactly once
+- Why not just erase and rewrite new version of entire 256KB block?
+  - Erasure is very slow (milliseconds)
+  - Each block has a finite lifetime, can only be erased and rewritten about 10K times
+  - – Heavily used blocks likely to wear out quickly
+- Two systems approach (FTL)
+  - Maintain a Flash Translation Layer (FTL) in SSD
+    - – Map virtual block numbers (which OS uses) to physical page numbers (which flash mem. controller uses)
+    - – Can now freely relocate data w/o OS knowing
+  - Copy on Write
+    - Don’t overwrite a page when OS updates its data (this is slow as we need to erase page first!)
+    - Instead, write new version in a free page
+    - Update FTL mapping to point to new location
+
 - **Performance**
     - Read
         - ~10ms, regardless of location of device, super good read performance (i.e. random access device)
@@ -157,6 +170,9 @@
   - No index is needed, since a cache block can go anywhere in the cache. Every tag must be compared when finding a block in the cache, but block placement is very flexible!
 
 ## Transactions as a means for reliability: journaling file systems and redo logging
+
+- A transaction is an atomic sequence of reads and writes that takes the system from consistent state to another.
+  - Transactions extend the concept of atomic updates from memory to persistent storage
 
 ### Journal File Systems
 
@@ -317,6 +333,7 @@ Sweep back and forth, from one end of disk other, serving requests as pass that 
     - These dirty writes still sit in main memory (in the **page cache** or **buffer cache**) for some times
     - Buffers are associated with a specific block device, and cover caching of filesystem metadata as well as tracking in-flight pages. The cache only contains parked file data. That is, the buffers remember what's in directories, what file permissions are, and keep track of what memory is being written from or read to for a particular block device. The cache only contains the contents of the files themselves.
     - Buffer cache and page cache are unified later in Linux. 
+      - Implemented entirely in software. 
 
 ### Solution #1: File System Checker (FSCK)
 
@@ -337,7 +354,7 @@ Sweep back and forth, from one end of disk other, serving requests as pass that 
     - Way too slow!!
         - search-the-entire-house-for-keys recovery algorithm
 
-### 2.1 Data Journaling (i.e. in Linux ext3) 
+### 2.1 Data Journaling (i.e. in Linux ext3 and NTFS) 
 
 1. **Journal write:** Write the contents of the transaction (including TxB, metadata, and data) to the log; wait for these writes to complete.
 2. **Journal commit:** Write the transaction commit block (containing TxE) to the log; wait for write to complete; transaction is said to be **committed**.
@@ -386,4 +403,16 @@ Sweep back and forth, from one end of disk other, serving requests as pass that 
     3. Determine consistency by checking if the forward pointer points to a block that refers back to it 
 3. **Optimistic crash consistency** 
     1. Issues as many writes to disk as possible by using a generalized form of **transaction checksum**
+
+## Time
+* Read block from random place on disk:
+  * – Seek (5ms) + Rot. Delay (4ms) + Transfer (0.082ms) = 9.082ms
+* • Read block from random place in same cylinder:
+  * – Rot. Delay (4ms) + Transfer (0.082ms) = 4.082ms 
+
+### Delayed write
+* • Performance advantage: return to user quickly without writing to disk!
+* • Disk scheduler can efficiently order lots of requests
+* • Delay block allocation: 
+* • Some files never actually make it all the way to disk
 

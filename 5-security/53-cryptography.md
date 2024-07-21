@@ -1,6 +1,7 @@
 # Cryptography
 
 - Cryptography achieves such protection by converting the data’s original bit pattern into a different bit pattern, using an algorithm called a cipher.
+  - A cipher (or cypher) is an algorithm used for performing encryption or decryption—a series of well-defined steps that can transform readable information (plaintext) into unreadable form (ciphertext) and vice versa. 
 - Basic idea
     - Take a piece of data
     - Use an algorithm (i.e. **cipher**), usually augmented with a second piece of information (i.e. **key**)
@@ -8,10 +9,10 @@
 $$
 C=E(P, K)
 $$
-- Data: P, or plaintext
-- Key: K
-- Encryption algorithm: E
-- Symmetric cryptography: use a single secret key shared by all parties with rights to access the data
+- Data: $P$, or plaintext
+- Key: $K$
+- Encryption algorithm: $E$
+- Symmetric cryptography: use a **single secret key shared** by all parties with rights to access the data
 
 ## Public Key Cryptography
 

@@ -2,6 +2,7 @@
 
 - Paging: a new solution to virtualizing memory
   - Correspondingly, we view physical memory as an array of fixed-sized slots called page frames; each of these frames can contain a single virtual-memory page.
+  - Naive paging leads to huge space inefficiency when using PT on sparse address. 
 - Pros
   - Does not lead to external fragmentation, as it divides memory into fixed-sized units
   - Quite flexible: enable sparse use of virtual addr space
@@ -20,6 +21,10 @@
   - **Offset:** within the page
   - **Page table register (PTBR)**: contain physical address of starting location of PT
   - Address of page table entry: PTE = PTBR + (VPN * sizeof(PTE))
+
+## Kernel mode is needed!
+- Modifying page table base, and segment descriptor tables. Have to transition into Kernel mode before you can change them!
+- Also, all page-table pages must be mapped only in kernel mode. 
 
 ## Where are page tables stored?
 
@@ -109,11 +114,17 @@
 
 ### Inverted Page Tables
 
+- ![alt text](images/03-paging/inverted-page-table.png)
+
 - Instead of having many page tables (one per process), keep a single page table that has an entry for each physical page in the system
   - Tell us which process is using the page, which virtual page of process maps to that physical page
 - Finding the correct entry?
   - Linear scan: expensive
   - Hash table lookup
+
+### Comparison
+
+- ![alt text](images/03-paging/paging-comparison.png)
 
 ### Linear Page Table vs. Multi-level Page Table
 
@@ -156,6 +167,12 @@
 
 * Approximate LRU with efficient implementation
 * Clock algorithm: replace page that is “old enough”
+  * Set of all pages in memory arranged in a circle
+  * Single clock hand
+  * Advances only on page fault!
+  * Check for pages not used recently
+  * Mark pages as not used recently.
+  * Replace an old page, not the oldest page
 * Hardware
   * Keep use (or reference) bit for each page frame
   * When page is referenced: set use bit
@@ -167,6 +184,8 @@
 
 ### Belady's Anomaly
 
+When you add memory the miss rate drops
+(stack property)
 * FIFO
 * Second-chance algorithm.
 
@@ -174,6 +193,7 @@
   - Suppose you have 32KB directly-mapped cache. You have 2 small 8k arrays, but unfortunately they are both aligned and map to the same sets. This means that while they could theoretically fit in the cache (if you fix your alignment), they will not utilize the full cache size and instead compete for the same group of sets and thrash each other. These are conflict misses, since the data could fit, but still collides due to organization. 
 - OS decides when to bring a page into memory (i.e. page selection policy)
   - Most pages: demand paging, bring in on-demand
+  - Demand paging is a technique used in virtual memory systems where pages enter main memory only when requested or needed by the CPU. In demand paging, the operating system loads only the necessary pages of a program into memory at runtime, instead of loading the entire program into memory at the start. A page fault occurred when the program needed to access a page that is not currently in memory.
   - Prefetching: i.e. page P is brought into memory, code P + 1 will likely soon be accessed
 - OS decides how to write pages out to disk
   - One at a time v.s clustering (or grouping)
@@ -187,6 +207,7 @@
 - Key features (approximate LRU):
   - Resident set size (RSS): each process allocated a fixed # of page frames, pages are managed in FIFO
   - Two second-chance list: before completely evicting a page from memory, it is put into two second chance list
+  - ![alt text](images/03-paging/second-chance-list.png)
 
 - clean-page free list: hold pages that have not been modified since they were last loaded
   - One interesting approach that has been around for some time is the use of segregated lists. The basic idea is simple: if a particular application has one (or a few) popular-sized request that it makes, keep a separate list just to manage objects of that size; all other requests are forwarded to a more general memory allocator.
@@ -234,6 +255,7 @@ Buddy Managed Heap- ![alt text](images/03-paging/buddy-managed-heap.png)
   - `brk`, which is used to change the location of the program’s break: the location of the end of the heap.
   - `sbrk:` change the space of the currently allocated program.
   - By passing in the correct arguments, `mmap()` can create an anonymous memory region within your program — a region which is not associated with any particular file but rather with swap space,
+  - Mmap can also map your file into memory. 
 
 - Question: what should the OS do when memory is simply oversubscribed, and the memory demands of the set of running processes simply exceeds the available physical memory?
 - In this case, the system will constantly be paging —> **thrashing**
@@ -246,3 +268,14 @@ Buddy Managed Heap- ![alt text](images/03-paging/buddy-managed-heap.png)
   - When a file is read, the data is stored in the page cache. If the same data is requested again, it can be served from the cache instead of reading from the disk again.
 - The Page Cache. The Linux page cache is unified, keeping pages in memory from three primary sources: memory-mapped files, file data and metadata from devices (usually accessed by directing read() and write() calls to the file system), and heap and stack pages that comprise each process (sometimes called anonymous memory, because there is no named file underneath of it, but rather **swap space**). These entities are kept in a page cache hash table, allowing for quick lookup when said data is needed.
 - The page cache tracks if entries are clean (read but not updated) or dirty (a.k.a., modified). Dirty data is periodically written to the backing store (i.e., to a specific file for file data, or to **swap space** for anonymous regions) by background threads (called pdflush), thus ensuring that modified data eventually is written back to persistent storage.
+
+### Kernel page-table isolation
+- ![alt text](images/03-paging/kernel-page-table-isolation.png)
+
+
+## Virtually-indexed vs. physically-indexed caches
+
+- Caches map either VA or PA to data. 
+- ![alt text](images/03-paging/caches.png)
+  - Additional reason for the latter is that in write through, we still have to walk the TLB and page table to write the data back to memory. 
+  - Virtually-addressed caches need to be "shootdown" on context switch, similar to TLB. 
