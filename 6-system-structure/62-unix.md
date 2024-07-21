@@ -8,7 +8,7 @@
        * Advantages: (1) similar to file IO, (2) can pass device to a program, (3) can protect devices with file permissions
      * Mount/Unmount filesystems
      * Permissions
-       * `setuid` lets files have special permissions
+       * The `setuid` bit is used to temporarily elevate privileges when executing a program.
        * super-user has permissions for all
      * No filesystem locks (unecessary and insufficient)
   2) Processes
@@ -20,7 +20,6 @@
      * Backgrounding
   4) Traps
 * Lessons
-  * Simplicity is key
+  * Simplicity is key; size constraint leads to simplicity as the design. 
   * Internal requirements led to good design, rather than any particular customer
   * Designed for programmers, which makes it capable for more users as an interactive system (versus batch)
-  * Size constraints led to simplicity in the design

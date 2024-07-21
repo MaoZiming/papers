@@ -8,7 +8,7 @@ Read: July 11th, 2024.
 
 * Pages and segments.
 
-> Therefore we have arranged the whole system as a society of sequential processes, progressing with un- defined speed ratios.
+> Therefore we have arranged the whole system as a society of sequential processes, progressing with un-defined speed ratios.
 
 Three contributions:
 1. A demonstration of the concept of software layering and how it leads to better verification and testing of a system.

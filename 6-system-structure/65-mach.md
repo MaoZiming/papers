@@ -16,7 +16,7 @@ Mach is an early **predecessor** of **microkernel**, providing the functionality
 
 MacOS has ideas from microkernels (MacOS is a hybrid kernel)
 
-In Mach, memory is viewed as **"abstract objects"** comprising collections of bytes with actions. It is easier for developers to extend system functionalities. For instance, file systems are managed through these "memory objects," and operations like reading and writing files are performed via these objects. **File systems are managed through memory objects.** 
+In Mach, memory is viewed as **"abstract objects"** comprising collections of bytes with actions. For instance, file systems are managed through these "memory objects," and operations like reading and writing files are performed via these objects.
 
 ![alt text](images/65-mach/mach-basic-abstraction.png)
 
@@ -27,8 +27,8 @@ _Memory Objects_: memory abstracted as objects with actions
 _Tasks and Threads_: tasks are similar to processes in UNIX, and each task can have multiple threads. Tasks allocate memory by mapping to these memory objects, which can be shared. 
 
 _Ports and Messages_: **each memory object has an associated port. Tasks and threads communicate with these objects through ports using messages (i.e. data, pointers, or commands for RPCs).**
-  - Almost everything in Mach is an object, and all objects are addressed via their communication ports. Messages (containing a fixed-length header and variable number of typed data objects) are sent to these ports to initiate operations on the objects by the routines that implement the objects.
-* E.x. File reading
+  - Almost everything in Mach is an object, and all objects are addressed via their communication **ports**. Messages (containing a fixed-length header and variable number of typed data objects) are sent to these ports to initiate operations on the objects by the routines that implement the objects.
+* E.x. File reading (similar to microkernel)
     * application sends IPC message to FS service in user space
     * FS service read data from disk (i.e. communicate with disk driver through IPC)
     * Monolithic: syscall  

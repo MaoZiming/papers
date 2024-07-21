@@ -12,7 +12,7 @@ Applications can deal with scheduling, saving and restoring for context switches
 
 - The goal is to avoid forcing any particular abstraction upon applications, instead **allowing them to use or implement whatever abstractions** are best suited to their task without having to layer them on top of other abstractions which may impose limits or unnecessary overhead. 
 
-- Substantial evidence exists that applications can benefit greatly from having more control over how machine resources are used to implement higher-level abstractions.
+- Substantial evidence exists that applications can benefit greatly from having more control over how machine resources are abstracted and used to implement higher-level abstractions.
 
 - This is done by **moving abstractions into untrusted user-space libraries** called "library operating systems" **(libOSes)**, which are linked to applications and call the operating system on their behalf.
 
@@ -25,9 +25,7 @@ it exports hardware resources rather than emulating them, which allows an effici
 - Exokernel can break the binding of uncooperative applications by force. 
 
 - Virtual memory and inter-process communication abstractions are implemented entirely within an application-level library. 
-- virtual memory is implemented at application level, where it can be tightly integrated with distributed shared memory systems and garbage collectors.
-
-- Fixed high-level abstractions hurt application performance be- cause there is no single way to abstract physical resources or to implement an abstraction that is best for all applications.
+- Virtual memory is implemented at application level, where it can be tightly integrated with distributed shared memory systems and garbage collectors.
 
 - page-table structures can vary among library operating systems: an application can select a library with a particular implementation of a page table that is most suitable to its needs.
 
@@ -43,13 +41,14 @@ it exports hardware resources rather than emulating them, which allows an effici
 
 - By isolating the need to understand these semantics to bind time, the kernel can efficiently implement access checks at access time without understanding them. Simply put, a secure binding allows the kernel to protect resources without understanding them.
 
-- For example, with the exception of some external pagers [2, 43], most operating systems deallocate (and allocate) physical memory without informing applications. This form of revocation has lower latency than visible revocation since it requires no application involvement. Its disadvantages are that library operating systems cannot guide deallocation and have no knowledge that resources are scarce.
+### Visible Resource Management
+- For example, most operating systems deallocate (and allocate) physical memory without informing applications. This form of revocation has lower latency than visible revocation since it requires no application involvement. Its disadvantages are that library operating systems cannot guide deallocation and have no knowledge that resources are scarce.
 
-  - An exokernel uses visible revocation for most resources. 
+- An exokernel uses visible revocation for most resources. 
 
 - If a library operating system fails to comply with the revocation protocol, an exokernel simply breaks all existing secure bindings to the resource and informs the library operating system.
 
-- To record the forced loss of a resource, we use a repossession vector. When an exokernel takes a resource from a library oper- ating system, this fact is registered in the vector and the library operating system receives a “repossession” exception so that it can update any mappings that use the resource. For resources with state, an exokernel can write the state into another memory or disk resource. In preparation, the library operating system can pre-load the repossession vector with a list of resources that can be used for this purpose.
+- To record the forced loss of a resource, we use a repossession vector. When an exokernel takes a resource from a library operating system, this fact is registered in the vector and the library operating system receives a **“repossession”** exception so that it can update any mappings that use the resource. For resources with state, an exokernel can write the state into another memory or disk resource. The library operating system can pre-load the repossession vector with a list of resources, watching for notifications. 
 
 - Another complication is that an exokernel should not arbitrarily choose the resource to repossess. A library operating system may use some physical memory to store vital bootstrap information such as exception handlers and page tables. The simplest way to deal with this is to guarantee each library operating system a small number of resources that will not be repossessed (e.g., five to ten physical memory pages)
 
@@ -79,18 +78,16 @@ Cons
 ### Others
 Today’s trends is that hardware is becoming faster, this might make exokernel design principals more valuable 
 - E.x DB system that needs high performance often completely forgo FS all together and manage raw block
-- DPDK in Linux: let application bypass kernel abstraction (i.e. storage, networking stack) and go directly to the raw hardware
+- DPDK in Linux: let application bypass kernel abstraction (i.e. storage, networking stack) and go directly to the raw hardware.
+  - E.g. Poll Mode Drivers (PMDs): These drivers are used to interact directly with network interface cards (NICs) to process packets without the overhead of kernel space processing.
 
 # Sample Questions 
 Question #1: Exokernels and Hypervisors
 Exokernels and hypervisors have many similarities, in that they **multiplex and protect hardware with minimal abstraction**.
 1. How does the exokernel manage address translations and memory reclamation (i.e., page replacement)?
 2. How does a hypervisor like Disco or VMware manage address translations and memory reclamation?
-3. What performance optimizations are available in one system (Exokernel or hypervisor) and not available in the other
-system design? Explain your answer.
-4. People have proposed running library operating systems in hypervisors. Suppose you want to run all the applications on
-your system with their own library operating system. Would you be better off using an Exokernel or hypervisor for this
-configuration? Explain your answer
+3. What performance optimizations are available in one system (Exokernel or hypervisor) and not available in the other system design? Explain your answer.
+4. People have proposed running library operating systems in hypervisors. Suppose you want to run all the applications on your system with their own library operating system. Would you be better off using an Exokernel or hypervisor for this configuration? Explain your answer
 
 ## Exokernel 
 1. Address Translations: Exokernels typically delegate the responsibility of address translation to applications. They use hardware-based mechanisms to ensure that applications cannot access unauthorized memory regions.
@@ -106,6 +103,6 @@ configuration? Explain your answer
 * Hypervisors: They benefit from optimizations like VM migration for load balancing, and memory deduplication across VMs, which isn't naturally a part of the Exokernel design, as exokernels don't manage multiple isolated OS instances.
 
 ## Use-cases 
-Exokernel Advantage: If each application will manage its own resources closely with its own library OS, exokernels would offer better performance and customization opportunities. The exokernel is designed to offload as much policy as possible to the application or library OS level, thereby providing more flexibility.
+* Exokernel Advantage: If each application will manage its own resources closely with its own library OS, exokernels would offer better performance and customization opportunities. The exokernel is designed to offload as much policy as possible to the application or library OS level, thereby providing more flexibility.
 
-Hypervisor Advantage: If isolation between different applications (running in their own library OS) is a major concern, then a hypervisor would be better suited because it's designed to fully isolate multiple guest operating systems.
+* Hypervisor Advantage: If isolation between different applications (running in their own library OS) is a major concern, then a hypervisor would be better suited because it's designed to fully isolate multiple guest operating systems.
