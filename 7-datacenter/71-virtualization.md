@@ -1,20 +1,27 @@
 # Virtualization 
 Virtualization allows multiple guest OSes (and their applications) to share the hardware resources of a single physical server. 
 
+## Hosted vs. Hypervisor architecture
+
+* Virtualization approaches use either a hosted or a hypervisor architecture. 
+  * A **hosted architecture** installs and runs the virtualization layer as an application on top of an operating system and supports the broadest range of hardware configurations
+  * In contrast, a **hypervisor** (bare-metal) architecture installs the virtualization layer directly on a clean x86-based system. Since it has direct access to the hardware resources rather than going through an operating system, a hypervisor is more efficient than a hosted architecture and delivers greater scalability, robustness and performance.
+
 ## Challenges: trap-and-emulate 
 * Guest instructions executed directly by hardware
     * Non-privileged operations: hardware speed
-    * Privileged operations: trap to hypervisor
+    * Privileged operations: **trap to hypervisor**
 * Hypervisor determines what needs to be done
-    * Emulates the behavior the guest OS expects from the hardware
+    * **Emulates** the behavior the guest OS expects from the hardware
+    * Followed by "Return from Trap" (`rtt`)
 
-Commodity hardware has more than 2 protection levels. E.g. **X86 has 2 protection levels (rings) and 2 protection modes (root and non-root) recently.**
+* Commodity hardware has more than 2 protection levels. E.g. **X86 has 2 protection levels (rings) and 2 protection modes (root and non-root) recently.**
 
 For X86 pre 2005, if trap-and-emulate: 
 * 4 rings, hypervisor in ring 0, guest OS in ring 1 
 * Problem: certain privileged instructions that can only be executed in Ring 0
-   *  17 privileged instructions do not trap, fail silently! 
-   * E.x. enable / disable interrupt bit in privileged register, done through POPF / PUSHF instructions that access it from ring 1 fail silently 
+   *  **17 privileged instructions do not trap, fail silently!**
+   * E.x. enable / disable interrupt bit in privileged register from ring 1 fail silently 
 * Hypervisor does not know, will not emulate the behaviors, assume changes was successful 
 
 ## CPU Virtualization
@@ -23,18 +30,21 @@ For X86 pre 2005, if trap-and-emulate:
 
 ### Full virtualization: binary translation and direct execution
 *  Goal: full virtualization == guest OS not modified
-*  Main idea: rewrite VM binrary to never issue those 17 instructions 
+*  **Main idea: rewrite VM binrary to never issue those 17 instructions**
 *  Approach: dynamic binary translation
     1) hypervisor inspects code to be executed by the guest OS 
-    2) if needed, translate to alternative instruction sequence
+    2) translates kernel code to replace nonvirtualizable instructions with new sequences of instructions that have the intended effect on the virtual hardware.
+    3) if needed, translate to alternative instruction sequence
        - e.g. to emulate desired behavior, possibly even avoiding trap
-    3) otherwise, run at hardware speeds
+    4) otherwise, run at hardware speeds
        - cache translated blocks to amortize translation costs 
 *  Pros: best isolation and security, excellent compatibility
-*  Cons: performance 
+*  **Cons: performance** (trap to hypervisor)
 
 ### Paravirtualization: hypercalls
 *  Goal: performance, give up on unmodified guest
+*  Replace non-virtualizable instructions with **hypercalls**
+*  The open-source Xen project is an example of paravirtualization. 
 *  Approach: **paravirtualization** == **modify guest OS so that**
      - **it knows it's running virtualized**
      - **it makes explicit calls to the hypervisor (hypercalls)**
@@ -46,11 +56,13 @@ For X86 pre 2005, if trap-and-emulate:
 *  Cons: poor compatibility, requires OS kernel modifications 
 
 ### Hardware-assisted virtualization: root / non-root  
-*  Allow VMM to run in new root mode below ring 0
-   *  Privileged calls are set to automatically trap to hypervisor
+*  New hardwares (e.g. Intel VT-x and AMD's AMD-V) allows VMM to run in new root mode below ring 0
+   *  **Privileged calls are set to automatically trap to hypervisor**
+   *  Removing the need for either binary translation or paravirtualization. 
    *  E.x. Intel-VT (~2005) 
 *  Pros: excellent compatibility
 *  Cons: some performance issues
+*  Rigid programming model: leaves little room for software flexibility in managing either the frequency or the cost of hypervisor to guest transitions. 
 
 ## Memory Virtualization 
 
@@ -66,24 +78,26 @@ The guests expect contiguous physical memory, start at 0 (just like it owns the 
 **Option 2:**
 - guest page table: VA => PA
 - hypervisor shadow PT: VA => MA
+  - VMM uses TLB hardware to map the virtual memory directly to the machine memory to avoid the two levels of translation on every access. 
 - hypervisor maintains consistency between guest PT and hypervisor shadow PT 
-    - e.g. invalidate on context switch, write-protect guest PT to track new 
+  - When the guest OS changes the virtual memory to physical memory mapping, the VMM updates the shadow page tables to enable a direct lookup.
+  - e.g. invalidate on context switch
 
 ### Paravirtualization
 The guest is aware of virtualization, and there is no longer strict requirement on contiguous physical memory starting at 0. 
 
-The guest can explicitly registers page tables with the hypervisor. Every update to the page table will cause a trap to the hypervisor, but we can do tricks like "batch" page table updates and issue a single hypercall. Other optimizations can be useful.
+The guest can *explicitly* registers page tables with the hypervisor. Every update to the page table will cause a trap to the hypervisor, but we can do tricks like "batch" page table updates and issue a single hypercall. Other optimizations can be useful.
 
 ## Device and I/O virtualization 
 When we look at CPU and memory, there is a significant level of standardization of interface at ISA-level and less diversity. We don't care much about the lower differences about the hardware. 
 
-For devices, there is higher diversity, and there is lack of specificaiton of device interface and behavior (e.x. what is the behavior when a particular call is invoked on a device). There are three key models for device virtualization (prior to virtualization even exists). 
+For devices, there is higher diversity, and there is lack of specificaiton of device interface and behavior. There are three key models for device virtualization (prior to virtualization even exists). 
 
 ![alt text](images/71-virtualization/device-driver.png)
 
 1. Passthrough model: VMM-level driver configures device access permissions
      *  Pros
-         *  VM provided with exclusive access to device
+         *  VM provided with *exclusive* access to device
          *  VM can directly access the device (**VMM-bypass**)
      *  Cons
          *  device sharing difficult
@@ -122,7 +136,7 @@ For devices, there is higher diversity, and there is lack of specificaiton of de
 
 ## Containers 
 * Containers are lightweight, encapsulated environments that run applications and their dependencies.
-* Unlike virtual machines, containers share the host system’s kernel, rather than needing their own operating system.
+* Unlike virtual machines, **containers share the host system’s kernel**, rather than needing their own operating system.
 * Mechanisms: kernel featurers like namespace and cgroups 
     *  Namespacing: isolates process trees, networking user IDs, and mounts
     *  Cgroups: limit and prioritize CPU, memory, block I/Os, and network resources
@@ -147,5 +161,8 @@ For example, UNIX provides isolation:
 * Namespace: used to isolate different system resources like network, PID, and mounts
    *  i.e. containers  
 
-## Exokernel v.s Hypervisor 
-Exokernels and hypervisors have many similarities, in that they multiplex and protect hardware with minimal abstraction.
+## Takeaways
+
+* Full Virtualization with Binary Translation is the Most Established Technology Today
+* Hardware Assist is the Future of Virtualization, but the Real Gains Have Yet to Arrive
+* Xen’s CPU Paravirtualization Delivers Performance Benefits with Maintenance Costs
