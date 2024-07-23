@@ -51,3 +51,21 @@
 - **Least privilege**: give a user or a process the minimum privileges required to perform the actions you want to show 
 - **Least common mechanism**: use separate data structures or mechanisms for different users or processes (e.x. page table for each process) 
   - disallows the sharing of mechanisms that are common to more than one user or process if the users or processes are at different levels of privilege
+
+### Security
+
+- **Cryptography** achieves protection by converting data’s original bit pattern into a different bit pattern, using an algorithm called cipher
+- **Symmetric key encryption** (ciphers): using a single secret key shared by all parties with rights to access the data
+    - Pros: simplicity, speedy
+    - Cons: key distribution problem (i.e. if someone intercepts the key during transmission, whole system compromise), doesn’t provide **non-repudiation** (i.e. the ability to prove that a sender is the true sender)
+- **Public-key encryption**: have two different keys for cryptography, one to encrypt and one to decrypt, with one keys kept secret and the other commonly made public
+    - Pros: solve the key distribution problem, secure key exchange
+    - Cons: speed, complexity
+- **Cryptographic hashes**: special category of hash function with important properties
+    - Computationally infeasible to find two inputs that will produce the same hash value
+    - Any change to input will result in unpredictable change to resulting hash value
+    - Computationally infeasible to infer any properties of the input based on the hash value
+    - Note: no key, no one should be able to obtain the original bit patterns from the hash
+    - Then, care about data integrity?
+        - Take crypto hash of the data, encrypt only that hash, send both the encrypted hash and unencrypted data to partner
+        - If opponent fiddles with the data in transit, decrypt the hash and repeating the hashing operation on data, find mismatch

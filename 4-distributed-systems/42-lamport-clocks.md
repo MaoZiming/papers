@@ -36,11 +36,9 @@ The paper offers a simple algorithm for advancing the logical clocks in a way th
 
 **Partial ordering** with lamport clock is useful to establish causation of messages. To produce a **total ordering**, Lamport introduces the notion of tie-breaking based on the deterministic ordering of processes. 
 
-## Examples 
-A, B, C: A broadcast questions, B replies based on that question 
-
 ## Limitations 
-This paper does not present any mechanisms for failure. Also, given Lamport timestamps $L(a)$ and $L(b)$, with $L(a) < L(b)$, we can't tell whether $a \rightarrow b$ or $a || b$. We can tell something, but can't differentiate the event that is concurrent and the event that one happened before the other. If we want to detect which events are concurrent, we need vector clocks.  
+* This paper does not present any mechanisms for failure. 
+* Also, given Lamport timestamps $L(a)$ and $L(b)$, with $L(a) < L(b)$, we can't tell whether $a \rightarrow b$ or $a || b$. We can tell something, but can't differentiate the event that is concurrent and the event that one happened before the other. If we want to detect which events are concurrent, we need vector clocks.  
 
 In summary, the limitations are:
 * Partial ordering: can't determine order of concurrent events
@@ -51,3 +49,29 @@ Scenarios where they are insufficient:
 * Synchronization of concurrent events: google doc, collaborative editing, gaming 
 * Global total ordering requirements: i.e. tradings 
 * Timestamp transactions: i.e. financial market, where microsecond precision is required for transaction ordering, relying on logical clock can introduce anomalies 
+
+## Vector clock
+
+### Structure of a Vector Clock
+- **Vector Clock**: A vector clock for a system with $N$ processes is an array of $N$ integers.
+- **Each Process**: Each process $P_i$ maintains its own vector clock $VC_i$, where $VC_i[j]$ is the process $P_i$'s knowledge of the logical time at process $P_j$.
+
+### Working with Vector Clocks
+1. **Initialization**: Each process $P_i$ initializes its vector clock to an array of zeros, with length equal to the number of processes in the system:
+   - $VC_i[k] = 0$ for all $k$.
+
+2. **Event Occurrence**: When a process $P_i$ performs an event (e.g., sending a message or performing a local operation), it increments its own entry in its vector clock:
+   - $VC_i[i] = VC_i[i] + 1$.
+
+3. **Message Sending**: When process $P_i$ sends a message to process $P_j$, it includes a copy of its vector clock $VC_i$ with the message.
+
+4. **Message Receiving**: When process $P_j$ receives a message from process $P_i$ with the vector clock $VC_i$:
+   - It increments its own entry: $VC_j[j] = VC_j[j] + 1$.
+   - For each other entry $k$, it updates its vector clock to the maximum value of its own clock and the received clock: $VC_j[k] = \max(VC_j[k], VC_i[k])$.
+
+## Vector clock vs. logical clock
+
+- **Logical Clocks**: Simple, single counter per process, provides a total order but limited causal information.
+- **Vector Clocks**: More complex, vector of counters per process, provides detailed causal ordering and concurrency detection.
+  -  **Causal ordering**: Event $A$ causally precedes event $B$ if $VC_A \leq VC_B$ (i.e., for all $k$, $VC_A[k] \leq VC_B[k]$) and $VC_A \neq VC_B$.
+  -  **Concurrency Detection**: Two events are concurrent if their vector clocks are incomparable. 

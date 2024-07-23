@@ -30,7 +30,7 @@ Read: July 12th, 2024
 * Log replication:
   * Once a leader has been elected, it begins servicing client requests. Each client request contains a command to be executed by the replicated state machines. The leader appends the command to its log as a new entry, then issues AppendEntries RPCs in parallel to each of the other servers to replicate the entry. 
 * Inconsistency resolution:
-  * In Raft, the leader handles inconsistencies by forcing the followers’ logs to duplicate its own. This means that conflicting entries in follower logs will be overwritten with entries from the leader’s log.
+  * In Raft, **the leader handles inconsistencies by forcing the followers’ logs to duplicate its own.** This means that conflicting entries in follower logs will be overwritten with entries from the leader’s log.
     * A leader never overwrites or deletes entries in its own log
 * Leader committing an entry:
-  * Raft never commits log entries from previous terms by counting replicas. Only log entries from the leader’s current term are committed by counting replicas; once an entry from the current term has been committed in this way, then all prior entries are committed indirectly because of the Log Matching Property.
+  * Raft never commits log entries from previous terms by counting replicas. Only log entries from the **leader’s current term** are committed by counting replicas; once an entry from the current term has been committed in this way, then all prior entries are committed indirectly because of the Log Matching Property.

@@ -8,13 +8,13 @@ Map Reduce is a simple data-parallel programming model designed for scalability 
 
 ## Key Motivation 
 - Background: MPI (message passing interface)
-    - Expressive programming model, more general (v.s. MR: limited)
+    - **Expressive** programming model, more general (v.s. MR: limited)
     - Not inherently fault tolerance: if a node fails, can cause entire app crash
     - Fine-grained synchronization and communication
 - Motivation: build google web search (i.e. crawl documents, build inverted indexes, etc.), need for
     - Automatic parallelization
     - Network, disk optimization
-    - Handling of machine failures
+    - Handling of machine **failures**
 
 ### Assumptions & Design Goals
 
@@ -29,9 +29,9 @@ Map Reduce is a simple data-parallel programming model designed for scalability 
     - Take one input KV pair and output a set of intermediate KV pairs
 - Shuffle phase
     - Data exchange step between Map and Reduce tasks
-    - After Map tasks finish processing, intermediate results are partitioned, grouped by key, and transferred to Reducers
+    - After Map tasks finish processing, intermediate results ($K_{inter}, V_{inter}$) are partitioned, grouped by key, and transferred to Reducers
     - Potential problems
-        - Data skew: one key with large # of values, overload single Reducer
+        - Data skew: one key with large # of values, overload single Reducer.
         - Network bandwidth: too much intermediate data transferred over the network
         - Disk I/O: might be the bottleneck
     - Not always needed
@@ -53,9 +53,11 @@ Map Reduce is a simple data-parallel programming model designed for scalability 
     - Probability of master failing is low
 - **If a task is going slowly**
     - Straggler: a machine takes an unusually long time to complete one of the last few map or reduce task in the computation
-    - Launch second copy of task on another node
+    - Launch **second copy** of task on another node
     - Take the output of whoever finishes first
 
 ## Limitations 
 - Not every program can be expressed via this model (i.e. **iterative**, **low-latency chained events** like PageRank, conjugate gradient, etc.)
+  - Not as expressive.
 - Failures of master aborts the computation, up to the client app to issue the retry
+- Disk and too much traffic over the network. 

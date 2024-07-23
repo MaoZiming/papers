@@ -14,7 +14,7 @@ Read: April 14th, 2024
 
 * RDD is read-only, can be derived from other RDDs or data on stable storage.
 * Transformations: `map` , `filter`, and `join`. 
-* RDD has enough information about how it was derived from other datasets (lineage)
+* RDD has enough information about how it was derived from other datasets (**lineage**)
 * The user can specify the storage medium for the RDD (memory or disk), and partitioning across machines given a key.
 
 ## Comparison to DSM
@@ -28,7 +28,7 @@ Read: April 14th, 2024
 
 ## Applications not suitable for RDDs
 
-* RDDs would be less suitable for applications that make asynchronous updates to shared states, such as storage system for web application or incremental web crawler. 
+* RDDs would be less suitable for applications that make **asynchronous** updates to shared states, such as storage system for web application or incremental web crawler. 
 
 ## System architecture
 
@@ -37,10 +37,10 @@ Read: April 14th, 2024
 * RDD themselves are statically typed objects. 
 
 ## Narrow vs. Wide Dependencies
-* Narrow dependencies: each partition of the parent RDD is used by at most one partition of the child RDD. 
-* Wide dependencies: multiple child partitions may depend on the parent partition. 
+* Narrow dependencies: each partition of the child RDD depends on a small number of partitions of the parent RDD.
+* Wide dependencies: each partition of the child RDD depends on multiple partitions of the parent RDD. This requires data to be shuffled across the nodes.
 * Narrow dependencies allow for pipelined execution on one cluster node. 
   * e.g. One can apply a *map* followed by a *filter* on an element-by-element basis. 
-  * In contrast, wide dependencies require data from all parent partitions to be available and to be shuffled across the nodes using a MapReducelike operation.
+  * In contrast, wide dependencies require data from all parent partitions to be available and to be shuffled across the nodes using a MapReduce-like operation.
 * Second, recovery after a node failure is more efficient with a narrow dependency, as only the lost parent partitions need to be recomputed, and they can be recomputed in parallel on different nodes. In contrast, in a lineage graph with wide dependencies, a single failed node might cause the loss of some partition from all the ancestors of an RDD, requiring a complete re-execution.
 * ![alt text](images/412-spark/narrow-vs-wide.png)

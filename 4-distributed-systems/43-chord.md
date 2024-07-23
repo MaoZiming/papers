@@ -6,8 +6,6 @@ Read: Dec 25th, 2023.
 
 This paper is about a new scalable distributed protocol for lookup in a dynamic p2p system with frequent node arrivals and departures. They achieve this by having a routing table with information of fewer other nodes, and consistent hashing to create identifiers for keys & nodes. 
 
-**Key**: performance, simplicity 
-
 ## Baselines before consistent hashing 
 Example:
 * Nodes: A, B, C
@@ -19,9 +17,7 @@ Nodes and keys are hashed using a uniform hash function, placing them onto a cir
 
 * Nodes: A, B, C, D (hashed to values 0, 42, 84, 127 on a 0-127 hash ring)
 * Keys: 1, 2, 3, 4, 5 (hashed to various positions on the same ring)
-* Assigning keys based on the nearest node moving clockwise on the ring would look like this:
-
-Keys close to 0 would be assigned to A. Keys close to 42 would be assigned to B. So on and so forth.
+* Assigning keys based on the nearest node moving clockwise on the ring.
 
 ## Key Techniques 
 * Identify the core operation in most p2p system: efficient location of data items
@@ -40,3 +36,18 @@ Keys close to 0 would be assigned to A. Keys close to 42 would be assigned to B.
     *  The $ith$ entry in the finger table at node $n$ contains the identity of the first node $s$ that succees $n$ by at least $2^i$
     *  ![Finger Table](images/43-chord/finter-table.png)
 
+## Node changes
+
+* In a dynamic network, nodes can join and leave at any time. 
+* Whenever a node joins or leaves, Chord needs to preserve two invariants to ensure correctness. 
+  * Each node’s successor should be correctly maintained and the second one is for every key $k$, node $successor(k)$ is responsible for $k$. 
+  * In order for lookups to be fast, it is also desirable for the finger tables to be correct.
+* The following three tasks should be done for a newly joined node n:
+  * Initialize node $n$.
+  * Notify other nodes to update their predecessors and finger tables
+  * The new node takes over its responsible keys from its successor.
+* A stablization protocol should be running periodically in the background which updates finger tables and successor pointers.
+
+## Bounds
+
+* In the steady-state network, each node maintains routing information for only about $O(log N)$ other nodes, and resolves all lookups via $O(log N)$ messages to other nodes.

@@ -1,7 +1,13 @@
 # Distributed Systems
 
+## DSM
+
 - Distributed shared memory (DSM) systems enable processes on different machines to share a large, virtual address space
-  - This approach is not widely in use today for a number of reasons. The largest problem for DSM is how it handles failure.
+  - Through virtual memory system of the OS 
+  - Not widely used because
+    - Failure handling is hard
+      - machine fails, data structure unavailable, addr space missing, etc. 
+    - Performance: remote fetching 
 
 ## RPC
 
@@ -14,7 +20,7 @@ interface {
   int func2(int arg1, int arg2);
 };
 ```
-  - The stub generator takes an interface like this.  For the client, a client stub is generated, which contains each of the functions specified in the interface; a client program wishing to use this RPC service would link with client stub and call into it in order to make RPCs.
+  - For the client, a client stub is generated, which contains each of the functions specified in the interface; a client program wishing to use this RPC service would link with client stub and call into it in order to make RPCs.
   - To the client, the code just appears as a function call (e.g., the client calls `func1(x)`); internally, the code in the client stub for `func1()` does:
     - Create a message buffer. A message buffer is usually just a contiguous array of bytes of some size.
     - Pack the needed information into the message buffer: marshaling of arguments or the serialization of the message.
@@ -25,27 +31,15 @@ interface {
 
 ### Run-time library
 
-- Many RPC packages are built on top of unreliable com- munication layers, such as UDP.
-- The run-time must also handle procedure calls with large arguments, larger than what can fit into a single packet. Some lower-level network protocols provide such sender-side fragmentation (of larger packets into a set of smaller ones) and receiver-side reassembly (of smaller parts into one larger logical whole); if not, the RPC run-time may have to implement such functionality itself.
+- The run-time must also handle procedure calls with large arguments, larger than what can fit into a single packet. Some lower-level network protocols provide such sender-side fragmentation (of larger packets into a set of smaller ones) and receiver-side reassembly (of smaller parts into one larger logical whole).
 - One issue: byte ordering. 
   - Big endian ordering vs. little endian ordering. 
   - Big endian stores bytes (say, of an integer) from most significant to least significant bits, much like Arabic numerals; little endian does the opposite. 
-- Server regards to concurrency? —> thread pool 
+- Server uses thread pool to manage concurrency. 
     1. Threads are created when server starts
     2. When message arrives, dispatched to one of the worker threads 
     3. Main thread keeps receiving data 
-# Networked and Distributed Systems
 
-## Concepts Explain
-
-### Remote Procedure Calls (RPCs) and their implementation
-
-1. OS abstraction: distributed shared memory (DSM)
-    1. Through virtual memory system of the OS 
-    2. Not widely used today for reliable distributed system 
-        1. Failure handling is hard
-            1. machine fails, data structure unavailable, addr space missing, etc. 
-        2. Performance: remote fetching 
 
 ### Reliable Transport: UDP v.s TCP
 
@@ -54,10 +48,8 @@ interface {
         1. Reads and writes over socket API (FDs) 
         2. Messages sent from / to ports to target a process on machine 
     2. Provide minimal reliability features 
-        1. Messages may be lost
-        2. Messages may be reordered
-        3. Messages may be duplicated
-        4. Only protection: checksums to ensure data not corrupted (i.e. for integrity) 
+        1. Messages may be lost, reordered, duplicated. 
+        2. Only protection: checksums to ensure data not corrupted (i.e. for integrity) 
 2. **TCP (Transmission Control Protocol) - Reliable Communication Layer** 
     1. Use software to build reliable logical connections over unreliable physical connections 
         1. No duplicates, message received exactly once 
@@ -73,46 +65,33 @@ interface {
                 2. If $K = N +1$, first time seeing this message 
                 3. If $K > N+1$, buffer this message so arrive in order 
 
-### Security
 
-- **Cryptography** achieves protection by converting data’s original bit pattern into a different bit pattern, using an algorithm called cipher
-- **Symmetric key encryption** (ciphers): using a single secret key shared by all parties with rights to access the data
-    - Pros: simplicity, speedy
-    - Cons: key distribution problem (i.e. if someone intercepts the key during transmission, whole system compromise), doesn’t provide non-repudiation (i.e. the ability to prove that a sender is the true sender)
-- **Public-key encryption**: have two different keys for cryptography, one to encrypt and one to decrypt, with one keys kept secret and the other commonly made public
-    - Pros: solve the key distribution problem, secure key exchange
-    - Cons: speed, complexity
-- **Cryptographic hashes**: special category of hash function with important properties
-    - Computationally infeasible to find two inputs that will produce the same hash value
-    - Any change to input will result in unpredictable change to resulting hash value
-    - Computationally infeasible to infer any properties of the input based on the hash value
-    - Note: no key, no one should be able to obtain the original bit patterns from the hash
-    - Then, care about data integrity?
-        - Take crypto hash of the data, encrypt only that hash, send both the encrypted hash and unencrypted data to partner
-        - If opponent fiddles with the data in transit, decrypt the hash and repeating the hashing operation on data, find mismatch
 
 ## System Model
-
-For each of the three parts:
 
 ### Network 
 1. Reliable: Assumes all messages will be successfully delivered.
 2. Fair-loss: Assumes messages may be lost but will eventually get through.
 3. Arbitrary: No assumptions about message delivery.
 ### Nodes 
-1. Crash-stop: Nodes will stop and not recover.
+1. Crash: Nodes will stop and not recover.
+   1. Similar to fail-stop. However, in a fail-stop scenario, the node intentionally halts its execution due to a detected error or by following a protocol for shutting down.
 2. Crash-recovery: Nodes can recover after a crash.
 3. Byzantine: Nodes can act arbitrarily, including maliciously.
 - **Timing:** synchronous, partially synchronous, or asynchronous
     - Synchronous: message latency no greater than a known upper bound
     - Partial synchronous: async for some finite (but unknown) period of time, sync otherwise
+      - Since the algorithm relies on predictable communication to detect and replace faulty primaries, intermittent synchrony (as in the case with partial synchrony) can lead to prolonged periods of inactivity or stalled consensus.
+    - > In one version of partial synchrony, fixed bounds Δ and Φ exist, but they are not known a priori. The problem is to design protocols that work correctly in the partially synchronous system regardless of the actual values of the bounds Δ and Φ. In another version of partial synchrony, the bounds are known, but are only guaranteed to hold starting at some unknown time T, and protocols must be designed to work correctly regardless of when time T occurs.
+    - Eventual synchrony: Starts asynchronous but eventually becomes and **remains** synchronous.
     - Async: messages can be delayed arbitrarily, nodes can pause execution arbitrarily, no timing guarantees at all
+  - Paxos and Raft assumes partially synchronous networks. PBFT assumes eventual synchrony for liveness, and asynchrony for safety. 
 
 - **Happens before relation**
     - An event is something happening at one node (sending, or receiving message, or local execution step)
-    - We says event $a$  happens before event $b$ (written $a \rightarrow b$) iff
+    - We says event $a$ happens before event $b$ (written $a \rightarrow b$) iff
         - $a$ and $b$ occurred at the same node, and $a$ occurred before $b$ in that node’s local execution order
-        - Or event $a$  is sending some message $m$, ad event $b$ is receiving that same mesage $m$ (assuming sent messages are unique)
+        - Or event $a$ is sending some message $m$, and event $b$ is receiving that same mesage $m$ (assuming sent messages are unique)
         - There exists some event $c$ such that $a \rightarrow c$ and $c \rightarrow b$
         - Partial order: it is possible that $a \rightarrow b$ nor $b \rightarrow a$, in that case $a$ and $b$ are concurrent (i.e. $a || b)$
 - **Causality**
@@ -122,6 +101,12 @@ For each of the three parts:
     - Happens before relation encodes **potential causality**
 
 - ![alt text](images/41-communication/broadcast-hierarchy.png)
+  - FIFO broadcast extends reliable boadcast with the FIFO ordering guarantee. 
+  - Causal broadcast ensures that messages are delivered respecting their causal dependencies, based on the happened-before relationship defined by Lamport.
+    - Since the happened-before relationship includes the order in which messages are sent by a single process, causal broadcast naturally enforces FIFO ordering for messages from the same sender.
+  - Total order broadcast (also known as atomic broadcast) ensures that all messages are delivered to all processes in the same total order.
+    - **This allows for multiple senders**
+  - FIFO Total Order Broadcast: Combines FIFO and total order guarantees, ensuring that messages from the same sender are delivered **in order** and all messages are delivered **in the same total order** across all processes.
 
 - Choice of retry semantics
     - **At-most-once**: send request, don’t retry, update may not happen
@@ -133,22 +118,20 @@ For each of the three parts:
 - Broadcast protocol to do replication!
 - Total order broadcast: every node delivers the **same messages** in **same order**
 - **State machine replication (SMR)**
-    - **FIFO-total order** broadcast every update to all replicas
+    - **FIFO-total order** broadcast
     - Replica delivers update message: apply it to own state
     - Applying an update is deterministic
         - Each replica is state machine, state is all data it’s stored
             - Go through same sequence of state transitions in the same order
             - Ended up in the same state
 
-
 ### Consensus system models
 
 - Paxos, Raft, etc. assume a **partially synchronous, crash-recovery** system model
+  - It can be designed for crash-stop, but needs additional care for state persistence and quorum adjustments. 
 - Why not async?
     - **FLP result**: there is no deterministic consensus algorithm that is guaranteed to terminate in an async crash-stop system model
     - Paxos, Raft, etc. use clocks only used for timeouts / failure detector to ensure progress. Safety (correctness) does not depend on timing.
-- There are also consensus algorithms for a partially synchronous Byzantine system model (used in blockchains)
-    - More complex! Less efficient
 
 ### Leader election
 
@@ -156,8 +139,6 @@ For each of the three parts:
     - Use a **failure detector** (timeout) to determine suspected crash or unavailability of leader
     - On suspected leader crash, **elect a new one**
     - Prevent **two leaders at the same time** (”split-brain”)!
-
-## System Model 
 
 ## SSL / TLS: a protocol, not a software package
 
@@ -168,7 +149,7 @@ For each of the three parts:
     - I.e. set up a socket, set up a special structure to perform crypto, then hook the output of that structure to the input of the socket, reverse the process on the other end
     - Steps
         - Start negotiation between client and server
-        - End in both sides finding some acceptable set of ciphers and techniques that balance between performance and security
+        - End in both sides finding some acceptable **set of ciphers and techniques** that balance between performance and security
             - I.e. Diffie-Hellman key exchange to create the key
 - Transport Layer Security (TLS)
     - Use this
