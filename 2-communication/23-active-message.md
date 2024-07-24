@@ -6,14 +6,17 @@ Read: June 17th.
 
 * Upcall and LRPC focus on local communication (different aspects, vertically and horizontally), and active messages focus on remote communication.
 * The **effectiveness** of the machine is low under traditional send/receive models due to **poor overlap of communication and computation**, and due to high communication overhead.
-  * Before: the message driven model and Active Messages is where computation-proper is performed: in the former, computation occurs in the message handlers whereas in the latter it is in the “background” and handlers only remove messages from the network transport buffers and integrate them into the computation.
+  * Before: the message driven model and Active Messages is where computation-proper is performed: 
+    * In the former, computation occurs in the message handlers 
+    * In the latter it is in the “background” and handlers only remove messages from the network transport buffers and integrate them into the computation.
 * **Key idea**: Include **code pointer in messages** which avoids buffering latency. Code is run immediately on server, thus avoiding as much queueing as possible. Handlers must be fast. Get communication onto network ASAP and off the network into computation ASAP.
 * The underlying idea is simple: each message contains at its head the address of a user-level handler which is executed on message arrival with the message body as argument.
+  * In contrast to running handling logic at the message handler. 
 
 ## Key techniques: active messages
 
 1. **User-Level Handler**: This is essentially a code pointer that indicates a specific, small piece of code that needs to be executed when the message is received. **The handler is shared and known across all machines in the network.**
-2. **Message Body**: This portion contains the actual data or arguments that the handler will use when it executes its code.
+2. **Message Body**: This portion contains **the actual data or arguments** that the handler will use when it executes its code.
 
 ## Workflows
 
@@ -37,13 +40,13 @@ Read: June 17th.
   - Software handles other necessary buffers
 - Improved performance
   - Close association with network protocol
-- Handlers are kept simple
+- **Handlers are kept simple**
   - Serve as an interface between network and computation
 - Concern becomes overhead, not latency
 
 ### Weakness
 
-- Restricted to **SPMD** model
+- Restricted to **Single Program Multiple Data (SPMD)** model
   - Active Messages simply generalize the hardware functionality by allowing the sender to specify the address of the handler to be invoked on message arrival. **Note that this relies on a uniform code image on all nodes, as is commonly used (the SPMD programming model).**
 - Handler code is restricted
   - Can’t block and has to get the message out of the network as fast as possible

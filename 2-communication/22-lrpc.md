@@ -85,18 +85,18 @@ Read: June 15 2024.
 4. Copy from client kernel space to client user space (to unmarshal the response).
 
 ### Message passing 
-Whenever a piece of data is to be exchanged, the process will invoke the kernel with a request to send information to target process. 
+* Whenever a piece of data is to be exchanged, the process will invoke the kernel with a request to send information to target process. 
 
-User-mode process will copy data into buffer, then issue a system call to request the data to be transferred. Once kernel is invoked, it will copy the transferred data first to its own memory. Then target process do similar things. 
+* User-mode process will copy data into buffer, then issue a system call to request the data to be transferred. Once kernel is invoked, it will copy the transferred data first to its own memory. Then target process do similar things. 
 
-E.x. pipe, message queue, RPC 
+* E.x. pipe, message queue, RPC 
 
 **Cons**: 
 1) one data exchange invokes two syscalls, one read, one write
 2) transferred data are copied twice (i.e. kernel memory, receiving process). 
 
 ### Shared memory 
-Processes initially set up a region of their virtual memory to use for IPC. Then it issues a system call to request that the kernel make the region shared. Other processes would do the same. The processes can read from and write to the region as normal, and there is no explicit syscall required to read new data. 
+* Processes initially set up a region of their virtual memory to use for IPC. Then it issues a system call to request that the kernel make the region shared. Other processes would do the same. **The processes can read from and write to the region as normal, and there is no explicit syscall required to read new data.**
 
 **Pros**: one-time penalty during set-up phase 
 

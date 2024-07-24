@@ -23,14 +23,14 @@ The paper introduces a mechanism allowing **control to be transferred from lower
 
 ### Examples 
 1. Downcall (create and bind a socket): application tells the kernel to prepare a socket for network communication just like before, and tell the socket layer which procedures to use as upcalls
-2. Upcall (for data and events): when packet comes, kernel can simply calls the relevant function directly; similarly when the kernel determines it's a good time to send data, make an upcall to the procedures
+2. Upcall (for data and events): when packet comes, kernel can simply calls the **relevant function directly**; similarly when the kernel determines it's a good time to send data, make an upcall to the procedures
 3. Downcall (optional, for additional data): the application can make a downcall to notify the kernel that it has more data to send
    
 ## Key Techniques 
-* **Definition**: An **upcall** is a mechanism where a lower layer in a system can directly call a function or procedure in an upper layer.
-* No tasks export an intertask communication interface. The only exported interfaces are subroutine calls.
-* ![alt text](images/22-upcall/diagram.png)
-  * As the figure shows, intertask communication only occurs in a horizontal direction, between the various tasks in a layer, while flow of control between layers is achieved between through subroutine calls, both up and down.
+* **Definition**: An **upcall** is a mechanism where a lower layer in a system can directly call a **function** or procedure in an upper layer.
+* No tasks export an intertask communication interface. The only exported interfaces are **subroutine calls**.
+* ![alt text](images/21-upcall/diagram.png)
+  * As the figure shows, **intertask communicatio**n only occurs in a horizontal direction, between the various tasks in a layer, while flow of control between layers is achieved between through subroutine calls, both up and down.
 * Typically, the layer cannot upcall until its client has first downcalled. 
 * Upcall is subroutine call (synchronous) rather than interprocess signal (asynchronous, using shared memroy, pipes, etc.). 
 
@@ -42,7 +42,7 @@ The paper introduces a mechanism allowing **control to be transferred from lower
 
 Allow kernel to make synchronous call into client: 
 1. **Single Address Space**: all modules are kept within a single address space to allow for direct procedure calls between them.
-   1. Due to security concerns and isolation, this is not widely used today.
+   1. **Due to security concerns and isolation, this is not widely used today.**
 2. **Multi-threading**: modules efficiently use upcalls and downcalls
 
 ### Pros
@@ -53,7 +53,7 @@ Allow kernel to make synchronous call into client:
 ### Cons
 * **Upward dependency and fault tolerance**: lower levels are often shared among different upper levels clients, failures may affect higher layers as well, poses challenges in releasing resources and corruption of state
 * Solution
-    * Separate shared data into global and client-specific variables 
+    * Separate shared data into **global** and **client-specific** variables 
     * Never upcall while holding a lock on global data
     * Never upcall in a thread you’re afraid to kill
 * **Indirect recursion: rely programmer skills to properly handle recursive calls** 
@@ -68,8 +68,9 @@ Allow kernel to make synchronous call into client:
             - Seems restrictive, but usually makes sense
             - Most upcalls ask simple questions and should return quickly anyway
             - We can change the interface to make it okay
-        - #3: the lower level enqueues recursive requests for later
+        - #3: The lower level enqueues recursive requests for later
             - This adds a lot of complexity to the lower level
+            - Doesn't make sense tbh. 
 
 ## Usage today 
 1. Interrupt handling and event-driven programming: lower-level components (e.g. device driver) can notify higher-level components (e.g. applicaiton-handlers) of certain events
@@ -79,4 +80,3 @@ Allow kernel to make synchronous call into client:
 
 - The thoughts around how service interact are still relevant in Internet and distributed system architecture today
 - Performance advantages by using shared memory remain
-    - E.x. distributed system ray uses the Plasma Object Store as a type of distributed share memory
