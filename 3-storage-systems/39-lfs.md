@@ -10,26 +10,39 @@ Compared to FFS: disk bandwidth is getting better. Computers are having more mem
 
 > In this paper we present a solution based on large extents called segments, where a segment cleaner process continually regenerates empty segments by compressing the live data from heavily fragmented segments. 
 
+## Motivation
+
+- **System memories are growing**
+    - More data can be cached in memory
+    - More writes, FS performance is largely determined by write performance
+- **Large gap between random I/O and sequential I/O performance**
+  - Sequential I/O is decreasing much slower. 
+- **Existing FS perform poorly on many common workloads**
+    - E.x. FFS perform many writes to create a new file of size one block
+- **File systems are not RAID-aware**
+    - RAID-4 and RAID-5 have small-write problem (i.e. one logical write causes 4 physical I/O)
+
+Thus we want to build an FS that focus on write performance, and try to make use of the sequential bandwidth of the disk.
+
+
 ## Motivation: optimize writes 
 1. System memories are growing, can be used for cache
 2. Existing FS perform poorly on common workloads: small-write problem 
     *  FFS performs many writes to create a small file (5 writes)
     *  Too many small writes. 
 > When writing small files in such a system, less than 5% of the disk’s potential bandwidth is used for new data; the rest of the time is spent seeking.
-
    * Another problem is synchronous writes. 
 > Unix FFS writes file data blocks asynchronously, file system metadata structures such as directories and inodes are written synchronously
 
-* a log-structured file system converts the many small synchronous random writes of traditional file systems into large asynchronous sequential transfers that can utilize nearly 100% of the raw disk bandwidth.
+* a log-structured file system converts the **many small synchronous random writes** of traditional file systems into **large asynchronous sequential transfers** that can utilize nearly 100% of the raw disk bandwidth.
 
 The crux is: how can a file system tranform all writes into sequential writes? how to read data, and how to free space? 
 
-
 ## How it works 
 
-Sprite LFS outputs index structures in the log to permit random-access retrievals.
+### Sprite LFS outputs index structures in the log to permit random-access retrievals.
 
-### 1.4 Inode map
+### Inode map
 
 Problem: finding inode is hard in LFS 
 
@@ -55,7 +68,7 @@ Unfortunately, as it gets updated frequently, this would then require updates to
 
 - LFS should perform the same amount of I/O as a typical file system during read
 - The entire imap is cached so extra work is just look up the inode’s address in the imap
-- Thus, the overall structure of the on-disk layout contains a checkpoint region (which points to the latest pieces of the in- ode map); the inode map pieces each contain addresses of the inodes; the inodes point to files (and directories) just like typical UNIX file systems.
+- Thus, the overall structure of the on-disk layout contains a checkpoint region (which points to the latest pieces of the inode map); the inode map pieces each contain addresses of the inodes; the inodes point to files (and directories) just like typical UNIX file systems.
 - Inode map contains the information for the location of both the directory file *dir* as well as the newly created file *f*
 
 LFS uses write buffering to keep track of updates in memory before writing to disk 
@@ -79,8 +92,7 @@ LFS uses write buffering to keep track of updates in memory before writing to di
 ## Garbage collection
 
 * Threading vs. Copying
-  * Threading: leave the live data in place and
-thread the log through the free extents.
+  * Threading: leave the live data in place and *thread* the log through the free extents.
   * Copying: copy live data out of the log in order to leave large free extents for writing.
 
 *  Segment-level cleaning
@@ -129,19 +141,6 @@ thread the log through the free extents.
     - Enables highly efficient writing
     - Gather all updates into an in-memory segment and write them out together sequentially
 
-## Motivation
-
-- **System memories are growing**
-    - More data can be cached in memory
-    - More writes, FS performance is largely determined by write performance
-- **Large gap between random I/O and sequential I/O performance**
-  - Sequential I/O is decreasing much slower. 
-- **Existing FS perform poorly on many common workloads**
-    - E.x. FFS perform many writes to create a new file of size one block
-- **File systems are not RAID-aware**
-    - RAID-4 and RAID-5 have small-write problem (i.e. one logical write causes 4 physical I/O)
-
-Thus we want to build an FS that focus on write performance, and try to make use of the sequential bandwidth of the disk.
 
 ### 1.6 Directories
 
@@ -218,7 +217,7 @@ Thus we want to build an FS that focus on write performance, and try to make use
     - Parity-based RAIDs (-4, and -5), avoid small write problem entirely
     - Flash-based SSDs
 - Downside: generate garbage
-    - Cleaning is hard, cleaning cost is a concern
+    - **Cleaning** is hard, cleaning cost is a concern
 - Some modern commercial FS: NetApp’s WAFL, Sun’s ZFS, Linux btrfs, flash-based SSDs
     - Adopt similar copy-on-write approach
     - WAFL gets around cleaning problem by turning them into feature: snapshots!

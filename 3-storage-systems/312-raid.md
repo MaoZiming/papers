@@ -7,7 +7,7 @@ Read: July 12th, 2024
 > Building I/O Systems as arrays of expensive disks. 
 
 However:
-> Without fault tolerance,large arrays of expensive disks are too unreliable to be useful.
+> Without fault tolerance, large arrays of expensive disks are too unreliable to be useful.
 
 Hence: Redundant Array of Inexpensive Disks vs. Single large expensive disk. 
 
@@ -29,7 +29,7 @@ Hence: Redundant Array of Inexpensive Disks vs. Single large expensive disk.
   - Assumes: disk can fail by returning bogus data. 
   - Identify the disk has failed and recover. 
   - Both reads and writes have to be from whole disk.
-    - Read has to check for error correction. 
+    - Read has to check for error correction to detect bogus data. 
   - Adding check disk for error correction.
   - ![alt text](images/312-raid/raid-2.png)
 > For a group size of 10 data disks (G) we need 4 check disks in total, and if G=25, then C=5. 
@@ -43,6 +43,8 @@ Hence: Redundant Array of Inexpensive Disks vs. Single large expensive disk.
   - bytes distributed across the disks. Reading blocks require touching all the disks. 
   - Reducing check disk to 1 per group. 
   - ![alt text](images/312-raid/raid-3.png)
+    - Performance: Byte-level striping can lead to high data transfer rates for large files because multiple disks are read/written simultaneously. However, RAID 3's performance may suffer with multiple simultaneous small I/O operations due to the need to read from all disks to access any piece of data.
+
 - RAID-4: use a parity disk. (a single check disk)
   - **block-level striping**
     - All parity block stored one disk.
@@ -50,9 +52,8 @@ Hence: Redundant Array of Inexpensive Disks vs. Single large expensive disk.
     - modify: two disks.
     - Parity: allow reconstruction of missing or corrupted data
     - Small write problem: parity disk is the bottleneck
-    - ![alt text](images/312-raid/raid-4.png)
-    - RAID 3's byte-level striping can result in better performance for large, continuous data transfers but may not be as efficient for small random I/O operations.
-    - RAID 4's block-level striping allows for independent access to data blocks, making it more efficient for random read operations but can still face write performance bottlenecks due to the single parity disk.
+    - ![alt text](images/312-raid/raid-4.png) 
+    - Block-level striping improves random read performance because individual blocks of data can be accessed from separate disks without needing to read from all disks. However, the dedicated parity disk can become a bottleneck during write operations because every write involves updating the parity information.
 - RAID-5: rotating parity
   - Block-level stripipng with distributed parity. 
     - Random write improves!
@@ -100,7 +101,7 @@ Assume:
     - Throughput
         - Random reads: $N * R$
         - Random writes: $\frac{N}{2} * R$
-            - Requires two physical write to complete before it is done
+            - Requires **two physical write** ($\frac{N}{2}$) to complete before it is done
             - Two writes can be done in parallel, but logical write must wait for both physical write to complete
         - Sequential writes: $\frac{N}{2} * S$
         - Sequential reads: $\frac{N}{2} * S$
@@ -138,7 +139,8 @@ Analysis
         - Random reads: $(N-1)*R$
         - Sequential writes: $(N-1) * S$
         - Sequential reads: $(N-1) * S$
-        - Random writes: $\frac{R}{2}$
+        - Random writes: $\frac{N}{4} * R$
+          - Read old data, old partiy, write new data, new parity. 
 
 ## RAID-5
 

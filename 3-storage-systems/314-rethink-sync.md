@@ -23,7 +23,7 @@ The application isn't blocked (like async I/O) but any output (e.x. network, sen
 
 - _**Output triggered commits**_: data is only committed when there is an external output that depends on the uncommitted data
 
-- Both speculative execution and external synchrony en- force restrictions on when external output may be ob- served. Speculative execution allows output to be ob- served based on correctness; output is externalized af- ter all speculations on which that output depends have proven to be correct. In contrast, external synchrony allows output to be observed based on durability; output is externalized after all file system operations on which that output depends have been committed to disk
+- Both speculative execution and external synchrony enforce restrictions on when external output may be observed. Speculative execution allows output to be observed based on correctness; output is externalized after all speculations on which that output depends have proven to be correct. In contrast, external synchrony allows output to be observed based on durability; output is externalized after all file system operations on which that output depends have been committed to disk
 
 - _**Tracking causal dependencies**_: tracks dependencies between file modifications and external outputs. This ensures the external outputs are reliable and consistent with the sync I/O model. 
 - marking process with dependencies: i.e. cannot externalize any output until some transaction commits

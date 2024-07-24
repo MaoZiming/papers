@@ -21,8 +21,7 @@ Key optimizations:
   *   File inodes allocate in the same group with directory
   *   Directory inodes allocated in new group with fewer used inodes than average group
   *   First data blocks allocated near inodes
-  *   Other data blocks allocate near data blocks
-  *  Reduce fragmentation of disk blocks by allocating contiguously from the bit maps
+  *   Reduce fragmentation of disk blocks by allocating contiguously from the bit maps
 * Increase block size to inmprove performance
   *   To mitigate internal fragmentation, also uses sub-blocks
  
@@ -79,12 +78,6 @@ The old UNIX file system data structures look like this:
   - The placement of directories: find the cylinder group with a low number of allocated directories and a high number of free inodes. 
 - modern drives do not export enough information for the file system to truly understand whether a particular cylinder is in use;
 - instead organize the drive into block groups, each of which is just a consecutive portion of the disk’s address space. 
-1. **Change the on-disk structures** 
-    1. **Key idea:** keep inode close to data 
-        1. Use group across disks
-        2. Strategy: allocate inodes and data blocks in the same group 
-    2. FFS: groups are ranges of cylinders called **cylinder groups**
-        1. In ext2, ext3, ext4, groups are ranges of blocks, called block group 
 
 ### Policies: how to allocate files and directories
 
@@ -100,15 +93,15 @@ The old UNIX file system data structures look like this:
     - All data in same FS is related in some way!
 - **Revised strategy**
     - File inodes: allocate in the same group with directory
-    - Directory inodes: allocate in new group with fewer used inodes than average group
+    - Directory inodes: allocate in **new** group with fewer used inodes than average group
     - First data block: allocate near inodes
     - Other data blocks: allocate **near previous block**
-- A per-group inode bitmap (ib) and data bitmap (db) serve this role for inodes and data blocks in each group. 
+- A **per-group** inode bitmap (ib) and data bitmap (db) serve this role for inodes and data blocks **in each group**. 
 - Problem: large files, which can fill nearly all of a group, displace data for many small files
     - Assumption: most files are small! Better to do one seek for large file than one seek for each of many files
         - Define large file as requiring an indirect block
     - **Policy**
-        - Large file data blocks: after 48KB, go to new group
+        - Large file data blocks: after **48KB**, go to new group
         - Move to another group (w/ fewer than average blocks) every subsequent 4MB
         - Effectively, large files are divided into parts and placed in several groups. 
     - Without large-file exception:
@@ -119,12 +112,10 @@ The old UNIX file system data structures look like this:
 ### Other FFS Features: usability
 
 - **Sub-blocks** (which were 512-byte little blocks that the file system could allocate to files.)
-  - Before 4KB blocks are good for transferring, but might lead to internal framgmentation.
-  - As the file grew, the file syst em will continue allocating 512-byte blocks to it until it acquires a full 4KB of data. At that point, FFS will find a 4KB block, copy the sub-blocks into it, and free the sub-blocks for future use.
+  - Before 4KB blocks are good for transferring, but might lead to **internal framgmentation**.
+  - As the file grew, the file system will continue allocating 512-byte blocks to it until it acquires a full 4KB of data. At that point, FFS will find a 4KB block, copy the sub-blocks into it, and free the sub-blocks for future use.
     - FFS can also modify the libc to buffer writes and then issue them in 4KB chunks to the file system. 
 - Large blocks (with libc buffering / fragments)
-> To be able to use large blocks without undue waste, small files must be stored in a more efficient way. The new file system accomplishes this goal by allowing the division of a single file system block into one or more fragments. 
-
 - Long file names
 - Atomic rename
     - `rename` operation for renaming files

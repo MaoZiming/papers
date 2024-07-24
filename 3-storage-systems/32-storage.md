@@ -15,7 +15,7 @@
       - One such head per surface of the drive
       - Attached to a single **disk arm**, which moves across the surface to position the head over the desired track
 - Performance
-    - Read / write time = seek time (multiple track) + rotation (single track latency) + transfer time
+    - Read / write time = seek time (move from one track to another) + rotation (single track latency, move from one section to another) + transfer time
     - Mechanical and slow
     - Drives may cache both reads and writes (in addition to OS cache)
 
@@ -35,15 +35,15 @@
         - Transform reads and writes from a client into reads, erases, and programs to underlying flash chips
 - R/W
     - Read: issue read with an address and length
-    - Write: client erase the entire block, then client can program each page exactly once
+    - Write: client **erase the entire block**, then client **can program each page exactly once**
 - Why not just erase and rewrite new version of entire 256KB block?
   - Erasure is very slow (milliseconds)
   - Each block has a finite lifetime, can only be erased and rewritten about 10K times
-  - – Heavily used blocks likely to wear out quickly
+  - Heavily used blocks likely to wear out quickly
 - Two systems approach (FTL)
   - Maintain a Flash Translation Layer (FTL) in SSD
-    - – Map virtual block numbers (which OS uses) to physical page numbers (which flash mem. controller uses)
-    - – Can now freely relocate data w/o OS knowing
+    - Map virtual block numbers (which OS uses) to physical page numbers (which flash mem. controller uses)
+    - Can now freely relocate data w/o OS knowing
   - Copy on Write
     - Don’t overwrite a page when OS updates its data (this is slow as we need to erase page first!)
     - Instead, write new version in a free page
@@ -60,6 +60,7 @@
             - More costly than reading a page
             - ~100s ms on modern flash chips
             - ![flash-program-page](images/31-io/flash-program-page.png)
+            - **Cannot re-program a page!!**
 - **Reliability**
     - Primary concern: wear out
         - Explain: if a block is erased and programmed too often, it becomes unusable
@@ -86,6 +87,56 @@
           - Reliability
               - Same block is erased and programmed over and over, wear out issue
 
+
+# Flash-based SSDs 
+
+- Flash is a technology by which data is stored while SSDs are a storage device. Not all SSDs use flash as their storage medium, but most currently on the market do.
+- SSD is **solid-state storage device**
+- Such devices have no mechanical or moving parts like hard drives
+- They simply built out of transistors, much like memory and processors
+- However, unlike typical DRAM, such SSD device retains information despite power lost
+- Technology focusing on: **flash** (i.e. **NAND-based flash**), created in 1980s
+    - To write a chunk (i.e. a **flash page**), have to erase a bigger chunk (i.e. **flash block**)
+    - Writing too often to a page will cause it to **wear out**
+
+
+## Log-structured FTL 
+- Write logging
+    - Upon write to a logical block N, the device appends the write to the next free spot in the currently-being-written-to block
+- Mapping table
+    - Store physical address of logical block in the system
+    - Kept in memory, and persistent on the device
+- Log based approach
+    - Improve performance
+        - Erase only being required once in a while
+        - Costly read-modify-write of direct-mapped are avoided
+    - Enhance reliability
+    - Spread writes across pages
+        - Wear leveling
+        - Increase the lifetime of the device
+- Garbage collection
+    - Finding a block that contains one or more garbage pages, read in live pages from that block, write out those to log, reclaim the entire block for use in writing
+    - Some SSDs over-provision the device to reduce GC costs
+        - Increase internal bandwidth used for cleaning
+        - Cleaning can be delayed and pushed to the background
+- Mapping table size
+    - With a large 1-TB SSD, for example, a single 4-byte entry per 4-KB page results in 1 GB of memory needed by the device, just for these mappings! Thus, this page-level FTL scheme is impractical.
+    - Block-based mapping
+        - Only keep a pointer per block of the device, instead of per page
+        - Pros: reduce memory needed for translations
+        - Cons: performance on small write (< physical block size)
+    - **Hybrid mapping**
+        - FTL keeps a few blocks erased and direct all writes to them (i.e. **log blocks**)
+        - Keeps per-page mappings for these log blocks
+            - Able to write any page to any location within the log block
+        - Hybrid mapping: Two types of mapping
+            - Per-page mapping: log table (**Good for small write**)
+            - Per-block mapping: data table (**Good for saving space (due to block-level mapping)**)
+        - Process
+            - Consult the log table
+            - If logical block is not found there, then consult the data table then access
+        - Key: keeping the # of log blocks small (i.e. examine log blocks and switch them into blocks)
+  
 ### SSD v.s. HDD comparisons
 
 - Performance
@@ -138,6 +189,9 @@
 - **Buffer cache**, or page cache
     - Refer to an area of main memory (RAM) that temporarily holds copies of disk blocks (data blocks, inodes, imaps, etc.)
     - The use of a cache aims to reduce the # of slow disk I/O operations by keeping frequently accessed or recently used data in faster, but more limited, main memory
+    - Buffers are associated with a specific block device, and cover caching of filesystem metadata as well as tracking in-flight pages. The cache only contains parked file data. That is, the buffers remember what's in directories, what file permissions are, and keep track of what memory is being written from or read to for a particular block device. The cache only contains the contents of the files themselves.
+    - Buffer cache and page cache are unified later in Linux. 
+      - Implemented entirely in software. 
 
 ## Case Study
 
@@ -162,8 +216,10 @@
 - Direct Mapped
   - Memory address $\rightarrow$ [Tag, Index, Offset]
     - A cache block can only go in one spot in the cache. It makes a cache block very easy to find, but it‛s not very flexible about where to put the blocks.
+    - **The index bits directly map to one of the sets in the cache without any hash function. This is a straightforward bit extraction.**
+    - The tag part of the address is compared with the tags of **all** the blocks within the selected set.
 - 2-Way Set Associative
-  - This cache is made up of sets that can fit two blocks each. The index is now used to find the set, and the tag helps find the block within the set.
+  - This cache is made up of sets that can fit two blocks each. The index is now used to find the set, and the tag helps find the block within the set scanning.
 - 4-Way Set Associative
   - Each set here fits four blocks, so there are fewer sets. As such, fewer index bits are needed.
 - Fully Associative
@@ -174,7 +230,7 @@
 - A transaction is an atomic sequence of reads and writes that takes the system from consistent state to another.
   - Transactions extend the concept of atomic updates from memory to persistent storage
 
-### Journal File Systems
+# Crash Consistency: FSCK and Journaling 
 
 - **Key problem:** how to update the disk despite crashes?
     - The system may crash or lose power between any two writes, the on-disk state may get partially updated
@@ -200,8 +256,31 @@
             2. Bitmap indicate that the block is allocated, but no inode points to it 
             3. This write will result in **space leak**, as block 5 would never be used by FS
 - **Crash consistency** problem
-    - What we’d like to do ideally is move the file system from one consistent state (e.g., before the file got appended to) to another **atomically** (e.g., after the inode, bitmap, and new data block have been written to disk).
+    - Ideally, move the file system from one consistent state (e.g., before the file got appended to) to another **atomically** (e.g., after the inode, bitmap, and new data block have been written to disk).
     - Unfortunately, we can’t do this easily because the disk only commits one write at a time, and crashes or power loss may occur between these updates. We call this problem **crash-consistency problem**.
+  
+### Solution #1: File System Checker (FSCK)
+
+- Basic idea: let inconsistency happen, fix them later
+- FSCK: a UNIX tool to check and repair a disk partition exist on different systems
+    - Runs before the file system is mounted and made available
+    - Once finished, should be consistent and made accessible
+- Summary
+    - Superblock: sanity check (i.e. FS size > # of blocks allocated)
+    - Free blocks: scan inodes, indirect blocks, to understand which blocks are currently allocated within FS. Inconsistency between bitmaps and inodes are resolved by trusting **inodes**.
+    - Inode state: checked for corruption, check valid type field
+    - Inode links: scan through directory tree, build link counts for every file, if mismatch between new calculated count and inode, correct action by fixing count within inode
+    - Duplicates: two inodes point to the same block
+    - Bad blocks: if pointer points to something outside valid range (i.e. refer to block greater than partition size)
+    - Directory checks: integrity check to make sure “.” and “..” are first entries, etc.
+- Problem
+    - Complicated knowledge about FS
+    - Way too slow!!
+        - search-the-entire-house-for-keys recovery algorithm
+
+### Solution 2: Journal File Systems
+
+
 - Journal File System
     - Basic idea: when updating the disk, before overwriting structures in place, first write down a little note (i.e. log) describing what you are about to do
     - Steps (data journaling)
@@ -227,6 +306,44 @@
     - Recovery
         - After commit, before checkpoint completes: recover update by replay the log (i.e. **redo logging**)
             - It completes transactions that were committed but not yet checkpointed and ignores or rolls back incomplete transactions.
+
+### 2.3 Batching log updates
+
+- Buffer all updates in a global transaction
+- E.g. Write two files in the same directory. 
+- Avoid excessive write traffic
+
+### 2.4 Making the log finite
+
+- Log may become full
+    - Larger log, longer recovery
+    - When log is full, no further transactions can be committed to disk, making FS useless
+- JFS: treat log as a circular data structure (i.e. circular log)
+    - Journal superblock: record enough information to know which transactions have not yet been checkpoint, thus reduce recovery time and enable re-use of log in circular fashion
+- ![alt text](images/32-storage/journal-superblock.png)
+
+
+### 2.6 Tricky Case: Block Reuse 
+- Create, delete, and create the same file reusing the same block, the newly-written data in block 1000 is not journaled
+- Crash occurs, with this log, reply
+    - Write of directory data in block 1000, overwrite user data with old directory contents!
+- Solution: **revoke**
+    - Deleting the directory would cause a revoke record to be written to the journal
+    - When replaying the journal, the system first scans for such revoke records
+    - Any such revoked data is never replayed, thus avoiding the problem mentioned above
+
+
+## Solution #3: other approaches
+1. **Copy-on-write (COW), like LFS** 
+    1. Technique: never overwrite files or directories in place 
+    2. Instead: places new updates to previous unused locations on disk 
+    3. After a number of updates completed, COW file system flips the root structure of the file system to include pointers to newly updated structures 
+2. **Backpointer-based consistency (BBC)**
+    1. No ordering is enforced between writes
+    2. Back pointer is added to every block in the system 
+    3. Determine consistency by checking if the forward pointer points to a block that refers back to it 
+3. **Optimistic crash consistency** 
+    1. Issues as many writes to disk as possible by using a generalized form of **transaction checksum**
 
 # Hard Disk Drives
 
@@ -268,142 +385,6 @@ Sweep back and forth, from one end of disk other, serving requests as pass that 
     - **Work-conserving**: immediately issue request to the disk, always try to do work if there’s work to be done
     - **Anticipatory disk scheduling**: wait a bit
 
-
-# Flash-based SSDs 
-
-- Flash is a technology by which data is stored while SSDs are a storage device. Not all SSDs use flash as their storage medium, but most currently on the market do.
-- SSD is **solid-state storage device**
-- Such devices have no mechanical or moving parts like hard drives
-- They simply built out of transistors, much like memory and processors
-- However, unlike typical DRAM, such SSD device retains information despite power lost
-- Technology focusing on: **flash** (i.e. **NAND-based flash**), created in 1980s
-    - To write a chunk (i.e. a **flash page**), have to erase a bigger chunk (i.e. **flash block**)
-    - Writing too often to a page will cause it to **wear out**
-
-
-## Log-structured FTL 
-- Write logging
-    - Upon write to a logical block N, the device appends the write to the next free spot in the currently-being-written-to block
-- Mapping table
-    - Store physical address of logical block in the system
-    - Kept in memory, and persistent on the device
-- Log based approach
-    - Improve performance
-        - Erase only being required once in a while
-        - Costly read-modify-write of direct-mapped are avoided
-    - Enhance reliability
-    - Spread writes across pages
-        - Wear leveling
-        - Increase the lifetime of the device
-- Garbage collection
-    - Finding a block that contains one or more garbage pages, read in live pages from that block, write out those to log, reclaim the entire block for use in writing
-    - Some SSDs over-provision the device to reduce GC costs
-        - Increase internal bandwidth used for cleaning
-        - Cleaning can be delayed and pushed to the background
-- Mapping table size
-    - With a large 1-TB SSD, for example, a single 4-byte entry per 4-KB page results in 1 GB of memory needed by the device, just for these mappings! Thus, this page-level FTL scheme is impractical.
-    - Block-based mapping
-        - Only keep a pointer per block of the device, instead of per page
-        - Pros: reduce memory needed for translations
-        - Cons: performance on small write (< physical block size)
-    - **Hybrid mapping**
-        - FTL keeps a few blocks erased and direct all writes to them (i.e. **log blocks**)
-        - Keeps per-page mappings for these log blocks
-            - Able to write any page to any location within the log block
-        - Hybrid mapping: Two types of mapping
-            - Per-page mapping: log table (**Good for small write**)
-            - Per-block mapping: data table (**Good for saving space (due to block-level mapping)**)
-        - Process
-            - Consult the log table
-            - If logical block is not found there, then consult the data table then access
-        - Key: keeping the # of log blocks small (i.e. examine log blocks and switch them into blocks)
-
-# Crash Consistency: FSCK and Journaling 
-
-## Example: append
-
-- Append operation
-    - Open the file
-    - `lseek()` to move the file offset to end of the file
-    - Issue a 4KB write to the file before closing it
-    - This needs to update
-        - The inode (which must point to new block and record the new larger size due to append)
-        - The new data block
-        - A new version of the data bitmap
-    - These dirty writes still sit in main memory (in the **page cache** or **buffer cache**) for some times
-    - Buffers are associated with a specific block device, and cover caching of filesystem metadata as well as tracking in-flight pages. The cache only contains parked file data. That is, the buffers remember what's in directories, what file permissions are, and keep track of what memory is being written from or read to for a particular block device. The cache only contains the contents of the files themselves.
-    - Buffer cache and page cache are unified later in Linux. 
-      - Implemented entirely in software. 
-
-### Solution #1: File System Checker (FSCK)
-
-- Basic idea: let inconsistency happen, fix them later
-- FSCK: a UNIX tool to check and repair a disk partition exist on different systems
-    - Runs before the file system is mounted and made available
-    - Once finished, should be consistent and made accessible
-- Summary
-    - Superblock: sanity check (i.e. FS size > # of blocks allocated)
-    - Free blocks: scan inodes, indirect blocks, to understand which blocks are currently allocated within FS. Inconsistency between bitmaps and inodes are resolved by trusting **inodes**.
-    - Inode state: checked for corruption, check valid type field
-    - Inode links: scan through directory tree, build link counts for every file, if mismatch between new calculated count and inode, correct action by fixing count within inode
-    - Duplicates: two inodes point to the same block
-    - Bad blocks: if pointer points to something outside valid range (i.e. refer to block greater than partition size)
-    - Directory checks: integrity check to make sure “.” and “..” are first entries, etc.
-- Problem
-    - Complicated knowledge about FS
-    - Way too slow!!
-        - search-the-entire-house-for-keys recovery algorithm
-
-### 2.1 Data Journaling (i.e. in Linux ext3 and NTFS) 
-
-1. **Journal write:** Write the contents of the transaction (including TxB, metadata, and data) to the log; wait for these writes to complete.
-2. **Journal commit:** Write the transaction commit block (containing TxE) to the log; wait for write to complete; transaction is said to be **committed**.
-3. **Checkpoint:** Write the contents of the update (metadata and data) to their final on-disk locations.
-
-### 2.2 Recovery
-
-- Main thing: use contents of journal to **recover** from a crash
-- Steps
-    - Before journal write: pending update is simply skipped
-    - After commit, before checkpoint completes: recover update by replay the log (i.e. **redo logging**)
-        - Might have redundant writes, but okay!
-
-### 2.3 Batching log updates
-
-- Buffer all updates in a global transaction
-- E.g. Write two files in the same directory. 
-- Avoid excessive write traffic
-
-### 2.4 Making the log finite
-
-- Log may become full
-    - Larger log, longer recovery
-    - When log is full, no further transactions can be committed to disk, making FS useless
-- JFS: treat log as a circular data structure (i.e. circular log)
-    - Journal superblock: record enough information to know which transactions have not yet been checkpoint, thus reduce recovery time and enable re-use of log in circular fashion
-- ![alt text](images/32-storage/journal-superblock.png)
-
-### 2.6 Tricky Case: Block Reuse 
-- Create, delete, and create the same file reusing the same block, the newly-written data in block 1000 is not journaled
-- Crash occurs, with this log, reply
-    - Write of directory data in block 1000, overwrite user data with old directory contents!
-- Solution: **revoke**
-    - Deleting the directory would cause a revoke record to be written to the journal
-    - When replaying the journal, the system first scans for such revoke records
-    - Any such revoked data is never replayed, thus avoiding the problem mentioned above
-
-## Solution #3: other approaches
-1. **Copy-on-write (COW), like LFS** 
-    1. Technique: never overwrite files or directories in place 
-    2. Instead: places new updates to previous unused locations on disk 
-    3. After a number of updates completed, COW file system flips the root structure of the file system to include pointers to newly updated structures 
-2. **Backpointer-based consistency (BBC)**
-    1. No ordering is enforced between writes
-    2. Back pointer is added to every block in the system 
-    3. Determine consistency by checking if the forward pointer points to a block that refers back to it 
-3. **Optimistic crash consistency** 
-    1. Issues as many writes to disk as possible by using a generalized form of **transaction checksum**
-
 ## Time
 * Read block from random place on disk:
   * – Seek (5ms) + Rot. Delay (4ms) + Transfer (0.082ms) = 9.082ms
@@ -411,8 +392,8 @@ Sweep back and forth, from one end of disk other, serving requests as pass that 
   * – Rot. Delay (4ms) + Transfer (0.082ms) = 4.082ms 
 
 ### Delayed write
-* • Performance advantage: return to user quickly without writing to disk!
-* • Disk scheduler can efficiently order lots of requests
-* • Delay block allocation: 
-* • Some files never actually make it all the way to disk
+* Performance advantage: return to user quickly without writing to disk!
+* Disk scheduler can efficiently order lots of requests
+* Delay block allocation: 
+* Some files never actually make it all the way to disk
 

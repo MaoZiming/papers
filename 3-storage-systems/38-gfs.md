@@ -14,7 +14,7 @@ GFS is a scalable distributed file system for large distributed data-intensive a
 4. Workloads: append-only 
    *  e.x. log collections, web search
    *  large streaming reads, small random reads
-   *  many large, sequential writes; none random writes
+   *  many large, **sequential** writes; none random writes
 
 ## Architecture 
 ![gfs-architecture](images/38-gfs/gfs-architecture.png)
@@ -26,13 +26,13 @@ GFS is a scalable distributed file system for large distributed data-intensive a
     *  Store chunks on local disks as Linux files
       
 ## Fault tolerance & scalability: Replication 
-**Chunks**: are replicated 3-way to handle faults
+**Chunks**: are replicated **3-way** to handle faults
 - Use large chunk size (64MB) 
     -  Handle lots of operations on a given chunks
     -  Reduce size of metadata stored on server and network communication in-between
     -  Beneficial for sequential writes
 - Lease: maintain a consistent mutation order across replicas
-- Chunk lease to one replica for each chunk (i.e. primary replica), which decides serial order for all mutations to the chunk
+- **Chunk lease to one replica for each chunk (i.e. primary replica), which decides serial order for all mutations to the chunk**
 - Check data integrity using checksum blocks in each chunkserver
 - Data forwarding is pipelined for efficiency, and is also network-aware
 

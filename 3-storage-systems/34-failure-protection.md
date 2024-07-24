@@ -52,8 +52,6 @@
     - We want to find one that minimize the chance of collisions
 - How should checksum be stored in disk?
     - If disk can format drive with 520 byte sectors (512 bytes chunks + 8 bytes checksum), then put checksum close to data
-    - If not:
-      - Put checksums at the front.
 
 ## New Problem: Misdirected Writes
 
@@ -62,7 +60,7 @@
     - Arises in disk and RAID controllers which write the data to disk correctly, except in the **wrong location**
 - **How to detect?**
     - Adding a physical identifier (physical ID) to each checksum
-    - E.x. stored information contains the checksum and both the disk and sector number of the block
+    - E.x. stored information contains the checksum and both the disk and block number of the block
 - ![alt text](images/34-failure-protection/misdirected-writes.png)
 
 ## One last problem: lost writes
@@ -88,7 +86,7 @@
 - **Space:** usually small
     - On-disk itself: takes up room
     - Memory: if checksums kept in memory (For an added level of protection against memory corruption)
-- **Time**: quite noticeable
+- **Time**: **quite noticeable**
     - CPU overhead: CPU must compute checksum over each block, both when data is stored (to determine value of stored checksum), and when it is accessed (to compute and compare)
     - Approach: combine data copying and checksumming into streamlined activity
         - Copying is needed anyhow

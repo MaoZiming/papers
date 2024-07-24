@@ -2,10 +2,7 @@
 
 ## Paths
 
-- String names are friendlier than number names
-- File system still interacts with inode numbers
 - **Directory tree** instead of single root directory
-- **File name** needs to be unique within a directory
 - Store **path-to-inode mappings** in each directory
     - Reading for getting final inode is called “traversal”
 - `open`, `read`, `write`, `close` system calls
@@ -13,12 +10,11 @@
 
 ## File Descriptor (FD)
 
-- `open()` returns: a file descriptor. A file descriptor is just an integer, private per process, and is used in UNIX systems to access files; thus, once a file is opened, you use the file de- scriptor to read or write the file, assuming you have permission to do so.
+- `open()` returns: a file descriptor. A file descriptor is just an integer, **private per process**, and is used in UNIX systems to access files; thus, once a file is opened, you use the file descriptor to read or write the file, assuming you have permission to do so.
   - File descriptor is as a pointer to an object of type file
 - Idea
     - Do expensive traversal once (open file)
-    - Store inode in descriptor object (kept in memory)
-    - Do reads / writes via descriptor, which **tracks offset**
+    - Store inode in the file descriptor object (kept in memory)
 - Each process: file descriptor table contains pointers to **open file descriptors**
 - Integer used for file I/O are indexes to this table
     - stdin: 0, stdout: 1, stderr: 2
@@ -54,6 +50,10 @@ FILE* f2 = fopen(“file.txt”, “rb”);
 fread(&x, sizeof(char), 1, f2);
 ```
 
+Note: 
+* The first set of functions (open, read, write, and close) are part of the POSIX (Portable Operating System Interface) standard for low-level file I/O operations.
+* The second set of functions (fopen, fwrite, fflush, fread) are part of the C standard library (stdio.h), providing a higher-level interface for file I/O operations. 
+
 ## High-level and low-level file operation
 
 ```c
@@ -71,18 +71,16 @@ Outputs "Beginning of line" 10 seconds earlier than “and end of line”
 
 > Why Buffer in Userspace? Overhead!
 > Syscalls are 25x more expensive than function calls (~100 ns)
-> 
 
 ## Reading And Writing, But Not Sequentially
-Reposition file offset within kernel (this is independent of any position held by high-level
-FILE descriptor for this file)!
+Reposition file offset within kernel (this is independent of any position held by high-level FILE descriptor for this file)!
 ```c
     off_t lseek(int fildes, off_t offset, int whence);
 ```
 Values that `whence` can take: 
 ```
   If whence is SEEK_SET, the offset is set to offset bytes.
-  If whence is SEEK_CUR, sthe offset is set to its current
+  If whence is SEEK_CUR, the offset is set to its current
     location plus offset bytes.
   If whence is SEEK_END, the offset is set to the size of
     the file plus offset bytes.
@@ -97,7 +95,7 @@ struct file {
   char readable;
   char writable;
   struct inode *ip;
-  uint off;
+  uint off; // Here
 };
 ```
 - Open file table. The xv6 kernel just keeps these as an array, with one lock for the entire table.
@@ -112,10 +110,9 @@ struct {
 
 - `fork`: increments the reference count. Parent and child shares the file.
 - For example, if you create a number of processes that are cooperatively working on a task, they can write to the same output file without any extra coordination.
-- ![alt text](images/32-storage-systems/sharing-files.png)
+- ![alt text](images/32-storage/sharing-files.png)
 - The `dup()` call allows a process to create a new file descriptor that refers to the same underlying open file as an existing descriptor.
-  - `dup2()`
-- Open file description remains alive until no file descriptors in any process refer to it
+- Open file description remains alive until no file descriptors in *any* process refer to it
 
 ## Should never call `fork` in a multi-threaded process.
 * Other threads just vanish (what if these threads are holding a lock).
@@ -137,13 +134,14 @@ Might be all of the file
 
 ## FSYNC: communicating requirements
 
-- Most times when a program calls write(), it is just telling the file system: please write this data to persistent storage, at some point in the future.
+- Most times when a program calls write(), it is just telling the file system: please write this data to persistent storage, **at some point in the future**.
 - File system keeps newly written data in memory for a while
     - Write buffering improves performance
 - If system crashes before buffers are flushed, then lose data
 - `fsync(int fd)`
     - Forces buffer to flush to disk
     - Tells disk to flush its write cache
+      - Many of the HDD and SSD have their own write cache. 
     - Makes data durable
 - In the UNIX world, the interface provided to applications is known as `fsync(int fd)`. When a process calls `fsync()` for a particular file descriptor, the file system responds by forcing all dirty (i.e., not yet written) data to disk, for the file referred to by the specified file descriptor. The `fsync()` routine returns once all of these writes are complete.
 
@@ -172,23 +170,24 @@ struct dirent {
 - Inode (and associate file) is **garbage collected** when there are no references
     - Paths are deleted when `unlink()` is called
     - FDs are deleted when `close()` or process quits
-- `link`: an old pathname and a new one; when you “link” a new file name to an old one, you essentially create another way to refer to the same file.
+- `link`: an old pathname and a new one; when you “link” a new file name to an old one, you essentially **create another way to refer to the same file**.
 - The way `link()` works is that it simply creates another name in the directory you are creating the link to, and refers it to the same inode number (i.e., low-level name) of the original file. The file is not copied in any way;
 - Hard link
   - `ln` command
     - Hard links are somewhat limited: you can’t create one to a directory (for fear that you will create a cycle in the directory tree); you can’t hard link to files in other disk partitions (because inode numbers are only unique within a particular file system, not across file systems); etc. Thus, a new type of link called the symbolic link was created
     - A hard link is essentially another name for an existing file on disk
-        - All hard links to a file point to the same inode, and the same data blocks
+        - All hard links to a file point to **the same inode**, and the same data blocks
 - What `link` does:
   - First, you are making a structure (the inode) that will track virtually all relevant information about the file, including its size, where its blocks are on disk, and so forth. Second, you are linking a human-readable name to that file, and putting that link into a directory.
   - The reason this works is because when the file system unlinks file, it checks a reference count within the inode number. This reference count (sometimes called the link count) allows the file system to track how many different file names have been linked to this particular inode. 
-    - only when the reference count reaches zero does the file system also free the inode and related data blocks, and thus truly “delete” the file.
+    - only when the reference count reaches zero does the file system also free the inode and **related data blocks**, and thus truly “delete” the file.
+    - **THis is all for safety**
 - Soft link (symbolic link)
     - `ln -s`. 
     - Difference
         - A symbolic link is actually a file itself, of a different type
         - A symbolic link is a separate file that contains a reference to another file or directory in the form of an absolute or relative path to target
-            - Have their own inode numbers
+            - **Have their own inode numbers**
     - Potential problem
         - Dangling reference
         - Quite unlike hard links, removing the original file named file causes the link to point to a pathname that no longer exists
@@ -205,6 +204,8 @@ struct dirent {
     - More complicated control to represent exactly who can access a given resource
     - Enable a user to create a specific list of who can and cannot read a set of files
         - V.s. limited owner / group / everyone model of permission bits
+
+- Later: capability based system. 
 
 ## Making and Mounting FS
 
@@ -231,17 +232,36 @@ struct dirent {
         - Chosen in the example below
     - **Superblock:** contains the information about the **particular file system**
         - E.x. how many inodes and data blocks are in the file system, where the inode table begins, identify the file system type, etc.
-    - ![alt text](images/33-storage-systems/file-system-organization.png)
+    - ![alt text](images/32-storage/file-system-organization.png)
 - E.x. when mounting a FS
     - OS will read the superblock first to initialize various parameters, then attach the volume to the file system tree
     - When files within the volume are accessed, the system will know exactly where to look for the needed on-disk structure
 
 ## File Organization: The Inode 
 
+```c
+#define N_DIRECT 12
+
+typedef struct {
+    mode_t file_type_and_permissions;  // File type and permissions
+    uid_t uid;                         // Owner's user ID
+    gid_t gid;                         // Owner's group ID
+    time_t ctime;                      // Creation time
+    time_t mtime;                      // Modification time
+    time_t atime;                      // Access time
+    size_t size;                       // Size of the file in bytes
+    int link_count;                    // Number of hard links
+    int direct_pointers[N_DIRECT];     // Direct pointers to data blocks
+    int single_indirect_pointer;       // Pointer to a single indirect block
+    int double_indirect_pointer;       // Pointer to a double indirect block
+    int triple_indirect_pointer;       // Pointer to a triple indirect block
+} inode;
+```
 - Inode: index node 
   - Used because these nodes where originally arranged in an array, and the array indexed into when accessing a particular node
   - Generic name used in FS to describe the structure that holds the metadata for a given file (i.e. length, permissions, location of its blocks)
   - referred to with i-number. 
+    - I-number is used to index into an array of inodes. 
   - Each inode stores a bunch of pointers. 
 - Information
     - Type: regular, directory, etc.
@@ -252,7 +272,7 @@ struct dirent {
     - Where its data block reside on disk
         - How?
             - Direct pointers (disk addresses) inside each inode
-              - **We need an inode per data block.**
+              - **We need an direct pointer per data block.**
               - For a 36KB file, if each data block is 4KB, we need 9 data blocks. and 9 direct pointers to these 9 data blocks. 
                 - Cons: limited, you want to have file really big (i.e. bigger than block size)?
                 - **Multi-level index: indirect pointer**
@@ -265,12 +285,12 @@ struct dirent {
                     - E.x. Linux ext2, ext3, UNIX file system
                 - Others use **extents** instead of pointers
                     - Akin to segments in virtual memory
-                    - Simply a disk pointer plus a length (in blocks)
+                    - Simply a **disk pointer plus a length (in blocks)**
                     - Instead of requiring a pointer for every block of a file, all one needs is a pointer and a length to specify the on-disk location of a file
                     - Just a single extent is limiting, as one may have trouble finding a contiguous chunk of on-disk free space when allocating a file. Thus, extent-based file systems often allow for more than one extent, thus giving more freedom to the file system during file allocation
                 - **Pointer v.s Extent**
                     - Pointer: more flexible but use large amount of metadata per file (particularly for large file)
-                    - Extent: less flexible but more compact, work well when there is enough free space on the disk and files can be laid out contiguously
+                    - Extent: **less flexible but more compact**, work well when there is enough free space on the disk and files can be laid out **contiguously** (this is why it is less flexible, usually requiring laying out files contiguously). 
 
 ## Directory Organization
 
@@ -279,7 +299,7 @@ struct dirent {
     - There is a string and a number in the data block(s) of the directory
     - For each string, there may also be a length
 - Each entry has an inode number, record length (the total bytes for the name plus any left over space), string length (the actual length of the name), and finally the name of the entry.
-- ![alt text](images/33-storage-systems/dir-org.png)
+- ![alt text](images/32-storage/dir-org.png)
 
 
 ## Free space management
@@ -298,7 +318,7 @@ struct dirent {
 
 - The file system must **traverse** the pathname and thus located the desired node
 - All traversals begin at the root of the file system, in the **root directory**
-- The amount of I/O generated by the open is proportional to the length of the pathname
+- The amount of I/O generated by the open **is proportional to the length of the pathname**
     - For each additional directory in the path, read its inode and data
 - Open(`\foo\bar`): All traversals begin at the root.
   - Read the inode of the root directory (typically 2). 
@@ -307,4 +327,4 @@ struct dirent {
   - Read through the directory, looking for the entry for the next directory in the path (`foo`)
   - Find the inode number for foo (say 44).
   - Recursively traverse the pathname. 
-  - The final step of open() is to read bar’s inode into memory; the FS then does a final permissions check, allocates a file descriptor for this process in the per-process open-file table, and returns it to the user.
+  - The final step of open() is to read bar’s **inode** into memory; the FS then does a final permissions check, allocates a file descriptor for this process in the per-process open-file table (file descriptors), and returns it to the user.

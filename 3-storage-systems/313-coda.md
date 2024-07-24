@@ -16,7 +16,7 @@ Caching can be used to improve both performance and availability.
 Venus is the cache manager.
 The set of replication sites for a volume is its volume storage group (VSG). The subset of a VSG that is currently accessible is a client’s accessible VSG (AVSG).
 
-While disconnected, Venus services file system requests by relying solely on the contents of its cache. Cache misses are appeared as failures.
+While disconnected, Venus services file system requests by relying solely on the contents of its cache. **Cache misses are appeared as failures.**
 
 -   **Server replication** for performance, scalability, and availability
     -  consistency ensured by callbacks  
@@ -48,7 +48,7 @@ Availability is the major concern
         - Leases: reserve resources for not long enough
           - Placing a time bound on exclusive or shared control, as done in the case of leases [7], avoids this problem but introduces others. Once a lease expires, a disconnected client loses the ability to access a cached object, even if no one else in the system is interested in it. This, in turn, defeats the purpose of disconnected operation which is to provide high availability. Worse, updates already made while disconnected have to be discarded.
     - Optimistic control may result in (W/W) conflict
-        - Need conflict detection and resolution, but uncommon for UNIX env
+        -**Need conflict detection and resolution**, but uncommon for UNIX env
     - UNIX write sharing is uncommon. Consistent with the goal of maximizing availability.
 
 ### Architecture
@@ -73,7 +73,7 @@ Availability is the major concern
 
 - ***EMULATION:** Psuedo-server*
     - Client disconnects but acts like it is connected by working on the cached contents
-        - Modified objects assume infinite priority
+        - **Modified objects assume infinite priority**
           - So they are not purged before reintegration.
         - Log operations for later REINTEGRATION
             - Replay log (metadata, HDB) accessed through recoverable virtual memory (RVM)
@@ -81,12 +81,12 @@ Availability is the major concern
             - Removes previous store records on repeated close
             - Should remove stores after unlink or truncate
             - Should remove log records that are inverted
-            - Cacnellation of old log records (e.g. `rmdir`)
+            - Cancellation of old log records (e.g. `rmdir`)
 - ***REINTEGRATION***
     - Perform a volume at a time, where the operations to a volume is suspended. 
     - Propagates changes back to servers (i.e. transfer updates, resolves conflicts)
         - Changes at one end: updates
-        - Changes in both end: W/W conflict
+        - Changes in both ends: W/W conflict
     - Ship log to all servers in AVSG
         - Begin transaction, lock all referenced objects
         - Validate each operation and then execute
