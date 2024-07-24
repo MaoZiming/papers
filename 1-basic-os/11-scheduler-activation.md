@@ -26,7 +26,7 @@ Read: June 16th, 12:55AM.
     - System scheduler unaware of user-thread state, leading to lower utilization
   
 ### User thread
-  - Invoking user-level thread (Python `threading` module) operations can be quite inexpensive. Context switch is low overhead similar to a procedure call. 
+  - Invoking user-level thread (Python `threading` module) operations can be quite inexpensive. Context switch is low overhead similar to a **procedure call**. 
     - Further, safety is not compromised: address space boundaries isolate misuse of a user-level thread system to the program. 
     - However, I/O operations have to go through the kernel in any case. User-level threads have poor performance.
     - User-level threads just require a small amount of bookkeeping within one kernel thread or process.

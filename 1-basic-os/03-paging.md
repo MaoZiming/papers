@@ -1,7 +1,7 @@
 # Paging
 
 - Paging: a new solution to virtualizing memory
-  - Correspondingly, we view physical memory as an array of fixed-sized slots called page frames; each of these frames can contain a single virtual-memory page.
+  - Correspondingly, we view physical memory as an array of page frames; each of these frames can contain a single virtual-memory page.
   - Naive paging leads to huge space inefficiency when using PT on sparse address. 
 - Pros
   - Does not lead to external fragmentation, as it divides memory into fixed-sized units
@@ -65,7 +65,7 @@
 - Page Fault
 - ***Page fault handler***- **Page fault:** the HW looks in the PTE, it may find that page is *not present* in physical memory
   - Upon page fault, **OS is invoked with page-fault handler**
-    - Find the page, do I/O from swap space (i.e. reserved space on the **disk** for moving pages back and forth)
+    - Find the page, do I/O from **swap space** (i.e. reserved space on the **disk** for moving pages back and forth)
       - **Swap Space**: reserved space on the **disk** for moving pages back and forth
         - Assume size of swap space is very large
       - The first thing we will need to do is to reserve some space on the disk for moving pages back and forth. In operating systems, **we generally refer to such space as swap space, because we swap pages out of memory to it and swap pages into memory from it.**
@@ -93,7 +93,7 @@
   - If an entire page of page-table entries (PTEs) is invalid, don’t allocate that page of the page table at all
   - Use **page directory**: track whether a page of the page table is valid
     - Either tell you where a page of the page table is
-    - Or that entire page of the page table contains no valid page
+    - Or that entire directory of the page table contains no valid page
 - Pros
   - Only allocate page-table space in proportion to the amount of addr space you are using, generally compact
   - If carefully constructed, each portion of the page table fits neatly within a page, making it easier to manage memory
@@ -115,7 +115,6 @@
 ### Inverted Page Tables
 
 - ![alt text](images/03-paging/inverted-page-table.png)
-
 - Instead of having many page tables (one per process), keep a single page table that has an entry for each physical page in the system
   - Tell us which process is using the page, which virtual page of process maps to that physical page
 - Finding the correct entry?
@@ -134,7 +133,7 @@
 
 ***Translation-lookaside buffer (TLB)***- Part of the chip’s MMU
 
-- Simply a hardware cache of popular virtual-to-physical address translation
+- Simply a hardware cache of popular **virtual-to-physical** address translation
 - Maintain virtual-to-physical translations that are only valid for the current running process
   - Flush on context switches
 - Can be software-managed or hardware-managed
@@ -161,7 +160,7 @@
     - HW doesn’t do much on a miss, just raise an exception and OS TLB miss handler do the rest
       - A typical TLB might have 32, 64, or 128 entries and be what is called fully associative. Basically, this just means that any given translation can be anywhere in the TLB, and that the hardware will **search the entire TLB in parallel** to find the desired translation. A TLB entry might look like this:
     - VPN | PFN | other | bits
-    - To reduce this overhead, some systems add hardware support to enable sharing of the TLB across context switches. In particular, some hardware systems provide an address space identifier (ASID) field in the TLB. You can think of the ASID as a process identifier (PID), but usually it has fewer bits (e.g., 8 bits for the ASID versus 32 bits for a PID)
+    - To reduce this overhead, **some systems add hardware support to enable sharing of the TLB across context switches**. In particular, some hardware systems provide an address space identifier (ASID) field in the TLB. You can think of the ASID as a process identifier (PID), but usually it has fewer bits (e.g., 8 bits for the ASID versus 32 bits for a PID)
 
 ### NRU (Clock Algorithm)
 

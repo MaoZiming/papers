@@ -53,8 +53,7 @@ Read: June 16th, 10:41AM.
 - **Pros:** robust to load
 - **Cons**
     - Event-handling threads can block.
-        - But this is not true, e.x. interrupts, page faults, garbage collection
-        - ^ For these reasons, event-handling threads can still block. 
+        -  e.x. interrupts, page faults, garbage collection
     - Additional challenges
         - Scheduling and ordering of events are hard for application
         - Modularity is difficult to achieve
@@ -85,7 +84,7 @@ Read: June 16th, 10:41AM.
         1. Goal: enough thread to handle concurrency demands 
         2. Periodically sample input queue and add a thread when the queue length exceeds some threshold 
         3. Threads are removed when they are idle for a specified period of time 
-    2. ***Batching controller***: adjust # of events processed by each invocation of the event handler within a stage 
+    2. ***Batching controller***: **adjust # of events processed by each invocation of the event handler within a stage**
         1. Observes output rate of events from a stage (by maintaining moving average across samples), and decreases batching factor until throughput starts to degrade 
         2. Responds to sudden drops in load by resetting batching factor to max 
 

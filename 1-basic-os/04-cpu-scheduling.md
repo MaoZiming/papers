@@ -12,7 +12,7 @@
       - Same convey problem
   - FCFS:
     - First-come-first-serve. 
-  - STCF:
+  - STCF (Shortest Time-to-Completion First):
     - If we do not requite all jobs to run to completion:
     - Add **preemption**
       - Any time a new job enters the system, the STCF scheduler determines which of the remaining jobs (including the new job) has the least time left, and schedules that one.
@@ -51,7 +51,7 @@ time
 - Pros: more flexible, allow different process to move between priorities, prevent starvation by increasing process’s priority
 - Cons: many tunable knobs: # of queues, time slice per queue, how often should priority be boosted, etc.
 
-### EDF
+### EDF (Earliest Deadline First)
 
 - Assign priorities to the task according to the absolute deadline. The task whose deadline is closet gets the highest priority.
 - Pros: efficient in real time system, dynamic
@@ -65,7 +65,6 @@ time
   - Lightweight, randomness
   - But occasionally not deliver right proportions
 - Stride Scheduling: not use randomness
-  - Stride: **inverse** in proportion to # of tickets it has
   - use the stride and pass to determine which process to run next; pick process to run that has the lowest pass value so far, when you run a process, increment its pass counter by stride
 
 ### Lottery Scheduling
@@ -105,7 +104,7 @@ time
     - Keep track of each process’ **pass value** (every time process runs). Increment by its stride to track its global process.
     - Scheduler chooses process with **lowest** pass value
     - Increment chosen process’ pass value **by its stride**
-  - Comparing lottery scheduling and stride scheduling, the benefit of lottery scheduling: no global state per process, we simply add a new process with whatever tickets it has, update the single global variable to track how many total tickets we have, and go from there. easier to incorporate new process
+  - Comparing lottery scheduling and stride scheduling, the benefit of lottery scheduling: **no global state per process**, we simply add a new process with whatever tickets it has, update the single global variable to track how many total tickets we have, and go from there. easier to incorporate new process
 
 
 ### Linux Completely Fair Scheduler (CFS)
@@ -213,10 +212,10 @@ time
 
 ## Problem #3: Cache Affinity
 
-- Notion: A process running on a particular CPU builds up a fair bit of state in caches (and TLBs) of the CPU
+- Notion: A process running on a particular CPU builds up a fair bit of state in caches  of the CPU
   - The next time the process runs, it is often advantageous to run this process on the same CPU again
-  - As it will run faster if some of its state already present in caches on that CPU
-  - Otherwise has to reload the state
+  - As it will run faster if some of its state already present in **caches** on that CPU
+  - Otherwise has to reload the state 
 
 ## Building a scheduler for multiprocessor system
 

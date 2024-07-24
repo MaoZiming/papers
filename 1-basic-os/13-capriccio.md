@@ -115,7 +115,7 @@ There are three parts:
     - E.x. 1GB virtual memory with just 500 threads
       - For example, LinuxThreads allocates two megabytes per stack by default; 
 - Most threads consume only a few kilobytes of stack space at any given time
-  - Significantly reduce the size of virtual memory dedicated to stacks if we adopt a dynamic stack allocation policy wherein stack space is allocated to threads on demand in relatively small increments and is deallocated when the thread requires less stack space.
+  - Significantly reduce the size of virtual memory dedicated to stacks if we adopt a **dynamic stack allocation policy** wherein stack space is allocated to threads on demand in relatively small increments and is deallocated when the thread requires less stack space.
 - Idea: dynamic stack allocation with linked chunks
     - Alleviates VM pressure and improve paging behavior
 - Method: compile-time analysis and checkpoint injection
@@ -144,7 +144,7 @@ There are three parts:
     - View applications as sequence of stages separated by blocking points
     - Generated at runtime
     - Nodes: program locations where threads block
-    - Edges: consecutive blocking points
+    - **Edges: consecutive blocking points**
         - Annotated by
             - Average time taken to traverse an edge
             - Change in resource usage like memory, stack space, sockets

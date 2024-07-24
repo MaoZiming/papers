@@ -106,7 +106,6 @@
 - Coarse-grained: a few segments like code, stack, heap
 - Fine-grained: early systems, large # of smaller segments
   - Need **segment table** of some kind stored in memory
-  - OS Support
 - Context switch?
   - Segment registers must be saved and restored
 - OS interaction when segments grow and shrink?

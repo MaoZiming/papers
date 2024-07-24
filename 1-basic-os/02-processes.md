@@ -37,7 +37,7 @@
     - CPU support: **user mode** and **a privileged (non-restricted) kernel mode**
         - Kernel: OS
         - Use **system call** to **trap** into kernel to request OS services
-        - The trap instruction save register state carefully, change hardware status to kernel model, and jump into the OS to a pre-specified destination: **trap table**
+        - The trap instruction saves register state carefully, change hardware status to kernel model, and jump into the OS to a pre-specified destination: **trap table**
         - After finish a system call, **return-from-trap**
         - Once program running, OS must use hardware mechanisms to ensure user program does not run forever: **timer interrupt** (i.e. **non-cooperative**)
             - Timer device programmed to raise interrupt
@@ -94,7 +94,7 @@
 
 # Process
 
-- Instruction Set Architecture (ISA): 
+- **Instruction Set Architecture** (ISA): 
   -  ISA defines the supported instructions, data types, registers, the hardware support for managing main memory (such as the memory consistency, addressing modes, virtual memory), and the input/output model of implementations of the ISA.
      -  E.g. x86, developed by Intel, CISC
      -  ARM, developed by ARM Holdings, RISC
@@ -102,7 +102,7 @@
   - Processor (Von Neumann model of computing):
   - Fetch an instruction from memory
   - Decode the instruction (Figure out what instruction it is)
-    - During decoding, the processor needs to: determine what instruction is represented by the opcode so that the instruction can be issued to the correct execution unit and that the correct operation is performed correctly interpret the arguments, prefixes, and other values attached to the instruction and pass the relevant information to the relevant circuitry (in most modern processor designs) break the instruction down into its corresponding micro-operations With modern processors, this can be a complex operation that requires multiple stages in the pipeline. To speed this process up, a dedicated cache may be used to store micro-operations for frequently-executed instructions.
+    - During decoding, the processor needs to: determine what instruction is represented by the opcode; prefixes, and other values attached to the instruction and pass the relevant information to the relevant circuitry (in most modern processor designs) break the instruction down into its corresponding micro-operations With modern processors, this can be a complex operation that requires multiple stages in the pipeline. To speed this process up, a dedicated cache may be used to store micro-operations for frequently-executed instructions.
   - Execute the instruction
   - Contents of memory is in its address space.
 - Contents of CPU registers (including the program counter and stack pointer).
@@ -146,18 +146,11 @@
 - Interrupt vector, indexed by interrupt number. 
   - Entry of the vector contains the address and properties of each interrupt handler. 
 - RTU: Return to user. 
-- Give control to process: put the program counter from UPC to PC. 
 
 # Limited Directed Execution
 
-- The CPU should support at least two modes of execution: a restricted user mode and a privileged (non-restricted) kernel mode.
-- Typical user applications run in user mode, and use a system call to trap into the kernel to request operating system services.
-- The trap instruction saves register state carefully, changes the hardware status to kernel mode, and jumps into the OS to a pre-specified destination: the **trap table**
-  - Purpose: The trap table is used to map different types of traps (such as interrupts, exceptions, and system calls) to their corresponding handler routines. These handlers are special functions that are executed when a specific trap occurs.
-- When the OS finishes servicing a system call, it returns to the user program via another special **return-from-trap** instruction.
 - The trap tables (with locations of trap handlers) must be set up by the OS at **boot time**, and make sure that they cannot be readily modified by user programs.
   - The timer interrupt. This approach is a non-cooperative approach to CPU scheduling.
-- Sometimes the OS, during a timer interrupt or system call, might wish to switch from running the current process to a different one, a low-level technique known as a context switch.
 - Direct Execution Protocol (Without Limits)
   - ![image](images/02-processes/direct-execution-protocol.png)
 - System call:
@@ -170,29 +163,26 @@
   - Switching Between Processes
     - Cooperative Approach: wait for system calls
       - the OS regains control of the CPU by waiting for a system call (e.g. **Yield**) or an illegal operation of some kind (divide by zero, or tries to access memory that it shouldn't have, generating a trap) to take place
-      - These system calls often involve a yield system call.
       - If a process gets stuck in an infinite loop, you can only reboot the machine.
     - Non-Cooperative Approach: the OS takes control
       - Use: timer interrupt and interrupt handler
       - A timer device can be programmed to raise an interrupt every so many milliseconds; when the interrupt is raised, the currently running process is halted, and a pre-configured interrupt handler in the OS runs.
       - During boot time, the OS must inform the hardware of which code to run when the timer interrupt occurs; thus, at boot time, the OS does exactly that. Second, also during the boot sequence, the OS must start the timer, which is of course a privileged operation. Once the timer has begun, the OS can thus feel safe in that control will eventually be returned to it, and thus the OS is free to run user programs.
     - Saving and restoring context
-      - Scheduler decision
       - Context switch: save a few register values for current process (onto its kernel stack), and restore a few for the next process
-        - To save the context of the currently-running process, the OS will execute some low-level assembly code to save the general purpose registers, PC, and the kernel stack pointer of the currently-running process, and then restore said registers, PC, and switch to the kernel stack for the soon-to-be-executing process.
   - Limited Direct Execution Protocol
     - ![image](images/02-processes/limited-direct-execution-protocol.png)
   - Two types of register save / restore
-    - When timer interrupt occurs, user registers of the running process are implicitly saved by the **hardware**, using the kernel stack of that process
+    - When timer interrupt occurs, user registers of the running process are implicitly saved by the **hardware**, using the **kernel stack** of that process
       - Switch from A to B, the kernel registers are explicitly saved by the **software** (i.e. the OS), but this time into memory in the process structure of the process
   - system call at the same time of timer interrupt?
     - one simple way: disable interrupt during interrupt processing
 
 ## Process States
 
-- Running: running on a processor
-- Ready: ready to run but OS has chosen not to run it at the moment
-- Blocked: the process has performed some kind of operation that makes it not ready to run until some other event takes place (i.e. I/O request)
+- **Running**: running on a processor
+- **Ready**: ready to run but OS has chosen not to run it at the moment
+- **Blocked**: the process has performed some kind of operation that makes it not ready to run until some other event takes place (i.e. I/O request)
 - Being moved from ready to running means the process has been scheduled; being moved from running to ready means the process has been descheduled.
 - Once a process has become blocked (e.g., by initiating an I/O operation), the OS will keep it as such until some event occurs (e.g., I/O completion); at that point, the process moves to the ready state again (and potentially immediately to running again, if the OS so decides).
 - These need a OS scheduler.
@@ -217,7 +207,7 @@
 * `wait()`
   * Parent can wait for the child to finish executing, thereby finishing before the child.
 * The separation of `fork()` and `exec()` enables features like input/output redirection, pipes and other cool features.
-  * The separation of fork() and exec() is essential in building a UNIX shell, because it lets the shell run code after the call to fork() but before the call to exec(); this code can alter the environment of the about-to-be-run program, and thus enables a variety of interesting features to be readily built.
+  * The separation of **fork()** and **exec()** is essential in building a UNIX shell, because it lets the shell run code after the call to fork() but before the call to exec(); this code can alter the environment of the about-to-be-run program, and thus enables a variety of interesting features to be readily built.
   * The way the shell accomplishes input/output redirection is quite simple: when the child is created, before calling exec(), the shell (specifically, the code executed in the child process) closes standard output and opens the file newfile.txt. By doing so, any output from the soon-to-be-running program is sent to the file instead of the screen
 * Shell:
   * It shows you a prompt and then waits for you to type something into it. You then type a command (i.e., the name of an executable program, plus any arguments) into it; in most cases, the shell then figures out where in the file system the executable resides, calls fork() to create a new child process to run the command, calls some variant of exec() to run the command, and then waits for the command to complete by calling wait(). When the child completes, the shell returns from wait() and prints out a prompt again, ready for your next command
@@ -229,20 +219,18 @@
 
 * Consider an in-memory queue.
 * Data written by process A is held in memory until process B reads it. 
-  * – If producer (A) tries to write when buffer full, it blocks (Put sleep until space)
+  * If producer (A) tries to write when buffer full, it blocks (Put sleep until space)
   * If consumer (B) tries to read when buffer empty, it blocks (Put to sleep until data)
-* Pipes are an abstraction of a single queue
-  * Used for communication between multiple processes on one machine
-* Sockets are an abstraction of two queues, one in each direction
+* **Pipes** are an abstraction of a single queue
+  * Used for communication between multiple processes **on one machine**
+* **Sockets** are an abstraction of two queues, one in each direction
   * Used for communication between multiple processes on different machines
 
 ### Context Switch
 
 * Switching between processes is significantly slower than switching between threads. 
-  * Switching between processes: 3-4 μsec.
-  * Switching between processes: 3-4 μsec.
   * PCB is much bigger than TCB. 
-  * Even faster, switch threads (in user space. `yield`).
+  * Even faster, switch user threads (in user space. `yield`).
     * User-level thread libraries. 
     * `yield` calls the library. Just a function call!
     * Many (user-level threads) to one (kernel-level thread). 

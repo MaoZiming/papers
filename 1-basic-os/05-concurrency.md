@@ -127,6 +127,10 @@ void unlock() {
 - `unpark()`: wake a particular thread
   - `unpark` is used to unblock a thread that was previously parked. It makes the specified thread eligible for scheduling.
   - If the specified thread is not currently parked, a future park call will return immediately.
+  - `park` is typically used in scenarios where a thread needs to wait for a condition to be met or for some resource to become available. It's a way to efficiently block a thread without busy-waiting.
+- park/unpark: Provides explicit control over thread execution. You can decide exactly when a thread should be suspended and resumed.
+- yield: Relies on the thread scheduler to make decisions about which thread to run next. It’s more of a hint than a command.
+
 
 ## Others
 
@@ -141,41 +145,6 @@ void unlock() {
   - Def: explicit queue that threads can put themselves on when some state of execution (i.e. some **condition**) is not as desired (by **waiting** on the condition)
   - Some other thread, when it changes said state, can then wake one (or more) of those waiting threads and allow them to continue (by **signaling** on condition)
 
-## Semaphore
-
-- A semaphore: an object with an integer value that we can manipulate with two routines
-  - `sem_wait()`
-  - `sem_post()`
-
-- From the 162 lecture
-- Down() or P(): an atomic operation that waits for semaphore to become positive,
-then decrements it by 1 
-- Up() or V(): an atomic operation that increments the semaphore by 1, waking up a
-waiting P, if any
-
-```c
-// initialize a semaphore 
-#include <semaphore.h> sem_t s;
-sem_init(&s, 0, 1); 
-
-// definiton of wait and post 
-int sem_wait(sem_t *s) {
-	// decrement the value of semaphore s 
-	// by one wait if value of semaphore s is negative
-} 
-
-int sem_post(sem_t *s) { 
-	// increment the value of semaphore s by one 
-	// if there are one or more threads waiting, wake one 
-} 
-
-// A binrary semaphore (i.e. a lock)
-sem_t m;
-sem_init(&m, 0, X); // initialize to X; what should X be?
-sem_wait(&m);
-// critical section here
-sem_post(&m);
-```
 
 # Condition Variable
 
@@ -221,6 +190,17 @@ unlock(buffer_lock)
 
 
 # Semaphore
+
+
+- A semaphore: an object with an integer value that we can manipulate with two routines
+  - `sem_wait()`
+  - `sem_post()`
+
+- From the 162 lecture
+- Down() or P(): an atomic operation that waits for semaphore to become positive,
+then decrements it by 1 
+- Up() or V(): an atomic operation that increments the semaphore by 1, waking up a
+waiting P, if any
 
 ```c
 int sem_wait(sem_t *s) {
@@ -287,11 +267,12 @@ int main() {
 - `SIGTERM` - default for `kill` shell command
 - `SIGSTP` - Control-Z (stop process)
 
-### Condition variable
-
 - Signalling must take place between threads.
 - `pthread_cond_wait()`
   - puts the calling thread to sleep, and thus waits for some other thread to signal it, usually when something in the program has changed that the now-sleeping thread might care about
+
+### Condition variable
+
 - To use a condition variable, one has to in addition have a lock that is associated with this condition. When calling either of the above routines, this lock should be held.
 
 ```c
@@ -312,7 +293,7 @@ Pthread_cond_signal(&cond);
 Pthread_mutex_unlock(&lock);
 ```
 
-- First, when signaling (as well as when modifying the global variable ready), we always make sure to have the lock held. This ensures that we don’t accidentally intro- duce a race condition into our code. This ensures that waiting threads are properly synchronized with the state changes.
+- First, when signaling (as well as when modifying the global variable ready), we always make sure to have the lock held. This ensures that we don’t accidentally introduce a race condition into our code. This ensures that waiting threads are properly synchronized with the state changes.
 - However, before returning after being woken, the pthread cond wait() re-acquires the lock, thus ensuring that any time the waiting thread is running between the lock acquire at the beginning of the wait sequence, and the lock release at the end, it holds the lock.
 - the waiting thread re-checks the condition in a while loop, instead of a simple if statement.
 - Although it rechecks the condition (perhaps adding a little overhead), there are some pthread implementations that could spuriously wake up a waiting thread; in such a case, without rechecking, the waiting thread will continue thinking that the condition has changed even though it has not.
@@ -322,7 +303,7 @@ while (ready == 0)
     ; // spin
 ```
 
-- First, it performs poorly in many cases (spinning for a long time just wastes CPU cycles). Second, it is error prone. As recent research shows [X+10], it is surprisingly easy to make mistakes when using flags (as above) to synchronize between threads; in that study, roughly half the uses of these ad hoc synchronizations were buggy! Don’t be lazy; use condition variables even when you think you can get away without doing so.
+- Use conditional variables. 
 
 # Event-based Concurrency
 
