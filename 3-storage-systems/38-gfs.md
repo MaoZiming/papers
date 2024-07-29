@@ -62,10 +62,24 @@ GFS is a scalable distributed file system for large distributed data-intensive a
   - The request includes chunk handle and byte offset within that chunk.
 
 ## Relaxed consistency 
+
+* ![alt text](images/38-gfs/file-region-state-after-mutation.png)
+* **Consistency**: A file region is consistent if all clients will always see the same data, regardless of which replicas they read from.
+* **Defined**: A region is defined after a file data mutation if it is consistent and clients will see what the mutation writes in its entirety. 
+* Concurrent successful mutations leave the region undefined but consistent: all clients see the same data, but it may not reflect what any one mutation has written.
+  * Basically, contains mingle fragments of multiple mutations.
 * GFS deploys a relaxed consistency model: data is appended **_atomically_ _at least once_** even in the presence of concurrent mutations, but at an offset of GFS' choosing. 
   * Concurrent writes only specify the data, and not the offset!
+* Stale replicas will never be involved in a mutation or given to clients asking the master for chunk locations. They are garbage collected at earliest opportunity. 
 
 * GFS may insert padding or record duplicates in between. GFS assumes that client applications can handle the inconsistent state: i.e. filter out occasional padding and duplicate using checksums (or unique IDs in the records). This also helps improving performance. 
+
+> As a result, replicas of the same chunk may con- tain different data possibly including duplicates of the same record in whole or in part. GFS does not guarantee that all replicas are bytewise identical. It only guarantees that the data is written at least once as an atomic unit.
+
+> This property follows readily from the simple observation that for the operation to report success, the data must have been written at the same offset on all replicas of some chunk.
+
+Just use a future / higher record if the past one fails. 
+* In terms of our consistency guarantees, the regions in which successful record append operations have written their data are defined (hence consistent), whereas intervening regions are inconsistent (hence undefined).
 
 ## Replication Order
 * Thus, the global mutation order is defined first by the lease grant order chosen by the master, and within a lease by the serial numbers assigned by the primary.
@@ -98,3 +112,4 @@ Use standard copy on write mechanism.
 * Each chunk server maintains checksums to verify the integrity of its own copy of data. 
 * Checksums have to be compared for every read before returning any data to the requestor. 
 * Checksums have little performance impact. (1) Reads span at least a few blocks. (2) Checksums are done with I/O.
+
