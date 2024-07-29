@@ -4,19 +4,19 @@ Link: [Coda File System](https://www.cs.cmu.edu/afs/cs/project/coda-www/Research
 
 Read June 25th, 2024.
 
-This paper presents Coda File System, based AFS. It was designed for mobile clients that disconnect as their machines move. 
+* This paper presents Coda File System, based AFS. It was designed for mobile clients that disconnect as their machines move. 
 
-To make disconnected operation transparent, each client keep a cached copy of remote files once connecting to the server. When disconnected, clients can work on the local cached copy without accessing to server. Once connected back to the server, clients synchronize updated contents with the server and download new files to its cache. 
+* To make disconnected operation transparent, each client keep a cached copy of remote files once connecting to the server. When disconnected, clients can work on the local cached copy without accessing to server. Once connected back to the server, clients synchronize updated contents with the server and download new files to its cache. 
 
 ## Key Motivation: Availability 
-Coda wants to support **disconnected operation**, i.e. enables a client to continue accessing critical data during temporary failures. Availability is achieved by replication and disconnected operation with cache
+* Coda wants to support **disconnected operation**, i.e. enables a client to continue accessing critical data during temporary failures. Availability is achieved by replication and disconnected operation with cache
 
-Caching can be used to improve both performance and availability. 
+* Caching can be used to improve both performance and availability. 
 
-Venus is the cache manager.
-The set of replication sites for a volume is its volume storage group (VSG). The subset of a VSG that is currently accessible is a client’s accessible VSG (AVSG).
+* Venus is the cache manager.
+* The set of replication sites for a volume is its volume storage group (VSG). The subset of a VSG that is currently accessible is a client’s accessible VSG (AVSG).
 
-While disconnected, Venus services file system requests by relying solely on the contents of its cache. **Cache misses are appeared as failures.**
+* While disconnected, Venus services file system requests by relying solely on the contents of its cache. **Cache misses are appeared as failures.**
 
 -   **Server replication** for performance, scalability, and availability
     -  consistency ensured by callbacks  
@@ -25,7 +25,7 @@ While disconnected, Venus services file system requests by relying solely on the
 -   **Optimistic replica control** to make it all work
     -  allow copies to diverge, detect, and resolve conflicts 
 
-For scalability, it uses **callback-based cache coherence**, and **whole-file caching** (similar to AFS); as well as placing of functionalities on clients.
+* For scalability, it uses **callback-based cache coherence**, and **whole-file caching** (similar to AFS); as well as placing of functionalities on clients.
 
 ### Design Goal
 

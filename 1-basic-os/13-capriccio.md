@@ -122,7 +122,7 @@ There are three parts:
     - **Small non-contiguous stack chunks** grow and shrink at runtime
     - Compiler analysis and runtime checks
         - Goal: place a reasonable bound on stack space consumed by each thread
-        - Generate a ***weight directed call graph***
+        - Generate a ***weighted directed call graph***
     - Features
         - Each node is a call site annotated with max stack space for that call
         - Edges: function calls in-between nodes

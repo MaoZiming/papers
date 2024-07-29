@@ -176,3 +176,27 @@ interface {
   * – Avoid the sender over-flowing the receiver buffer
   * – Receiver only reads in-sequence data, and acks with the next sequence number is waiting for
   * – Sender never sends more data than the receiver can hold in its buffer 
+
+### Consistency
+
+
+#### Sequential Consistency
+* **Order Maintenance**: The order of operations within each individual process is preserved.
+* **Global Sequence**: There is a single global sequence of operations that all processes agree on, but it does not necessarily reflect the real-time order of operations.
+
+#### Linearizability
+In essence, linearizability is a more stringent requirement that includes the guarantees of sequential consistency plus the real-time ordering of operations.
+```
+Real-Time:   ---A1---A2---B1---B2---
+Lineariz:    ---A1---A2---B1---B2---  (valid)
+             ---A1---B1---A2---B2---  (valid)
+             ---B1---A1---B2---A2---  (invalid, A1 < A2 in real-time)
+```
+#### Serializability vs. Linearizability
+
+* **Serializability** is a global property; a property of an entire history of operations/transactions. 
+* **Linearizability** is a local property; a property of a single operation/transaction. Another distinction is that linearizability includes a notion of real-time, which serializability does not
+
+In Plain English
+* Under linearizability, writes should appear to be instantaneous. Imprecisely, once a write completes, all later reads (where “later” is defined by wall-clock start time) should return the value of that write or the value of a later write. Once a read returns a particular value, all later reads should return that value or the value of a later write.
+* Serializability is a guarantee about transactions, or groups of one or more operations over one or more objects. It guarantees that the execution of a set of transactions (usually containing read and write operations) over multiple items is equivalent to some serial execution (total ordering) of the transactions.
