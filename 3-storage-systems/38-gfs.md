@@ -113,3 +113,6 @@ Use standard copy on write mechanism.
 * Checksums have to be compared for every read before returning any data to the requestor. 
 * Checksums have little performance impact. (1) Reads span at least a few blocks. (2) Checksums are done with I/O.
 
+* Separation of control plane (namespace) and data plane (chunk servers) allows for scalability.
+* contact closest servers to propagate data.
+* primary propagate order. (after data is propagated)
