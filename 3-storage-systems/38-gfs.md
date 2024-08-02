@@ -1,6 +1,7 @@
 # The Google File System (2003) 
 
 Link: https://static.googleusercontent.com/media/research.google.com/en//archive/gfs-sosp2003.pdf
+Useful notes: https://pages.cs.wisc.edu/~thanhdo/qual-notes/fs/fs4-gfs.txt
 
 Read: Dec 25th, 2023. 
 
@@ -116,3 +117,22 @@ Use standard copy on write mechanism.
 * Separation of control plane (namespace) and data plane (chunk servers) allows for scalability.
 * contact closest servers to propagate data.
 * primary propagate order. (after data is propagated)
+
+## Pipelining writes
+* Why pipeline write?
+	- Fully utilize each machine's bandwidth
+		+ each machine's full bandwidth is used to transfer the data as fast
+		  as possible, rather than divided among multiple recipient
+	- Avoid network bottlenecks and high-latency links
+		+ each machine forwards the data to the "closest" machine in the 
+		  network topology that has not received it
+	- Minimize latency:
+		+ pipelining the data transfer over TPC connections
+		+ once a chunkserver receives some data, it starts forwarding right away
+  
+
+## Questions:
+* Data consistency is unclear. 
+* Concurrent *successful* mutations leave the region undefined but consistent: all clients see the same data, but it may not reflect what any one mutation has written.
+  * WHY IS THAT successful?
+* A failed mutation makes the region inconsistent (hence also undefined): different clients may see different data at different times.

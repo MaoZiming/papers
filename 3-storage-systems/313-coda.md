@@ -141,6 +141,14 @@ Availability is the major concern
     4. Cons: conflicting writes, relies on resolution protocol  
     5. Rational of using this: chance of conflicts is low because **low degree of write share in UNIX**
 
+## Replay Log
+
+* During emulation, Venus records sufficient information to replay update activity when it reinteWates. It maintains this information in a per-volume log of mutating operations called a replay log.
+* Venus uses a number of optimizations to reduce the length of the replay log, resulting in a log size that is typically a few percent of cache size. 
+* Since Coda uses whole-file caching, the close after an open of a file for modification installs a completely new copy of the file. Rather than logging the open, close, and intervening write operations individually, Venus logs a single store record during the handling of a close.
+* Coda discards a previous store record for a file when a new one is appended to the log.
+  * Reason: a store renders the previous versions superfluous.
+
 ## Adoptions
 
 * Disconnected session of one hour requires a minute for reintegration
@@ -149,3 +157,4 @@ Availability is the major concern
 > Coda is unique in that it exploits caching for both performance and high availability while preserving a high degree of transparency. 
 
 > View [Coda] as an idea of write-back caching to mask temporary failures.
+
