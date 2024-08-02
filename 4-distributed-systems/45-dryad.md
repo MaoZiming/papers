@@ -1,26 +1,81 @@
 # Dryad: Distributed Data-Parallel Programs from Sequential Building Blocks
 
 Link: http://www.michaelisard.com/pubs/eurosys07.pdf
+Youtube: https://www.youtube.com/watch?v=WPhE5JCP2Ak&t=8s
 
 Read: July 3rd, 2024
 
 Dryad is designed to allow developers to build distributed data-parallel programs as **directed acyclic graphs (DAGs)**, and the runtime dynamically optimizes execution plans based on available resources and other factors. 
+* For coarse-grain data-parallel applications. 
+* It achieve similar goals as MapReduce, but with different design. Computations in Dryad expressed as a graph
+* "A more flexible version of MapReduce". 
 
 > The Dryad project addresses a long-standing problem: how can we make it easier for developers to write efficient parallel and distributed applications?
+* Prioritize throughput than latency (real-time response). 
+* Nice thing about graphs is that you can just have a scheduler that doesn't need to know application semantics; just graphs. 
+
+* "Uniform" opeartions/stage aren't really uniform
+* It's not just one stage at a time.
+* Once we after dynamic optimization, the actual things that get executed flow more irregular. 
+
+* Graphs should be modifiable at runtime. 
+
+
+### Stages
+- Useful for reporting aggregate statistics;
+- Get callbacks on interesting events. 
+- Link any pairs of stages.
+- Get callback on interesting events in upstream stages. 
+  - How dynamic optimizations are implemented. 
 
 ## Summary:
 
-- A job in Dryad is a DAG where each vertex is an executable program and edges represent data channels (e.g. files, TCP pipes, and shared memory FIFOs.). 
+- A job in Dryad is a DAG where each vertex is an executable program and **edges represent data channels** (e.g. files, TCP pipes, and shared memory FIFOs.). 
 - The job manager contains the application-specific code to construct the job’s communication graph along with library code to schedule the work across the available resources. 
 - To discover available resources, each computer in the cluster has a proxy daemon running, and they are registered into a central name server, the job manager queries the name server to get available computers.
 
-- Authors designed a simple graph description language that empowers the developer with explicit graph construction and refinement to fully take advantage of the rich features of the Dryad execution engine.
+- Authors designed a **simple graph description language** that empowers the developer with explicit graph construction and refinement to fully take advantage of the rich features of the Dryad execution engine. 
+  - Multi-graph: multiple vertices between the vertices. 
 
 - Another important design in Dryad is that each vertex belongs to a "stage", and each stage has a **stage manager** that receives a callback on every state transition of a vertex execution in that stage.
+
 
 - In Dryad, a scheduler inside **job manager** tracks states of each vertex. The vertices **report status and errors** to the Job manager, and the progress of channels is automatically monitored. When a vertex execution fails for any reason, the vertex will be re-ran, but with different version numbers.
 
 - The DryadLINQ system automatically and transparently translates the data-parallel portions of the program into a distributed execution plan which is passed to the Dryad execution platform.
+
+### Job Manager (JM)
+
+* Centralized coordinating process
+* Use user applications to construct graphs
+* Linked with Dryad libraries for executing vertices
+
+### Vertex Executable
+
+* Dryad libraries to communicate with JM 
+* User application sees channels in/out
+* Arbitrary application code. 
+
+### Name Server
+
+* Discover available resources
+
+### Channel implementation
+
+Sequence of structured (typed) items. 
+* Temporary disk file
+  * Items are serialized in buffers
+* TCP pipe
+  * Items are serialized in buffers
+* Shared-memory FIFO
+  * Pass pointers to items directly.
+  * Don't have to worry about serialization.
+
+### Fault tolerance
+
+* Fault tolerance is simpler. 
+* Especially when vertices are deterministic. 
+* When inputs disappear, re-run upstream vertices.
 
 ## Note:
 
