@@ -5,6 +5,14 @@ Youtube: https://www.youtube.com/watch?v=WPhE5JCP2Ak&t=8s
 
 Read: July 3rd, 2024
 
+After the developer considers the data parallelism of the computation into graphs, the systems deal with the hardest distributed computing problems, resource allocation, scheduling, and the transient or permanent failure of a subset of components in a system. 
+
+> By contrast, the Dryad system allows the developer fine control over the communication graph as well as the subrou- tines that live at its vertices.
+
+> This direct specification of the graph also gives the developer greater flexibility to easily compose basic common opera tions, leading to a distributed analogue of “piping” together traditional Unix utilities such as grep, sort and head.
+
+Dryad is notable for allowing graph vertices (and computations in general) to use an arbitrary number of inputs and outputs. MapReduce restricts all computations to take a single input set and generate a single output set.
+
 Dryad is designed to allow developers to build distributed data-parallel programs as **directed acyclic graphs (DAGs)**, and the runtime dynamically optimizes execution plans based on available resources and other factors. 
 * For coarse-grain data-parallel applications. 
 * It achieve similar goals as MapReduce, but with different design. Computations in Dryad expressed as a graph
@@ -19,7 +27,8 @@ Dryad is designed to allow developers to build distributed data-parallel program
 * Once we after dynamic optimization, the actual things that get executed flow more irregular. 
 
 * Graphs should be modifiable at runtime. 
-
+* ![alt text](images/45-dryad/system-organization.png)
+* We use a distributed storage system, not described here, that shares with the Google File System the property that large files can be broken into small pieces that are replicated and distributed across the local disks of the cluster comput- ers.
 
 ### Stages
 - Useful for reporting aggregate statistics;
@@ -56,6 +65,10 @@ Dryad is designed to allow developers to build distributed data-parallel program
 * User application sees channels in/out
 * Arbitrary application code. 
 
+### Graph Description Language
+
+![alt text](images/45-dryad/graph-description-language.png)
+
 ### Name Server
 
 * Discover available resources
@@ -86,6 +99,10 @@ Sequence of structured (typed) items.
 ## Mapreduce versus Dryad: 
 - I think we can view Dryad as a general version of Mapreduce. First, computations in Dryad are not limited to just map and reduce but are expressed as DAGs. Second, Dryad allows communication between stages to happen over not just files stored in disk: it allows for **files, TCP pipes and shared memory**. Lastly, in Dryad, each vertex can take $n$ inputs and produce $n$ outputs, but, in Mapreduce, map only takes one input and generate one output.
 - In general, Dryad has a number of benefits: more efficient communication, the ability to chain together multiple stages, and express more complicated computation.
+
+## Dynamic graph refinement. 
+- The added intermediate computation stages are usually not known beforehand. Therefore, dynamic refinement is often more efficient than attempting a static grouping in advance.
+
 
 ## Limitations:
 
