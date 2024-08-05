@@ -179,24 +179,130 @@ interface {
 
 ### Consistency
 
+Link: https://www.cs.princeton.edu/courses/archive/fall18/cos418/docs/p8-consistency.pdf
 
-#### Sequential Consistency
-* **Order Maintenance**: The order of operations within each individual process is preserved.
-* **Global Sequence**: There is a single global sequence of operations that all processes agree on, but it does not necessarily reflect the real-time order of operations.
 
-#### Linearizability
-In essence, linearizability is a more stringent requirement that includes the guarantees of sequential consistency plus the real-time ordering of operations.
+#### Linearizability / Atomic Consistency / Strict Consisntecy
+* In essence, linearizability is a more stringent requirement that includes the guarantees of sequential consistency plus the real-time ordering of operations.
+* Strict Consistency requires events to be ordered in the same real-time sequence in which they occurred. In other words, “an earlier write always has to be seen before a later write.” This is almost impossible to implement in distributed systems. Hence it remains in the realm of theoretical discussions.
+
 ```
 Real-Time:   ---A1---A2---B1---B2---
 Lineariz:    ---A1---A2---B1---B2---  (valid)
              ---A1---B1---A2---B2---  (valid)
              ---B1---A1---B2---A2---  (invalid, A1 < A2 in real-time)
 ```
+* Importantly, linearizability acknowledges that there’s some time gap between when an operation is submitted to the system and when the system acknowledges it.
+  * Only non-overlapping writes need to be ordered in a real-time sequence.
+  * Not for writes/reads that overlap with each other. 
+* **Some text suggests that strict consistency = linearizability.** Likely true, also as mentioned by ChatGPT. 
+* ![alt text](images/41-communication/linearizability-serializability.png)
+
+* Strict serializability: 
+* * **Preserves real-time ordering**: Any transaction A that completes before transaction B begins, occurs before B in the total order.
+* Strict serializability is a combination of serializability and linearizability
+* Strict serializability ensures that the result of concurrently executing transactions is not only equivalent to some serial execution but also respects the real-time order of the transactions. This means that the system's behavior adheres to both the logical consistency of serializability and the real-time ordering guarantees of linearizability.
+
+**IMPORTANT**
+* Strict serializability: any transaction A that occurs after B.
+* Linearizability: any operation A that occurs after B.
+* In Linearizability, clients only have consistency guarantees for operations, where strict serializability allows clients to use transactions.
+
 #### Serializability vs. Linearizability
 
+**IMPORTANT**: serializability is NOT **strict serializability**. 
+  * The first one is for ordering transactions in logical order. 
 * **Serializability** is a global property; a property of an entire history of operations/transactions. 
+  * Serializability mainly through 2PL. 
+  * Conflict serializability:  requires that transactions do not have conflicting accesses to the same data item
+  * View serializability only requires that transactions produce the same final result as a serial schedule.
 * **Linearizability** is a local property; a property of a single operation/transaction. Another distinction is that linearizability includes a notion of real-time, which serializability does not
 
 In Plain English
 * Under linearizability, writes should appear to be instantaneous. Imprecisely, once a write completes, all later reads (where “later” is defined by wall-clock start time) should return the value of that write or the value of a later write. Once a read returns a particular value, all later reads should return that value or the value of a later write.
 * Serializability is a guarantee about transactions, or groups of one or more operations over one or more objects. It guarantees that the execution of a set of transactions (usually containing read and write operations) over multiple items is equivalent to some serial execution (total ordering) of the transactions.
+
+* ![alt text](images/41-communication/serializability-vs-linearizability.png)
+
+#### Sequential Consistency
+* **Order Maintenance**: The order of operations within each individual process is preserved.
+* **Global Sequence**: There is a single global sequence of operations that all processes agree on, but it does not necessarily reflect the real-time order of operations.
+* Sequential consistency: Preserves process ordering: All of a process’ operations appear in that order in the total order.
+* Difference from linearizability? Sequence of ops across processes not determined by real-time
+
+
+#### Causal Consistency
+* Causal Consistency: Causal Consistency requires only related operations to have a global ordering between them. Two operations can be related because they acted on the same data item, or because they originated from the same thread.
+* **Causal+ Consistency**: +: Replicas eventually converge
+
+#### Consistency Prefix
+* By requesting a consistent prefix, a reader is guaranteed to observe an ordered sequence of writes starting with
+the first write to a data object.
+* In other words, the reader sees a version of the data store that existed at the master at some time in the past. This is similar to the “snapshot isolation” consistency offered by many database management systems.
+
+#### Bounded staleness
+* Time-bounded staleness
+* The storage system guarantees that a read operation will return any values written more than T minutes ago or more recently written values
+
+#### Monotonic Reads
+* With monotonic reads, a client can read arbitrarily stale data, as with eventual consistency, but is guaranteed to observe a data store that is increasingly up-to-date over time. In particular, if the client issues a read operation and then later issues another read to the same object(s), the second read will return the same value(s) or the results of later writes.
+
+#### Read-my-writes
+* A sequence of operations performed by a single client. 
+* It guarantees that the effects of all writes that were performed by the client are visible to the client’s subsequent
+reads.
+
+* ![alt text](images/41-communication/baseball-consistency.png)
+
+
+
+### Lamport Clock
+
+* Each node maintains a counter that increments with each event. When nodes communicate, they update their counters based on the maximum value seen, ensuring a consistent order of events.
+* Algorithm of Lamport Clocks:
+  * Initialization: Each node initializes its clock LLL to 0.
+  * Internal Event: When a node performs an internal event, it increments its clock LLL.
+  * Send Message: When a node sends a message, it increments its clock LLL and includes this value in the message.
+  * Receive Message: When a node receives a message with timestamp T: It sets L=max⁡(L,T)+1
+* Advantages of Lamport Clocks:
+  * Simple to implement and understand.
+  * Ensures total ordering of events.
+
+### Vector Clock
+
+* Vector Clock is an algorithm that generates partial ordering of events and detects causality violations in a distributed system.
+* Capture causal relationship
+* This algorithm helps us label every process with a vector (a list of integers) with an integer for each local clock of every process within the system. So for N given processes, there will be vector/ array of size N. 
+* How does the vector clock algorithm work: 
+  * Initially, all the clocks are set to zero.
+  * Every time, an Internal event occurs in a process, the value of the processes’s logical clock in the vector is incremented by 1
+  * Also, every time a process sends a message, the value of the processes’s logical clock in the vector is incremented by 1.
+  * Every time, a process receives a message, the value of the processes’s logical clock in the vector is incremented by 1, and moreover, each element is updated by taking the maximum of the value in its own vector clock and the value in the vector in the received message (for every element). 
+* ![alt text](images/41-communication/vector-clock.png)
+* To sum up, Vector clocks algorithms are used in distributed systems to provide a causally consistent ordering of events but the entire Vector is sent to each process for every message sent, in order to keep the vector clocks in sync.
+* Advantages of Vector Clocks:
+  * Accurately captures causality and concurrency.
+  * Detects concurrent events, which Lamport clocks cannot do.
+
+### Matrix Clock
+* Matrix clocks extend vector clocks by maintaining a matrix where each entry captures the history of vector clocks. This allows for more detailed tracking of causality relationships.
+
+#### Components
+
+* **Matrix Representation**: A matrix clock for a system with $n$ processes is represented as an $n \times n$ matrix. Let's denote this matrix for process $P_i$ as $MC_i$, where $MC_i[j, k]$ indicates the latest known clock value of process $P_k$ according to process $P_j$.
+
+* **Row Representation**: Each row in the matrix corresponds to a vector clock for a process, and each column corresponds to the clock value known by a process for other processes.
+
+## Rules for Maintenance
+
+* **Local Event (Internal Event)**:
+  - When process $P_i$ experiences an internal event, it increments its own clock value: $MC_i[i, i] += 1$.
+
+* **Message Sending**:
+  - When process $P_i$ sends a message to $P_j$, it includes its current matrix clock $MC_i$ in the message.
+
+* **Message Receiving**:
+  - When process $P_j$ receives a message from $P_i$ with the matrix clock $MC_i$, it updates its own matrix clock $MC_j$ as follows:
+    - For each process $P_k$, update $MC_j[j, k]$ to be the maximum of $MC_j[j, k]$ and $MC_i[i, k]$.
+    - Additionally, for the sender $P_i$, update $MC_j[i, i]$ to be the maximum of $MC_j[i, i]$ and $MC_i[i, i] + 1$.
+
