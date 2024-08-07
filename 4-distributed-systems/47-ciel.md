@@ -89,3 +89,7 @@ Read: June 30th, 2024.
 ## Lazy Evaluation
 
 * To evaluate an object, identify the task, T , that is expected to produce the object. If T has only concrete dependencies, execute it immediately; otherwise, block T and recursively evaluate all of its unfulfilled dependencies using the same procedure.
+
+## Limitations
+
+* Ciel: Relies on persistent storage to store intermediate results

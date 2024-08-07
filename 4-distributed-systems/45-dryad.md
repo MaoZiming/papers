@@ -7,9 +7,9 @@ Read: July 3rd, 2024
 
 After the developer considers the data parallelism of the computation into graphs, the systems deal with the hardest distributed computing problems, resource allocation, scheduling, and the transient or permanent failure of a subset of components in a system. 
 
-> By contrast, the Dryad system allows the developer fine control over the communication graph as well as the subrou- tines that live at its vertices.
+> By contrast, the Dryad system allows the developer fine control over the communication graph as well as the subroutines that live at its vertices.
 
-> This direct specification of the graph also gives the developer greater flexibility to easily compose basic common opera tions, leading to a distributed analogue of “piping” together traditional Unix utilities such as grep, sort and head.
+> This direct specification of the graph also gives the developer greater flexibility to easily compose basic common operations, leading to a distributed analogue of “piping” together traditional Unix utilities such as grep, sort and head.
 
 Dryad is notable for allowing graph vertices (and computations in general) to use an arbitrary number of inputs and outputs. MapReduce restricts all computations to take a single input set and generate a single output set.
 

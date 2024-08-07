@@ -5,7 +5,7 @@ Another Link: https://www.usenix.org/legacy/event/hotcloud10/tech/full_papers/Za
 
 Read: April 14th, 2024
 
-* Those that reuse intermediate results (or working sets) across multiple computations. Data reuse is common in many iterative machine learning and graph algorithm. 
+* Those that reuse intermediate results (or working sets) across multiple computations. **Data reuse is common in many iterative machine learning and graph algorithm**. 
   * Unfortunately, in most current frameworks, the only way to reuse data between computations (e.g., between two MapReduce jobs) is to write it to an external stable storage system, e.g., a distributed file system.
 * Resilient Distributed Datasets (RDDs), a distributed memory abstraction that lets programmers perform in-memory computations on large clusters in a fault-tolerant manner.
 * RDDs are motivated by two types of applications that current computing frameworks handle inefficiently: iterative algorithms and interactive data mining tools.
@@ -44,7 +44,7 @@ Read: April 14th, 2024
 
 ## Closures
 * closures — constructs like loops or locally defined methods, should not be used to mutate some global state. Spark does not define or guarantee the behavior of mutations to objects referenced from outside of closures.
-* Use accumulators instead. s
+* Use accumulators instead. 
 
 ## Comparison to DSM
 
@@ -79,4 +79,4 @@ Read: April 14th, 2024
 * Spark’s resilient distributed datasets can be viewed as an abstraction for distributed shared memory (DSM), which has been studied extensively
 * First, RDDs provide a much more restricted programming model, but one that lets datasets be rebuilt efficiently if cluster nodes fail. This means that only the lost partitions need to be recomputed, and that they can be recomputed in parallel on different nodes, without requiring the program to revert to a checkpoint (How to recover data in DSM). In addition, there is no overhead if no nodes fail.
 * RDDs push computation to the data as in MapReduce [11], rather than letting arbitrary nodes access a global address space.
-* 
+  
