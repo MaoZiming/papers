@@ -8,7 +8,7 @@ LFS is a copy-on-write (COW) based file system that introduces **a new approach 
 
 Compared to FFS: disk bandwidth is getting better. Computers are having more memory. Disk seek is still **really slow**. We can use some of the memory as buffer cache (help with the reads but not the writes).
 
-> In this paper we present a solution based on large extents called segments, where a segment cleaner process continually regenerates empty segments by compressing the live data from heavily fragmented segments. 
+> In this paper we present a solution based on large extents called segments, where a segment cleaner process continually **regenerates empty segments** by compressing the live data from **heavily fragmented segments**. 
 
 ## Motivation
 
@@ -67,7 +67,7 @@ Unfortunately, as it gets updated frequently, this would then require updates to
 - Updated periodically (~30s) or so
 
 - LFS should perform the same amount of I/O as a typical file system during read
-- The entire imap is cached so extra work is just look up the inode’s address in the imap
+- The entire **imap** is cached so extra work is just look up the inode’s address in the imap
 - Thus, the overall structure of the on-disk layout contains a checkpoint region (which points to the latest pieces of the inode map); the inode map pieces each contain addresses of the inodes; the inodes point to files (and directories) just like typical UNIX file systems.
 - Inode map contains the information for the location of both the directory file *dir* as well as the newly created file *f*
 
@@ -141,6 +141,9 @@ LFS uses write buffering to keep track of updates in memory before writing to di
     - Enables highly efficient writing
     - Gather all updates into an in-memory segment and write them out together sequentially
 
+### Segments
+
+* We present a solution based on large extents called segments, where a segment cleaner process continually regenerates empty segments by compressing the live data from heavily fragmented segments. 
 
 ### 1.6 Directories
 

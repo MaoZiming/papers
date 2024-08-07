@@ -1,6 +1,7 @@
 # Dryad: Distributed Data-Parallel Programs from Sequential Building Blocks
 
 Link: http://www.michaelisard.com/pubs/eurosys07.pdf
+
 Youtube: https://www.youtube.com/watch?v=WPhE5JCP2Ak&t=8s
 
 Read: July 3rd, 2024
@@ -11,15 +12,15 @@ After the developer considers the data parallelism of the computation into graph
 
 > This direct specification of the graph also gives the developer greater flexibility to easily compose basic common operations, leading to a distributed analogue of “piping” together traditional Unix utilities such as grep, sort and head.
 
-Dryad is notable for allowing graph vertices (and computations in general) to use an arbitrary number of inputs and outputs. MapReduce restricts all computations to take a single input set and generate a single output set.
+Dryad is notable for allowing graph vertices (and computations in general) to use an **arbitrary number of inputs and outputs.** MapReduce restricts all computations to take a single input set and generate a single output set.
 
 Dryad is designed to allow developers to build distributed data-parallel programs as **directed acyclic graphs (DAGs)**, and the runtime dynamically optimizes execution plans based on available resources and other factors. 
-* For coarse-grain data-parallel applications. 
+* For **coarse-grain data-parallel** applications. 
 * It achieve similar goals as MapReduce, but with different design. Computations in Dryad expressed as a graph
 * "A more flexible version of MapReduce". 
 
 > The Dryad project addresses a long-standing problem: how can we make it easier for developers to write efficient parallel and distributed applications?
-* Prioritize throughput than latency (real-time response). 
+* Prioritize **throughput** than latency (real-time response). 
 * Nice thing about graphs is that you can just have a scheduler that doesn't need to know application semantics; just graphs. 
 
 * "Uniform" opeartions/stage aren't really uniform
@@ -28,7 +29,9 @@ Dryad is designed to allow developers to build distributed data-parallel program
 
 * Graphs should be modifiable at runtime. 
 * ![alt text](images/45-dryad/system-organization.png)
-* We use a distributed storage system, not described here, that shares with the Google File System the property that large files can be broken into small pieces that are replicated and distributed across the local disks of the cluster comput- ers.
+* We use a distributed storage system, not described here, that shares with the Google File System the property that **large files can be broken into small pieces** that are replicated and distributed across the local disks of the cluster computers.
+  * JM: job manager
+  * NS: name server. 
 
 ### Stages
 - Useful for reporting aggregate statistics;
@@ -46,12 +49,13 @@ Dryad is designed to allow developers to build distributed data-parallel program
 - Authors designed a **simple graph description language** that empowers the developer with explicit graph construction and refinement to fully take advantage of the rich features of the Dryad execution engine. 
   - Multi-graph: multiple vertices between the vertices. 
 
-- Another important design in Dryad is that each vertex belongs to a "stage", and each stage has a **stage manager** that receives a callback on every state transition of a vertex execution in that stage.
+- Another important design in Dryad is that **each vertex belongs to a "stage"**, and each stage has a **stage manager** that receives a callback on every state transition of a vertex execution in that stage, and on a regular timer interrupt. 
+- The default stage manager includes heuristics to detect vertices that are running slower than their peers and schedule duplicate executions. 
 
 
 - In Dryad, a scheduler inside **job manager** tracks states of each vertex. The vertices **report status and errors** to the Job manager, and the progress of channels is automatically monitored. When a vertex execution fails for any reason, the vertex will be re-ran, but with different version numbers.
 
-- The DryadLINQ system automatically and transparently translates the data-parallel portions of the program into a distributed execution plan which is passed to the Dryad execution platform.
+- The DryadLINQ system **automatically and transparently translates the data-parallel portions of the program** into a distributed execution plan which is passed to the Dryad execution platform.
 
 ### Job Manager (JM)
 
@@ -101,7 +105,7 @@ Sequence of structured (typed) items.
 - In general, Dryad has a number of benefits: more efficient communication, the ability to chain together multiple stages, and express more complicated computation.
 
 ## Dynamic graph refinement. 
-- The added intermediate computation stages are usually not known beforehand. Therefore, dynamic refinement is often more efficient than attempting a static grouping in advance.
+- **The added intermediate computation stages are usually not known beforehand. Therefore, dynamic refinement is often more efficient than attempting a static grouping in advance.**
 
 
 ## Limitations:

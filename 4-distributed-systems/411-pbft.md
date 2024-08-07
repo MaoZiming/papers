@@ -39,7 +39,7 @@ Data: June 30th, 2024.
   * Primary multicasts the request to the backups.
   * replicas execute the request and send a reply to the **client** (**not the primary**).
   * The client waites for $f+1$ replies from different replicas with the same result.
-  * If the client does not receive the replies soon enough, it broadcasts the request to all replicas. If the request has already been processed, the replicas re-send the reply. Otherwise, if the replica is not the primary, it relays the request to the primary. If the primary does not mutlicast, it will be suspected as faulty.
+  * If the client does not receive the replies soon enough, it broadcasts the request to all replicas. If the request has already been processed, the replicas re-send the reply. Otherwise, **if the replica is not the primary, it relays the request to the primary.** If the primary does not mutlicast, it will be suspected as faulty.
 
 ### Normal case operation:
 
@@ -57,22 +57,17 @@ Data: June 30th, 2024.
   * If the replica $i$ has received the request $m$, a pre-pare for $m$ in view $v$ with sequence number $n$, and $2f$ prepares for $m$ in view $v$ that match the pre-pare
   * The pre-pare and prepare phases of the algorithm guarantees that non-faulty replicas agree on a total order for the requests within a view. 
 * After a replica is prepared, it multicasts a `COMMIT` message to all other replicas.
-* Each replica ensures that prepare phase was successful and it has accepted **2f + 1** ‘COMMIT’ type messages from different replicas that match the pre-prepare for the request. If everything so far is successful, then the replica executes (or computes) the request. The commit phase now ends.
+* Each replica ensures that prepare phase was successful and it has accepted **2f + 1** `COMMIT` type messages from different replicas that match the pre-prepare for the request. If everything so far is successful, then the replica executes (or computes) the request. The commit phase now ends.
 * A replica sends the ‘REPLY’ type message to the client. The message contains (1) information of view number (similar to block height), (2) timestamp, (3) result of executing the requested operation, and (4) the unique number of replica who sends this message.
-* The client waits for **f+1** valid replies from different replicas before finally accepting the result of the operation.
+* The client waits for **f+1** valid replies from different replicas before finally accepting the result of the operation. At least one honest client has replied. 
 
 * ![alt text](images/411-pbft/normal-case.png)
 
 ## Why do we need both pre-prepare and prepare?
 
-* **Ensuring Order**: The pre-prepare phase proposes the order, while the prepare phase ensures that the majority of replicas agree on this order. Together, they guarantee that the system maintains a consistent global order of requests.
+* **Ensuring Order**: **The pre-prepare phase proposes the order, while the prepare phase ensures that the majority of replicas agree on this order.** Together, they guarantee that the system maintains a consistent global order of requests.
 * **Preventing Malicious Behavior**: By requiring agreement in both phases, PBFT protects against malicious behavior by faulty replicas, including the primary. Even if the primary tries to mislead some replicas, the prepare phase ensures that only proposals agreed upon by a majority can proceed.
 * **Achieving Quorum**: The two-phase approach ensures that any request that reaches the commit phase has been seen and agreed upon by at least $2𝑓+1$ replicas. This overlap is crucial for ensuring that all correct replicas eventually reach the same decision, maintaining the integrity of the system.
-
-
-> $committed(m,v,n)$ is true if and only if $prepared(m,v,n,i)$ is true for all $i$ in some set of $f+1$ non-faulty replicas; and $committed-local(m,v,n,i)$ is true if and only if $prepared(m,v,n,i)$ is true and has accepted $2f+1$ commits (possibly including its own) from different replicas that match the pre-prepare for $m$;
-
-> The commit phase ensures the following invariant: if $committed-local(m,v,n,i)$ is true for some non-faulty $i$ then $commited(m,v,n)$ is true. 
 
 Checkpoint:
 > When a replica produces a checkpoint, it multicasts a message $(CHECKPOINT,n,d,i)$  to the other replicas, where $n$ is the sequence number of the last request whose execution is reflected in the state and is the digest of the state. Each replica collects checkpoint messages in its log until it has $2f+1$ of them for sequence number $n$  with the same digest $d$ signed by different replicas (including possibly its own such message). These $2f+1$ messages are the proof of correctness for the checkpoint.
@@ -85,7 +80,7 @@ Once a checkpint with a proof becomes stable and the replica disards all pre-par
 
 > If the timer of backup expires in view $v$, the backup starts a view change to move the system to view $v+1$. It stops accepting messages (other than checkpoint, view-change, and new-view messages) and multicasts a $VIEW-CHANGE, v+1, i$  message to all replicas.
 
-If the primary $p$ of view $v+1$ receives $2f$ valid view-change messages for view $v+1$ from other replicas, it multi-casts a new $NEW-view, v+1$ message to all other replicas. 
+If the primary $p$ of view $v$ receives $2f$ valid view-change messages for view $v+1$ from other replicas, it multi-casts a new $NEW-view, v+1$ message to all other replicas. 
 
 The primary determines the sequence number $min-s$ of the latest stable checkpoint in and the highest sequence number $max-s$ in a prepare message in $V$. Replicas redo the protocol for messages between $min-s$ and $max-s$, but they avoid re-executing client requests. 
 
@@ -115,10 +110,10 @@ Techniques
  
 ### View Change Protocol 
 
-*   _certificate_: a collection of matching valid signed messages from $2f+1$ different replicas, representing **a proof that certain thing has happened**
+*   _certificate_: a collection of **matching valid signed messages** from $2f+1$ different replicas, representing **a proof that certain thing has happened**
       *   messages are signed, so replica is able to evaluate a certificate and decide for itself whether it is valid    
-*  Need to use PREPARE certificates (i.e. composed of the messages replicas received while running the protocol)
-      *  Consists of the PREPREPARE message from primary and $2f$ PREPARE message all for the same request( i.e. represented as the message digest) from the same viewstamp. 
+*  Need to use `PREPARE` certificates (i.e. composed of the messages replicas received while running the protocol)
+      *  Consists of the `PREPARE` message from primary and $2f$ `PREPARE` message all for the same request (i.e. represented as the message digest) from the same viewstamp. 
 
 ### Limitations 
 - Drawback: all-to-all communication with $O(n^2)$ 

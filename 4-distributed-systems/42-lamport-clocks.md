@@ -8,6 +8,9 @@ Read: Jan 23th, 2024.
 * Event ordering is crucial for various aspects of system functionalities such as data consistency, debugging, and coordination.
 * There is no single, universally-agreed-upon time or clock that all processes can refer to.
 * Synchronizing physical clocks cannot solve the problem due to issues like clock drift and network latency. 
+* Logical clock includes {Lamport clock, vector clock, matrix clocks}. 
+  * Both provides total ordering of events consistent with causality
+  * Vector clocks allow you to determine if any two arbitrarily selected events are causally dependent or concurrent. Lamport timestamps cannot do this.
 
 ## Summary 
 Lamport presents the classic paper about how to define ordering of events in system of collections of nodes. 
@@ -29,19 +32,21 @@ Lamport introduces **logical clock**, which is the way to count number of events
   
 ### Synchronization Algorithm 
 The paper offers a simple algorithm for advancing the logical clocks in a way that respects the happened-before relationship.
-1. Each node maintains a counter $t$, incremented on local event $e$
+1. Each node maintains **a counter $t$**, incremented on local event $e$
 2. When the node sends the message, attach current $t$ to messages sent over the network
 3. Recipients move its clock forward to timestamp in the message (if greater than the local counter), then increments 
 
 
 **Partial ordering** with lamport clock is useful to establish causation of messages. To produce a **total ordering**, Lamport introduces the notion of tie-breaking based on the deterministic ordering of processes. 
+* The tie breaker can be an unique node ID. 
+* Because the node ID can be arbitrarily used to break ties, we effectively have a total order. In other words, we can "convert" a partially ordered sequence number into a totally ordered one that is consistent with causality. It's still not a linearizable system, which makes it feel partially ordered.
 
 ## Limitations 
 * This paper does not present any mechanisms for failure. 
 * Also, given Lamport timestamps $L(a)$ and $L(b)$, with $L(a) < L(b)$, we can't tell whether $a \rightarrow b$ or $a || b$. We can tell something, but can't differentiate the event that is concurrent and the event that one happened before the other. If we want to detect which events are concurrent, we need vector clocks.  
 
 In summary, the limitations are:
-* Partial ordering: can't determine order of concurrent events
+* **Partial ordering: can't determine order of concurrent events**
 * Doesn't handle network failures: delays or message losses can lead to potential inconsistency
 * Overhead: carry timestamp information
 

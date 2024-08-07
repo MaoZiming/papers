@@ -11,7 +11,7 @@ Read: June 30th, 2024.
 * MapReduce and Dryad are for batch-oriented jobs. 
 * Designed to maximize throughput, rather than minimizing job latency.
   * Job latency is important for iterative computations
-* No data-dependent control flow, so the work in each computation must be statically pre-determined. 
+* **No data-dependent control flow**, so the work in each computation must be statically pre-determined. 
 * CIEL is designed for coarse-grained parallelism across large data sets, as are MapReduce and Dryad. For fine-grained tasks, a work-stealing scheme is more appropriate 
 
 ### Dynamic Task Graph
@@ -22,10 +22,10 @@ Read: June 30th, 2024.
 * It allows for more adaptive and flexible task execution. This dynamic approach, coupled with a runtime that can adjust execution strategies based on current conditions, makes it possible to support a wider range of applications efficiently. 
 * Examples of usecases include iterative, low-latency chained events like k-means, E-M, PageRank, and so on. 
 
-* SkyWriting: a scripting language that allows the straightforward expression of iterative and recursive task-parallel algorithms using imperative and functional language syntax.
+* **SkyWriting: a scripting language** that allows the straightforward expression of iterative and recursive task-parallel algorithms using imperative and functional language syntax.
   * However CIEL extends previous models by **dynamically building the DAG** as tasks execute. As we will show, this conceptually simple extension allowing tasks to create further tasks—enables CIEL to support data-dependent iterative or recursive algorithms
-* In MapReduce, the data flow is limited to a bipartite graph parameterised by the number of map and reduce tasks; Dryad allows data flow to follow a more general directed acyclic graph (DAG), but it must be fully specified before starting the job. 
-* In general, to support iterative or recursive algorithms within a single job, we need **data-dependent control flow**—i.e. the ability to create more work dynamically, based on the results of previous computations. 
+* In MapReduce, the data flow is limited to a **bipartite** graph parameterised by the number of map and reduce tasks; Dryad allows data flow to follow a more general directed acyclic graph (DAG), but it must be fully specified before starting the job. 
+* In general, to support iterative or recursive algorithms within a single job, we need **data-dependent control flow** — i.e. the ability to create more work dynamically, based on the results of previous computations. 
 * At the same time, we wish to retain the existing benefits of task-level parallelism: transparent fault tolerance, locality-based scheduling and transparent scaling.
 * Having **data-dependent control flow** means that each computation doesn't need to be pre-determined. 
 * **Primitives**:
@@ -34,14 +34,14 @@ Read: June 30th, 2024.
   * **References**: A reference comprises a name and a set of locations (e.g. host name-port pairs) where the object with that name is stored. The set of locations may be empty: in that case, the reference is a **future reference** to an object that has not yet been produced. Otherwise, it is a **concrete** reference, which may be consumed.
   * **Tasks**:  A CIEL job makes progress by executing tasks. **A task is a non-blocking atomic computation** that executes completely **on a single machine**. The task becomes runnable when all of its dependencies become **concrete**. 
     * Task has one or more dependencies. 
-    * A task can **publish one or more objects**, by creating a **concrete reference** for those objects. In particular, the task can publish objects for its expected outputs, which may cause other tasks to become runnable if they depend on those outputs.
+    * A task can **publish one or more objects**, by creating a **concrete reference** **for those objects.** In particular, the task can publish objects for its expected outputs, which may cause other tasks to become runnable if they depend on those outputs.
     * To support data-dependent control flow, however, a task may also **spawn new tasks** that perform additional computation.
     * > CIEL requires that all tasks compute a deterministic function of their dependencies.
     * > A task also has one or more expected outputs, which are the names of objects that the task will either create or delegate another task to create.
   * Prevent deadlock by preventing circles in the dependency graphs. 
   * ![alt text](images/47-ciel/ciel-cluster.png)
     * Single master: 
-      * keeps record of obj and task tables
+      * keeps record of **obj** and task tables
       * Dispatch tasks to workers
       * Persistent logging of tables. 
     * Multiple workers:
@@ -56,13 +56,13 @@ Read: June 30th, 2024.
 
   * Skywriting functions are pure: functions cannot have side-effects, and all arguments are passed by value. 
   *  **The dereference (unary-) operator can be applied * to any reference**; it loads the referenced data into the **Skywriting** execution context, and evaluates to the resulting data structure.
-  *  A Skywriting task has a single output, which is the value of the expression in the return statement. On termination, the runtime stores the output in the local object store, publishes a concrete reference to the object, and sends a list of spawned tasks to the master, in order of creation.
+  *  A Skywriting task has a single output, which is the value of the expression in the return statement. On termination, the runtime stores the output in the local object store, publishes a **concrete reference** to the object, and sends a list of spawned tasks to the master, in order of creation.
   *  `spwawn`, `execute` `spawn_exec` . The results of `spawn` and `spawn_exec` are first-class futures. A Skywriting task can pass the references in its return value or in a subsequent call to the task-creation functions.
 
 ## Continuation
 
-* The `spawn()` function creates a new task to run the given Skywriting function. To do this, the Skywriting runtime first creates a data object that contains the new task’s environment, including the text of the function to be executed and the values of any arguments passed to the function. This object is called a Skywriting continuation, because it encapsulates the state of a computation.
-* If the task attempts to dereference an object that has not yet been created—for example, the result of a call to spawn()—the current task must block.
+* The `spawn()` function creates a **new task to run the given Skywriting function**. To do this, the Skywriting runtime first creates a data object that contains the new task’s environment, including the text of the function to be executed and the values of any arguments passed to the function. This object is called a Skywriting continuation, because it encapsulates the state of a computation.
+* If the task attempts to dereference an object that has not yet been created—for example, the result of a call to `spawn()`—the current task must block.
   * To resolve this contradiction, the runtime implicitly creates a continuation task that depends on the dereferenced object and the current continuation (i.e. the current Skywriting execution stack).
 * A Skywriting task has a single output, which is the value of the expression in the return statement. On termination, the runtime stores the output in the local object store, publishes a concrete reference to the object, and sends a list of spawned tasks to the master, in order of creation
 

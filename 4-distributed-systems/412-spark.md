@@ -9,7 +9,7 @@ Read: April 14th, 2024
   * Unfortunately, in most current frameworks, the only way to reuse data between computations (e.g., between two MapReduce jobs) is to write it to an external stable storage system, e.g., a distributed file system.
 * Resilient Distributed Datasets (RDDs), a distributed memory abstraction that lets programmers perform in-memory computations on large clusters in a fault-tolerant manner.
 * RDDs are motivated by two types of applications that current computing frameworks handle inefficiently: iterative algorithms and interactive data mining tools.
-* RDDs provide an interface based on coarse-grained transformations (e.g., map, filter and join) that apply the same operation to many data items. This allows them to efficiently provide fault tolerance by logging the transformations used to build a dataset (its lineage) rather than the actual data.
+* RDDs provide an interface based on coarse-grained transformations (e.g., map, filter and join) that apply the same operation to many data items. This allows them to efficiently **provide fault tolerance by logging the transformations used to build a dataset (its lineage)** rather than the actual data.
 
 ## RDD
 
@@ -31,7 +31,7 @@ Read: April 14th, 2024
 
 ## Parallel Operations
 
-* *reduce*: Combines dataset elements using an associa- tive function to produce a result at the driver program.
+* *reduce*: Combines dataset elements using an associative function to produce a result at the driver program.
 * *collect*: Sends all elements of the dataset to the driver program. For example, an easy way to update an array in parallel is to parallelize, map and collect the array.
 * *foreach*: Passes each element through a user provided function. 
 
@@ -66,8 +66,12 @@ Read: April 14th, 2024
 * RDD themselves are statically typed objects. 
 
 ## Narrow vs. Wide Dependencies
-* Narrow dependencies: each partition of the child RDD depends on a small number of partitions of the parent RDD.
-* Wide dependencies: each partition of the child RDD depends on multiple partitions of the parent RDD. This requires data to be shuffled across the nodes.
+<!-- * Narrow dependencies: each partition of the child RDD depends on a small number of partitions of the parent RDD. -->
+<!-- * Wide dependencies: each partition of the child RDD depends on multiple partitions of the parent RDD. This requires data to be shuffled across the nodes. -->
+* Narrow dependencies, where each partition of the parent RDD is used by at most one partition of the child RDD
+  * ![alt text](images/412-spark/narrow-dependency.png)
+* Wide dependencies, where multiple child partitions may depend on it. 
+  * ![alt text](images/412-spark/wide-dependency.png)
 * Narrow dependencies allow for pipelined execution on one cluster node. 
   * e.g. One can apply a *map* followed by a *filter* on an element-by-element basis. 
   * In contrast, wide dependencies require data from all parent partitions to be available and to be shuffled across the nodes using a MapReduce-like operation.

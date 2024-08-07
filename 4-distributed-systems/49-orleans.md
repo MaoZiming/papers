@@ -6,7 +6,7 @@ Read June 30th, 2024.
 
 # Introduction
 * Building interactive services that are scalable and reliable is hard.
-* Target workload: Interactive, latency-sensistive, run for a finite amounts of time
+* Target workload: Interactive, **latency-sensistive**, run for a finite amounts of time
 * Implementing virtual actors with a limited underlying number of physical actors
 * Object-Oriented Approach to accessing classes.
 * Raised the **level of the actor abstraction**.
@@ -22,16 +22,21 @@ Read June 30th, 2024.
 * This paper presents the design principles behind Orleans and demonstrates how Orleans achieves a simple programming model that meets these goals. We describe how Orleans simplified the development of several scalable production applications on Windows Azure, and report on the performance of those production systems.
 * Actors are units of isolation and distribution. Actors are isolated; they don't share memory. Two actors can communicate only by sending messages. 
 
+## Single Threading
+
+* Orleans ensures that at most one thread runs at a time within each activation. Thus, activation state is never accessed by multiple threads simultaneously, so race conditions are impossible and locks and other synchronization primitives are unnecessary
+* By providing single-threaded access to the internal state of an actor instance. By not sharing data between actor instances except via message-passing.
+
 ## Virtual actors
 
 * First, an Orleans actor always exists, virtually. It cannot be explicitly created or destroyed. **Its existence transcends the lifetime of any of its in-memory instantiations, and thus transcends the lifetime of any particular server.**
 * Orleans actors are automatically instantiated: if there is no in-memory instance of an actor, **a message sent to the actor causes a new instance to be created on an available server**. An unused actor instance is automatically reclaimed as part of runtime resource management. 
 * Third, the location of the actor instance is transparent to the application code, which greatly simplifies programming.
-* Fourth, Orleans can automatically create multiple instances of the same stateless actor, seamlessly scaling out hot actors.
+* **Fourth, Orleans can automatically create multiple instances of the same stateless actor, seamlessly scaling out hot actors.**
 
 * **Perpetual existence**: Perpetual existence: actors are purely logical entities that always exist, virtually. An actor cannot be explicitly created or destroyed and its virtual existence is unaffected by the failure of a server that executes it.
 
-* **Automatic instantiations**: Orleans’ runtime automatically creates in-memory instances of an actor called activations. An actor can have zero or more activations. 
+* **Automatic instantiations**: Orleans’ runtime automatically creates in-memory instances of an actor called activations. An actor can have **zero or more activations.**
   * An actor will not be instantiated if there are no requests pending for it. When a new request is sent to an actor that is currently not instantiated, the Orleans runtime automatically creates an activation by picking a server, instantiating on that server the .NET object that implements the actor, and invoking its ActivateAsync method for initialization
 * If the server fails, the runtime will automatically re-instantiates it on a new server on its next invocation. 
 * An unused actor's in-memory instance is automatically reclaimed as part of the runtime resource management. 
@@ -53,18 +58,27 @@ Read June 30th, 2024.
 ## Promises
 
 * Orleans method calls return immediately with a promise for a future result, rather than blocking until the result is returned.
-* Initially, a promise is unresolved; it represents the expectation of receiving a result at some future time. When the result is received, the promise becomes fulfilled and the result becomes the value of the promise. If an error occurs, either in the calculation of the result or in the communication, the promise becomes broken.
+* Initially, a promise is **unresolved**; it represents the expectation of receiving a result at some future time. When the result is received, the promise becomes **fulfilled** and the result becomes the value of the promise. If an error occurs, either in the calculation of the result or in the communication, the promise becomes **broken**.
 * The main way to use a promise is to schedule a closure (or continuation) to execute when the promise is resolved. Closures are usually implicitly scheduled by using the await C# keyword on a promise.
 
 ## Turns
 
 * Actor activations are single threaded and do work in chunks, called turns. An activation executes one turn at a time. A turn can be a method invocation or a closure executed on resolution of a promise. While Orleans may execute turns of different activations in parallel, each activation always executes one turn at a time.
 * For simplicity, an activation does not receive a new request until all promises created during the processing of the current request have been resolved and all of their associated closures executed.
+* While the turn-based asynchronous model allows for interleaving of turns for multiple requests to the same activation, the reasoniong about that is challenging. 
+* Thus, an activation does not receive a new request until all promises created during the processing of the current request have been resolved and all of their associated closures executed.
 
 ## Persistence
 
 * An actor class can declare a property bag interface that represents the actor state that should be persisted. 
 * Up to application logic to decide when to checkpoint an actor's persistent state. 
+
+## How does Orleans target low latency?
+
+* Cooperative multitasking (remove context switching overhead). 
+* Asynchronous IO
+  * All methods and properties of an actor interface are asynchronous, returning promises for the results. 
+  * Orleans method calls return immediately with a promise for a future result, rather than blocking until the result is returned. 
 
 ## Reminder
 
@@ -91,7 +105,7 @@ Read June 30th, 2024.
 
 # Limitations
 
-One such pattern is an application that intermixes frequent bulk operations on many entities with operations on individual entities. Isolation of actors makes such bulk operations more expensive than operations on shared memory data structures. The virtual actor model can degrade if the number of actors in the system is extremely large (billions) and there is no temporal locality. Orleans does not yet support cross-actor transactions, so applications that require this feature outside of the database system are not suitable.
+One such pattern is an application that intermixes frequent bulk operations on many entities with operations on individual entities. Isolation of actors makes such bulk operations more expensive than operations on shared memory data structures. The virtual actor model can degrade if the number of actors in the system is extremely large (billions) and there is no temporal locality. **Orleans does not yet support cross-actor transactions, so applications that require this feature outside of the database system are not suitable.**
 
 * Actor's persistent state is left to the programmer. 
 
