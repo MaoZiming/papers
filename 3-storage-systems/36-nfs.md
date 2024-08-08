@@ -17,6 +17,12 @@ NFS is a **distributed file system** designed to make sharing of filesystem reso
     - ![nfs](images/36-nfs/nfs.png)
 - ![arch](images/36-nfs/distributed-file-system-arch.png)
 
+## Others
+
+* Portable to other OS and machine architecture
+* Implemented on top of RPC.
+* the `mount` command was modified to take additional arguments including a filesystem type and options string.
+
 ## Goals
 1. **Crash recovery** (main goal): recover easily from server crashes
 2. Transparency and UNIX semantics: access remote files as local 
@@ -29,6 +35,7 @@ There are a few techniques used to achieve these goals
 ### 1. Simple and fast recovery: _statelessness_
 *  Stateless protocol: **server does not keep track of anything about client**
     *  most requests are **idempotent** (e.x. `LOOKUP`, `READ`, `WRITE`)   
+    *  This also means that the server has to flush all modified data to disk before returning to the call.
 *  Key structure: file handle (FD)
     *  <volume id, inode id, generation #>     
     *  - *Volume identifier* —> which FS the request refers to
@@ -37,8 +44,13 @@ There are a few techniques used to achieve these goals
    - *Generation number* —> needed when reusing an inode number
        - Increment it whenever an inode number is reused
        - Ensure that a client with an old file handle can’t accidentally access the newly allocated file
+   - New fhandles are returned by the lookup, create, and mkdir procedures which also take an fhandle as an argument.
+     - Pathname traversal is done in the kernel by breaking the path into directory components and doing a lookup call through the vnode for each component.
+     -  In the NFS filesystem, passing whole pathnames would force the server to keep track of all of the mount points of its clients in order to determine where to break the pathname and this would violate server statelessness. 
+        -  Partly a reason that the file system can be mounted to any vnode. 
+   - The root directory file handle is obtained with `MOUNT`.
 *  Steps 
-    *  Every client RCP call pass a FD
+    *  Every client RCP call pass a **FD**
     *  server fails: client retires
 *  - Stateful protocol
     - **Shared / distributed state complicates crash recovery**
@@ -56,9 +68,9 @@ There are a few techniques used to achieve these goals
     *  put in battery-backed mem, or use faster medium to write
  
 ### 4. Machine & OS independences: VFS / Vnode interface 
-- *Virtual File System (VFS)*: includes operations that are done to the entire file system
+- *Virtual File System (VFS)*: **includes operations that are done to the entire file system**
     - E.x. mounting, unmounting, getting FS-wide statistics, forcing dirty writes to disk, etc.
-- *Virtual node (Vnode)*: includes all operations one can perform on a file
+- *Virtual node (Vnode)*: **includes all operations one can perform on a file**
     - E.x. open, close, reads, writes, etc.
 - - To build a new FS, one just needs to define these “methods”
 - The framework will handle the rest
@@ -70,6 +82,10 @@ There are a few techniques used to achieve these goals
 - Security in early NFS implementation was lax: easy for any user on a client to masquerade as other users and gain access to virtually any file 
 - Performance: though with caching, still a bunch of issues 
 
+### Concurrent accesses
+- In the local filesystem, file modifications are locked at the inode level. This prevents two processes writing to the same file from intermixing data on a single write.
+- Since the NFS server maintains no locks between requests, and a write may span several RPC requests, two clients writing to the same remote file may get intermixed data on long writes.
+
 ### NFSv2 Protocol
 
 - `LOOKUP`
@@ -78,7 +94,7 @@ There are a few techniques used to achieve these goals
       - Output: file handle (or directory) plus its attribute
       - Assume client already has file handle for root dir (`/`) (with **mount protocol**)
     - If a long pathname must be traversed (e.g., /home/remzi/foo.txt), the client would send three `LOOKUP`s.
-    - Third, each server request has all the information needed to complete the request in its entirety. Ensure stateless server. 
+    - **Third, each server request has all the information needed to complete the request in its entirety. Ensure stateless server.**
 - `READ`
     - Input: file handle of the file, along with offset within the file and # of bytes to read
     - `WRITE` is handled similarly
@@ -96,7 +112,7 @@ There are a few techniques used to achieve these goals
     - **Def:** when the effect of performing the operation multiple times is equivalent to the effect of performing the operation a single time
     - E.x. `LOOKUP` and `READ`
     - E.x. `WRITE`
-        - If, for example, a WRITE fails, the client can simply retry it. The WRITE message contains the data, the count, and (importantly) the exact offset to write the data to.
+        - If, for example, a `WRITE` fails, the client can simply retry it. The WRITE message contains the data, the count, and (importantly) the exact offset to write the data to.
         - Thus, it can be repeated with the knowledge that the outcome of multiple writes is the same as the outcome of a single one
     - Some operations are hard to make idempotent
         - E.x. `MKDIR`
@@ -126,3 +142,10 @@ There are a few techniques used to achieve these goals
     - Some tricks
         - First put writes in a **battery-backed memory**
         - Second is to use a FS specifically designed to write to disk quickly
+
+
+## Limitations
+
+* The two remaining problem areas are getattr and write. 
+* The reason is that stat-ing files causes one RPC call to the server for each file. In the local case the inodes for a whole directory end up in the buffer cache and then stat is just a memory reference. 
+* The write operation is slow because it is synchronous on the server. Fortunately, the number of write calls in normal use is very small (about 5% of all calls to the server, see appendix 2) so it is not noticeable unless the client writes a large remote file.
