@@ -2,7 +2,7 @@
 
 Link: https://www.usenix.org/system/files/conference/osdi14/osdi14-paper-li_mu.pdf
 
-Read: July 3rd 2024. 
+Read: July 3rd 202* 
 
 ## Challenges
 
@@ -45,16 +45,16 @@ Read: July 3rd 2024.
 
 ## Strong Points
 
-- The trade-off between the system efficiency and algorithm convergence rate depends on: algorithm’s sensitivity to data inconsistency, feature correlation in training data, capacity difference of hardware components, and many other factors. 
+* The trade-off between the system efficiency and algorithm convergence rate depends on: algorithm’s sensitivity to data inconsistency, feature correlation in training data, capacity difference of hardware components, and many other factors. 
   
-- Discussed three models of consistency: sequential, eventual, bounded delay. 
+* Discussed three models of consistency: sequential, eventual, bounded delay. 
 
-- **Parameter server is able to cover orders of magnitude more data on orders of magnitude more processors than any other published system**. It simplifies the development of distributed machine learning applications. It enabled LDA (Latent Dirichlet Allocation) models with 10s of billions of parameters to be inferred from billions of documents, using up to thousands of machines
+* **Parameter server is able to cover orders of magnitude more data on orders of magnitude more processors than any other published system**. It simplifies the development of distributed machine learning applications. It enabled LDA (Latent Dirichlet Allocation) models with 10s of billions of parameters to be inferred from billions of documents, using up to thousands of machines
 
-- Natural but also clear division of BOTH: the input data and the parameters (in the form of key, value pairs) between many worker nodes and parameter server nodes, respectively. 
-  - This approach allows them to scale the computing resources, the data used for training machine learning models and the models themselves (with billions of parameters).
+* Natural but also clear division of BOTH: the input data and the parameters (in the form of key, value pairs) between many worker nodes and parameter server nodes, respectively. 
+  * This approach allows them to scale the computing resources, the data used for training machine learning models and the models themselves (with billions of parameters).
 
-- Both key/parameter caching and data compressing system-level optimization are generalized to user-defined filters.
+* Both key/parameter caching and data compressing system-level optimization are generalized to user-defined filters.
 
 ## Fault tolerance
 
@@ -63,9 +63,9 @@ Read: July 3rd 2024.
 
 ## Weak Points:
 
-- Do not offer higher-level general-purpose building blocks such as model partitioning strategies, scheduling, managed communication that are key to simplifying the adoption of a wide range of ML methods. 
+* Do not offer higher-level general-purpose building blocks such as model partitioning strategies, scheduling, managed communication that are key to simplifying the adoption of a wide range of ML methods. 
 
-- They used the traditional techniques from distributed systems with some small improvements (vectors clocks compressed taking into account that not many vector clocks diverge), snappy compression applied on messages - to compress zeros as user-defined filters may zero out large fraction of the parameters.
+* They used the traditional techniques from distributed systems with some small improvements (vectors clocks compressed taking into account that not many vector clocks diverge), snappy compression applied on messages - to compress zeros as user-defined filters may zero out large fraction of the parameters.
 
 ## Implementation
 

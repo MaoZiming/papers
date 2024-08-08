@@ -36,8 +36,8 @@ This paper presents the design of MULTICS, including its concepts of processes, 
 
 ## Problem 
 Before MULTICS there were no existing OS capable of providing users with a large machine-independent virtual memory. So the objectives of MULTICS are 
-1. Provide user with ***large machine-independent virtual memory*** 
-    1. I.e. responsibility of managing physical storage is now the system software 
-2. Permit programming ***generality*** 
-    1. One procedure can use another procedure only knowing its name, not the storage requirement 
-3. Permit ***sharing of procedures and data*** among users subject only to proper authorization
+* Provide user with ***large machine-independent virtual memory*** 
+    * I.e. responsibility of managing physical storage is now the system software 
+* Permit programming ***generality*** 
+    * One procedure can use another procedure only knowing its name, not the storage requirement 
+* Permit ***sharing of procedures and data*** among users subject only to proper authorization

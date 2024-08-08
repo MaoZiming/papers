@@ -2,198 +2,198 @@
 
 ## Hardware Privilege Level
 
-- Setting managed by the CPU to restrict types of operations that can be executed
-- **X86**: four **privilege levels**
-    - **Ring 0:** highest privilege level, generally used for most trusted functions of OS kernel
-    - **Ring 1, Ring 2:** seldom use
-    - **Ring 3:** lowest privilege levels, typically used for user-mode
-- Connections
-    - Kernel mode: typically high hardware privilege level (e.g., Ring 0)
-    - User mode: typically low hardware privilege level (e.g., Ring 3).
+* Setting managed by the CPU to restrict types of operations that can be executed
+* **X86**: four **privilege levels**
+    * **Ring 0:** highest privilege level, generally used for most trusted functions of OS kernel
+    * **Ring 1, Ring 2:** seldom use
+    * **Ring 3:** lowest privilege levels, typically used for user-mode
+* Connections
+    * Kernel mode: typically high hardware privilege level (e.g., Ring 0)
+    * User mode: typically low hardware privilege level (e.g., Ring 3).
   
 ## Process: abstraction for CPU
 
-- CPU abstraction of *a running program*
-- **What constitutes a process?**
-    - Memory: content of memory in its address space
-        - **Address space**: memory that the process can address
-    - Register: content of CPU registers (PC, stack pointer, etc.)
-        - PC: which instruction will execute next
-        - SP: manage stack for function parameters
-    - Storage: information about I/O (open files, etc.)
-- **API**
-    - E.x. creation
-        - Allocate memory for runtime stack and heap
-        - Lazy loading: loading pieces of code and data
-        - Start at entry point (i.e. `main()`), transfer control of CPU to the process, execute
-    - UNIX-like environment API
-        - `fork()`: creates a new process, creator is parent, newly created process is child, child process is nearly identical copy of parent
-        - `exec`: allows a child to break free from similarity to its parent and execute an entirely new program
-        - `wait()`: allows a parent to wait for its child to complete execution
-- **Process state:** running, ready, blocked
-- **Mechanism:** ***limited direct execution***
-    - V.s. direct execution: run program directly on the CPU
-        - Problem: restricted operation, switching between processes
-    - CPU support: **user mode** and **a privileged (non-restricted) kernel mode**
-        - Kernel: OS
-        - Use **system call** to **trap** into kernel to request OS services
-        - The trap instruction saves register state carefully, change hardware status to kernel model, and jump into the OS to a pre-specified destination: **trap table**
-        - After finish a system call, **return-from-trap**
-        - Once program running, OS must use hardware mechanisms to ensure user program does not run forever: **timer interrupt** (i.e. **non-cooperative**)
-            - Timer device programmed to raise interrupt
-            - When raised
-                - The current running process is halted
-                - A pre-configured interrupt handler in the OS run
+* CPU abstraction of *a running program*
+* **What constitutes a process?**
+    * Memory: content of memory in its address space
+        * **Address space**: memory that the process can address
+    * Register: content of CPU registers (PC, stack pointer, etc.)
+        * PC: which instruction will execute next
+        * SP: manage stack for function parameters
+    * Storage: information about I/O (open files, etc.)
+* **API**
+    * E.x. creation
+        * Allocate memory for runtime stack and heap
+        * Lazy loading: loading pieces of code and data
+        * Start at entry point (i.e. `main()`), transfer control of CPU to the process, execute
+    * UNIX-like environment API
+        * `fork()`: creates a new process, creator is parent, newly created process is child, child process is nearly identical copy of parent
+        * `exec`: allows a child to break free from similarity to its parent and execute an entirely new program
+        * `wait()`: allows a parent to wait for its child to complete execution
+* **Process state:** running, ready, blocked
+* **Mechanism:** ***limited direct execution***
+    * V.s. direct execution: run program directly on the CPU
+        * Problem: restricted operation, switching between processes
+    * CPU support: **user mode** and **a privileged (non-restricted) kernel mode**
+        * Kernel: OS
+        * Use **system call** to **trap** into kernel to request OS services
+        * The trap instruction saves register state carefully, change hardware status to kernel model, and jump into the OS to a pre-specified destination: **trap table**
+        * After finish a system call, **return-from-trap**
+        * Once program running, OS must use hardware mechanisms to ensure user program does not run forever: **timer interrupt** (i.e. **non-cooperative**)
+            * Timer device programmed to raise interrupt
+            * When raised
+                * The current running process is halted
+                * A pre-configured interrupt handler in the OS run
 
 ## Thread
 
-- Thread
-    - I.e. like a separate process, except they share the same address space
-    - Multi-threaded program has more than one point of execution (i.e. multiple PCs)
-    - **Why thread?**
-        - Parallelism: utilize multi-core
-        - To avoid blocking program due to slow I/O: e.x. server-based applications
-        - Why not multi-process
-            - Sharing data is easier
-            - Processes are more logically separate tasks (little sharing)
-    - **What constitute of a thread?**
-        - A program counter (PC) and private set of registers
-            - Save states of each thread of a process to thread control blocks (TCBs)
-            - Context switch must take place (but no need to switch page table, for example)
-        - A stack per thread
-            - Thread-local storage
-    - **Central to concurrent code: 4 problems**
-        - **Critical section**: piece of code that accessed a shared resource
-        - **Race condition**: arise if multi-thread enter critical section roughly at the same time; both attempts to update the shared data structure, lead to undesirable outcome
-        - **Indeterminate program**: consists of one or more race conditions
-            - Outcome is not deterministic
-        - Threads should use **mutual exclusion** primitives
-            - Guarantee that only a single thread enter a critical section, avoid races, and produce deterministic program output
-    - **POSIX threads library**
-        - `pthread_create()` and `pthread_join()`: create a thread
-        - `pthread_mutex_lock()` and `pthread_mutex_unlock()`: lock
-        - `pthread_cond_wait()`, `pthread_cond_signal()`: condition variables
-    - POSIX: Portable Operating System Interface (for uniX?)
-      - “everything is a file”
+* Thread
+    * I.e. like a separate process, except they share the same address space
+    * Multi-threaded program has more than one point of execution (i.e. multiple PCs)
+    * **Why thread?**
+        * Parallelism: utilize multi-core
+        * To avoid blocking program due to slow I/O: e.x. server-based applications
+        * Why not multi-process
+            * Sharing data is easier
+            * Processes are more logically separate tasks (little sharing)
+    * **What constitute of a thread?**
+        * A program counter (PC) and private set of registers
+            * Save states of each thread of a process to thread control blocks (TCBs)
+            * Context switch must take place (but no need to switch page table, for example)
+        * A stack per thread
+            * Thread-local storage
+    * **Central to concurrent code: 4 problems**
+        * **Critical section**: piece of code that accessed a shared resource
+        * **Race condition**: arise if multi-thread enter critical section roughly at the same time; both attempts to update the shared data structure, lead to undesirable outcome
+        * **Indeterminate program**: consists of one or more race conditions
+            * Outcome is not deterministic
+        * Threads should use **mutual exclusion** primitives
+            * Guarantee that only a single thread enter a critical section, avoid races, and produce deterministic program output
+    * **POSIX threads library**
+        * `pthread_create()` and `pthread_join()`: create a thread
+        * `pthread_mutex_lock()` and `pthread_mutex_unlock()`: lock
+        * `pthread_cond_wait()`, `pthread_cond_signal()`: condition variables
+    * POSIX: Portable Operating System Interface (for uniX?)
+      * “everything is a file”
     
 ## Address Space: abstraction for memory
 
-- Address space
-    - Virtual address space
-        - Illusion that each program has the view that it has a large contiguous address space to put its code and data into
-        - Goal
-            - Transparency: just like own private physical memory, OS does multiplex
-            - Efficiency: time and space, need hardware support (i.e. TLBs)
-                - Space: not spend too much memory for structures for virtualization
-            - Protection: isolate among processes
-    - Contains
-        - Code: where instructions live
-        - Data: global and stack variables. 
-        - Stack: contains local variables arguments to routines, return values, etc.
-        - Heap: contains malloc’d data, dynamic data structure
+* Address space
+    * Virtual address space
+        * Illusion that each program has the view that it has a large contiguous address space to put its code and data into
+        * Goal
+            * Transparency: just like own private physical memory, OS does multiplex
+            * Efficiency: time and space, need hardware support (i.e. TLBs)
+                * Space: not spend too much memory for structures for virtualization
+            * Protection: isolate among processes
+    * Contains
+        * Code: where instructions live
+        * Data: global and stack variables. 
+        * Stack: contains local variables arguments to routines, return values, etc.
+        * Heap: contains malloc’d data, dynamic data structure
 
 # Process
 
-- **Instruction Set Architecture** (ISA): 
-  -  ISA defines the supported instructions, data types, registers, the hardware support for managing main memory (such as the memory consistency, addressing modes, virtual memory), and the input/output model of implementations of the ISA.
-     -  E.g. x86, developed by Intel, CISC
-     -  ARM, developed by ARM Holdings, RISC
-- Process
-  - Processor (Von Neumann model of computing):
-  - Fetch an instruction from memory
-  - Decode the instruction (Figure out what instruction it is)
-    - During decoding, the processor needs to: determine what instruction is represented by the opcode; prefixes, and other values attached to the instruction and pass the relevant information to the relevant circuitry (in most modern processor designs) break the instruction down into its corresponding micro-operations With modern processors, this can be a complex operation that requires multiple stages in the pipeline. To speed this process up, a dedicated cache may be used to store micro-operations for frequently-executed instructions.
-  - Execute the instruction
-  - Contents of memory is in its address space.
-- Contents of CPU registers (including the program counter and stack pointer).
-  - program counter (PC), or instruction pointer (IP): which instruction will execute next
-  - stack pointer & frame pointer: manage the stack for function parameters, local variables, and return addresses
-  - Stack pointer: tracks the top of the stack in memory
-    - Stack holds temporary results
-    - Permit recursive execution
-  - Frame pointer: points to a fixed location within the stack frame of the current function. The stack frame contains the function’s local variables, parameters, and return address.
-    - Redundant (can just use stack pointer + offset? save one extra register. )
-    - Useful when getting stack trace. 
-- Information about I/O.
-  - persistent storage devices: I/O information for a list of files the process currently has open
-- Process API:
-  - Calls programs can make related to processes: creation, destruction, etc.
-  - Create
-  - Destroy
-  - Wait
-  - Miscellaneous Control (Suspend and resume)
-  - Status
-- Process states:
-  - Running, ready-to-run, blocked
-- Process List
-  - Information about all processes that are ready and some additional information to track which process is currently running.
-  - Each entry of the list is found in what is sometimes called Process Control block (PCB).
-- Process —> a running program
-  - **Sits** on a disk (with instructions, static data) in some kind of executable format.
-- Operating system —> takes these bytes and gets them running
-  - Makes the system easy to use, never concern with whether CPU is available
-- Virutualizing CPUs
-  - Mechanism: time sharing and context switch
+* **Instruction Set Architecture** (ISA): 
+  * ISA defines the supported instructions, data types, registers, the hardware support for managing main memory (such as the memory consistency, addressing modes, virtual memory), and the input/output model of implementations of the ISA.
+     * E.g. x86, developed by Intel, CISC
+     * ARM, developed by ARM Holdings, RISC
+* Process
+  * Processor (Von Neumann model of computing):
+  * Fetch an instruction from memory
+  * Decode the instruction (Figure out what instruction it is)
+    * During decoding, the processor needs to: determine what instruction is represented by the opcode; prefixes, and other values attached to the instruction and pass the relevant information to the relevant circuitry (in most modern processor designs) break the instruction down into its corresponding micro-operations With modern processors, this can be a complex operation that requires multiple stages in the pipeline. To speed this process up, a dedicated cache may be used to store micro-operations for frequently-executed instructions.
+  * Execute the instruction
+  * Contents of memory is in its address space.
+* Contents of CPU registers (including the program counter and stack pointer).
+  * program counter (PC), or instruction pointer (IP): which instruction will execute next
+  * stack pointer & frame pointer: manage the stack for function parameters, local variables, and return addresses
+  * Stack pointer: tracks the top of the stack in memory
+    * Stack holds temporary results
+    * Permit recursive execution
+  * Frame pointer: points to a fixed location within the stack frame of the current function. The stack frame contains the function’s local variables, parameters, and return address.
+    * Redundant (can just use stack pointer + offset? save one extra register. )
+    * Useful when getting stack trace. 
+* Information about I/O.
+  * persistent storage devices: I/O information for a list of files the process currently has open
+* Process API:
+  * Calls programs can make related to processes: creation, destruction, etc.
+  * Create
+  * Destroy
+  * Wait
+  * Miscellaneous Control (Suspend and resume)
+  * Status
+* Process states:
+  * Running, ready-to-run, blocked
+* Process List
+  * Information about all processes that are ready and some additional information to track which process is currently running.
+  * Each entry of the list is found in what is sometimes called Process Control block (PCB).
+* Process —> a running program
+  * **Sits** on a disk (with instructions, static data) in some kind of executable format.
+* Operating system —> takes these bytes and gets them running
+  * Makes the system easy to use, never concern with whether CPU is available
+* Virutualizing CPUs
+  * Mechanism: time sharing and context switch
 
 ## Process Creation
 
 * ![image](images/02-processes/process-creation.png)
 
-- In early (or simple) operating systems, the loading process is done eagerly, i.e., all at once before running the program;
-- Lazy loading: loading pieces of code or data only as they are needed during program execution (i.e. paging, swapping)
-- Before running the process: allocate memory for the program’s run-time stack (C programs use the stack for local variables, function parameters, and return addresses), also for the program’s heap (for explicitly requested dynamically-allocated data; other initialization related to I/O ). In Unix systems, each process by default has three open file descriptors, for standard input, output, and error [stored in heap.]
-- Start the program at the entry point: `main()` routine, OS transfers control of CPU to the process, begin execution
-- Interrupt vector, indexed by interrupt number. 
-  - Entry of the vector contains the address and properties of each interrupt handler. 
-- RTU: Return to user. 
+* In early (or simple) operating systems, the loading process is done eagerly, i.e., all at once before running the program;
+* Lazy loading: loading pieces of code or data only as they are needed during program execution (i.e. paging, swapping)
+* Before running the process: allocate memory for the program’s run-time stack (C programs use the stack for local variables, function parameters, and return addresses), also for the program’s heap (for explicitly requested dynamically-allocated data; other initialization related to I/O ). In Unix systems, each process by default has three open file descriptors, for standard input, output, and error [stored in heap.]
+* Start the program at the entry point: `main()` routine, OS transfers control of CPU to the process, begin execution
+* Interrupt vector, indexed by interrupt number. 
+  * Entry of the vector contains the address and properties of each interrupt handler. 
+* RTU: Return to user. 
 
 # Limited Directed Execution
 
-- The trap tables (with locations of trap handlers) must be set up by the OS at **boot time**, and make sure that they cannot be readily modified by user programs.
-  - The timer interrupt. This approach is a non-cooperative approach to CPU scheduling.
-- Direct Execution Protocol (Without Limits)
-  - ![image](images/02-processes/direct-execution-protocol.png)
-- System call:
-  - trap: jumps to the kernel and raises privileged level to kernel mode
-    - push the program counter, flag, and a few registers onto a per-process kernel stack
-    - return-from-trap: returns to user program, reduces privilege level back
-  - pop values off the stack and resume execution
-  - system-call number: assigned to each system call
-    - **protection**: user code cannot specify an exact address to jump to, but request service via number
-  - Switching Between Processes
-    - Cooperative Approach: wait for system calls
-      - the OS regains control of the CPU by waiting for a system call (e.g. **Yield**) or an illegal operation of some kind (divide by zero, or tries to access memory that it shouldn't have, generating a trap) to take place
-      - If a process gets stuck in an infinite loop, you can only reboot the machine.
-    - Non-Cooperative Approach: the OS takes control
-      - Use: timer interrupt and interrupt handler
-      - A timer device can be programmed to raise an interrupt every so many milliseconds; when the interrupt is raised, the currently running process is halted, and a pre-configured interrupt handler in the OS runs.
-      - During boot time, the OS must inform the hardware of which code to run when the timer interrupt occurs; thus, at boot time, the OS does exactly that. Second, also during the boot sequence, the OS must start the timer, which is of course a privileged operation. Once the timer has begun, the OS can thus feel safe in that control will eventually be returned to it, and thus the OS is free to run user programs.
-    - Saving and restoring context
-      - Context switch: save a few register values for current process (onto its kernel stack), and restore a few for the next process
-  - Limited Direct Execution Protocol
-    - ![image](images/02-processes/limited-direct-execution-protocol.png)
-  - Two types of register save / restore
-    - When timer interrupt occurs, user registers of the running process are implicitly saved by the **hardware**, using the **kernel stack** of that process
-      - Switch from A to B, the kernel registers are explicitly saved by the **software** (i.e. the OS), but this time into memory in the process structure of the process
-  - system call at the same time of timer interrupt?
-    - one simple way: disable interrupt during interrupt processing
+* The trap tables (with locations of trap handlers) must be set up by the OS at **boot time**, and make sure that they cannot be readily modified by user programs.
+  * The timer interrupt. This approach is a non-cooperative approach to CPU scheduling.
+* Direct Execution Protocol (Without Limits)
+  * ![image](images/02-processes/direct-execution-protocol.png)
+* System call:
+  * trap: jumps to the kernel and raises privileged level to kernel mode
+    * push the program counter, flag, and a few registers onto a per-process kernel stack
+    * return-from-trap: returns to user program, reduces privilege level back
+  * pop values off the stack and resume execution
+  * system-call number: assigned to each system call
+    * **protection**: user code cannot specify an exact address to jump to, but request service via number
+  * Switching Between Processes
+    * Cooperative Approach: wait for system calls
+      * the OS regains control of the CPU by waiting for a system call (e.g. **Yield**) or an illegal operation of some kind (divide by zero, or tries to access memory that it shouldn't have, generating a trap) to take place
+      * If a process gets stuck in an infinite loop, you can only reboot the machine.
+    * Non-Cooperative Approach: the OS takes control
+      * Use: timer interrupt and interrupt handler
+      * A timer device can be programmed to raise an interrupt every so many milliseconds; when the interrupt is raised, the currently running process is halted, and a pre-configured interrupt handler in the OS runs.
+      * During boot time, the OS must inform the hardware of which code to run when the timer interrupt occurs; thus, at boot time, the OS does exactly that. Second, also during the boot sequence, the OS must start the timer, which is of course a privileged operation. Once the timer has begun, the OS can thus feel safe in that control will eventually be returned to it, and thus the OS is free to run user programs.
+    * Saving and restoring context
+      * Context switch: save a few register values for current process (onto its kernel stack), and restore a few for the next process
+  * Limited Direct Execution Protocol
+    * ![image](images/02-processes/limited-direct-execution-protocol.png)
+  * Two types of register save / restore
+    * When timer interrupt occurs, user registers of the running process are implicitly saved by the **hardware**, using the **kernel stack** of that process
+      * Switch from A to B, the kernel registers are explicitly saved by the **software** (i.e. the OS), but this time into memory in the process structure of the process
+  * system call at the same time of timer interrupt?
+    * one simple way: disable interrupt during interrupt processing
 
 ## Process States
 
-- **Running**: running on a processor
-- **Ready**: ready to run but OS has chosen not to run it at the moment
-- **Blocked**: the process has performed some kind of operation that makes it not ready to run until some other event takes place (i.e. I/O request)
-- Being moved from ready to running means the process has been scheduled; being moved from running to ready means the process has been descheduled.
-- Once a process has become blocked (e.g., by initiating an I/O operation), the OS will keep it as such until some event occurs (e.g., I/O completion); at that point, the process moves to the ready state again (and potentially immediately to running again, if the OS so decides).
-- These need a OS scheduler.
-  - ![image](images/02-processes/process-state-transitions.png)
-- Register context: hold the contents of its registers; when the process is stopped, its registers will be saved to this memory location
-- Zombie: when the process has exited but has not yet been cleaned up
-- When finished, the parent will make one final call (e.g., `wait()`) to wait for the completion of the child, and to also indicate to the OS that it can clean up any relevant data structures that referred to the now-extinct process.
+* **Running**: running on a processor
+* **Ready**: ready to run but OS has chosen not to run it at the moment
+* **Blocked**: the process has performed some kind of operation that makes it not ready to run until some other event takes place (i.e. I/O request)
+* Being moved from ready to running means the process has been scheduled; being moved from running to ready means the process has been descheduled.
+* Once a process has become blocked (e.g., by initiating an I/O operation), the OS will keep it as such until some event occurs (e.g., I/O completion); at that point, the process moves to the ready state again (and potentially immediately to running again, if the OS so decides).
+* These need a OS scheduler.
+  * ![image](images/02-processes/process-state-transitions.png)
+* Register context: hold the contents of its registers; when the process is stopped, its registers will be saved to this memory location
+* Zombie: when the process has exited but has not yet been cleaned up
+* When finished, the parent will make one final call (e.g., `wait()`) to wait for the completion of the child, and to also indicate to the OS that it can clean up any relevant data structures that referred to the now-extinct process.
 
 ## What OS tracks about a process
 
-- Register context will hold, for a stopped process, the contents of its registers. When a process is stopped, its registers will be saved to this memory location; by restoring these registers (i.e., placing their values back into the actual physical registers), the OS can resume running the process.
+* Register context will hold, for a stopped process, the contents of its registers. When a process is stopped, its registers will be saved to this memory location; by restoring these registers (i.e., placing their values back into the actual physical registers), the OS can resume running the process.
 
 # Process API
 

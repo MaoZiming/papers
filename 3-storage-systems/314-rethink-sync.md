@@ -16,22 +16,22 @@ The central insight is to define synchronous operations from the viewpoint of an
 ## Key Techniques
 The application isn't blocked (like async I/O) but any output (e.x. network, sends to screen) depending on the file save operation is buffered until the data is committed, ensuring safety (like sync I/O).
 
-- **_External Sync I/O_**: 
-  - Returns control to the application before the data is committed to the disk but buffers all output that is causally dependent on the uncommitted modification.
-  - It only externalizes (sends to screen, network, etc.) the output after the modification commits
-  - Multiple file modifications are grouped together and committed as a single transaction, making the commits atomic.
+* **_External Sync I/O_**: 
+  * Returns control to the application before the data is committed to the disk but buffers all output that is causally dependent on the uncommitted modification.
+  * It only externalizes (sends to screen, network, etc.) the output after the modification commits
+  * Multiple file modifications are grouped together and committed as a single transaction, making the commits atomic.
 
-- _**Output triggered commits**_: data is only committed when there is an external output that depends on the uncommitted data
+* _**Output triggered commits**_: data is only committed when there is an external output that depends on the uncommitted data
 
-- Both speculative execution and external synchrony enforce restrictions on when external output may be observed. Speculative execution allows output to be observed based on correctness; output is externalized after all speculations on which that output depends have proven to be correct. In contrast, external synchrony allows output to be observed based on durability; output is externalized after all file system operations on which that output depends have been committed to disk
+* Both speculative execution and external synchrony enforce restrictions on when external output may be observed. Speculative execution allows output to be observed based on correctness; output is externalized after all speculations on which that output depends have proven to be correct. In contrast, external synchrony allows output to be observed based on durability; output is externalized after all file system operations on which that output depends have been committed to disk
 
-- _**Tracking causal dependencies**_: tracks dependencies between file modifications and external outputs. This ensures the external outputs are reliable and consistent with the sync I/O model. 
-- marking process with dependencies: i.e. cannot externalize any output until some transaction commits
-- if a marked process shares information with another process (IPC), another process inherits the same dependencies 
+* _**Tracking causal dependencies**_: tracks dependencies between file modifications and external outputs. This ensures the external outputs are reliable and consistent with the sync I/O model. 
+* marking process with dependencies: i.e. cannot externalize any output until some transaction commits
+* if a marked process shares information with another process (IPC), another process inherits the same dependencies 
     
-- Example: xsyncfs adds modifications to a file system transaction and returns control to the process without waiting for the transaction to commit but taints it with a commit dependency. If the process tries to write to an external device, the output is buffered until all related disk transactions commit.
+* Example: xsyncfs adds modifications to a file system transaction and returns control to the process without waiting for the transaction to commit but taints it with a commit dependency. If the process tries to write to an external device, the output is buffered until all related disk transactions commit.
 
-- The new model builds upon a system called Speculator, initially targeted at improving network performance, to track and propagate causal dependencies.
+* The new model builds upon a system called Speculator, initially targeted at improving network performance, to track and propagate causal dependencies.
 
 ## Limitations
-- Crash recovery is a problem in this paper, and there are many extra mechanisms to deal with catastrophic media failures and system crashes (via checkpoints and commits). 
+* Crash recovery is a problem in this paper, and there are many extra mechanisms to deal with catastrophic media failures and system crashes (via checkpoints and commits). 

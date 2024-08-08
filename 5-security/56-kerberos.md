@@ -6,15 +6,15 @@ Read on: June 26th, 2024
 
 Mechanism explained: https://www.youtube.com/watch?v=5N242XcKAsM&t=94s
 
-- Kerberos is an authentication network protocol developed by MIT to provide robust and **secure authentication system in an open network** where **users at workstations** wish to access **services on network servers**. Open networks are susceptible to various kinds of attacks, such as eavesdropping, replay attacks, and impersonation. 
+* Kerberos is an authentication network protocol developed by MIT to provide robust and **secure authentication system in an open network** where **users at workstations** wish to access **services on network servers**. Open networks are susceptible to various kinds of attacks, such as eavesdropping, replay attacks, and impersonation. 
 
 
-- The authentication server provides a properly authenticated user with a way to prove her/his identity to servers scattered across the network.
+* The authentication server provides a properly authenticated user with a way to prove her/his identity to servers scattered across the network.
 
 
-- Kerberos keeps a database of its clients and their private keys. The private key is a large number known only to Kerberos and the client it belongs to. In the case that the client is a user, it is an encrypted password.
+* Kerberos keeps a database of its clients and their private keys. The private key is a large number known only to Kerberos and the client it belongs to. In the case that the client is a user, it is an encrypted password.
 
-- A Kerberos ticket is only good for a single named server. As such, a separate ticket is required to gain access to different instances of the same service.
+* A Kerberos ticket is only good for a single named server. As such, a separate ticket is required to gain access to different instances of the same service.
 
 * There are three phases to authentication through Kerberos. In the first phase, the user obtains credentials to be used to request access to other services. In the second phase, the user requests authentication for a specific service. In the final phase, the user presents those credentials to the end server.
 
@@ -31,13 +31,13 @@ There are three components in Kerberos transactions:
 * **Authenticator**: whether it is client or service, to maintaining authentication, will send an authenticator (e.g. from client to TGS) 
 
 ## Protocol Simple Explain 
-1. **Initial Authentication**:
+* **Initial Authentication**:
     * Client sends login details to Authentication Server (AS)
     * The user is prompted for her/his username. Once it has been entered, a request is sent to the authentication server containing the user’s name and the name of a special service known as the ticket-granting service.
     * AS replies with two messages
        * Ticket Granting Ticket (TGT) encrypted with **TGS secret key**. TGT contains **TGS session key**
        * M1: TGS **session** key encrypted with **client's secret key**
-2. **Request for Service Ticket**:
+* **Request for Service Ticket**:
     * The client decrypt M1 with its client secret key
       * In this process, the user is asked for her/his password. The password is used to decrypt the response from the authentication server. 
       * **IMPORTANTLY**: TGT encrypted with **TGS secret key** is not decrypted by the client, as the client does not have the **TGS secret key**
@@ -55,22 +55,22 @@ There are three components in Kerberos transactions:
         * M3: **Service session key** encrypted by **TGS session key**
         * **Service ticket (ST)** (also containing the **service session key**): encrypted by **TGS secret key**
     * It is assumed that clocks are synchronized to within several minutes. If the time in the request is too far in the future or the past, the server treats the request as an attempt to replay a previous request.
-3. **Accessing the service**:
+* **Accessing the service**:
     * User decrypt M3 with **TGS session key** and get **service session key**
     * Use **Service session key** to encrypt user authentication and send back service ticket
     * Send two messages to the service:
       * Service ticket
       * User authenticator message. 
-4. Service **Verification**
+* Service **Verification**
     * **Service decrypt ST** with the **service secret key** get **service session key** and decrypt user auth with **service session key**
     * If matches, send back **service authenticator** encrypted by **service session key**
     * Confirming **authentication** success and establish secure session
     * Just like TGS, service maintains a cache of user authenticators. 
-5. User decrpts the service authenticator with the **service session key**
-   1. User now verifies the service is the expected one to talk to. 
-   2. User maintains own cache. 
-6. ![keberos](images/56-kerberos/keberos-auth-protocol.png)
-7. Default authentication package for Windows. Also built into MacOS. 
+* User decrpts the service authenticator with the **service session key**
+   * User now verifies the service is the expected one to talk to. 
+   * User maintains own cache. 
+* ![keberos](images/56-kerberos/keberos-auth-protocol.png)
+* Default authentication package for Windows. Also built into MacOS. 
 
 * KDBM Server
   *  The KDBM server accepts requests to add principals to the database or change the passwords for existing principals. This service is unique in that the ticket-granting service (**TGS**) will not issue tickets for it. Instead, the authentication service itself must be used (the same service that is used to get a ticket-granting ticket).

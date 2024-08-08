@@ -2,7 +2,7 @@
 
 Link: https://cacm.acm.org/research/the-tail-at-scale/
 
-Read: July 5th, 2024. 
+Read: July 5th, 202* 
 
   *   Insights
       *  Rare performance hiccups affect many requests in large-scale DS 
@@ -43,6 +43,6 @@ Read: July 5th, 2024.
               *   rather than initially send a request to thousands of leaf servers, a root server sends it first to one or two leaf servers. The remaining servers are only queried if the root gets a successful response from the canary in a reasonable period of time. If the server crashes or hangs while the canary request is outstanding, the system flags the request as poten- tially dangerous and prevents further execution by not sending it to the remaining leaf servers.
 
 
-> A common technique for reducing la- tency in large-scale online services is to parallelize sub-operations across many different machines, where each sub-op- eration is co-located with its portion of a large dataset. Parallelization happens by fanning out a request from a root to a large number of leaf servers and merg- ing responses via a request-distribution tree. These sub-operations must all complete within a strict deadline for the service to feel responsive.
+* A common technique for reducing la- tency in large-scale online services is to parallelize sub-operations across many different machines, where each sub-op- eration is co-located with its portion of a large dataset. Parallelization happens by fanning out a request from a root to a large number of leaf servers and merg- ing responses via a request-distribution tree. These sub-operations must all complete within a strict deadline for the service to feel responsive.
 
-> Missing in this discussion so far is any reference to caching. While effec- tive caching layers can be useful, even a necessity in some systems, they do not directly address tail latency, aside from configurations where it is guaranteed that the entire working set of an applica- tion can reside in a cache.
+* Missing in this discussion so far is any reference to caching. While effec- tive caching layers can be useful, even a necessity in some systems, they do not directly address tail latency, aside from configurations where it is guaranteed that the entire working set of an applica- tion can reside in a cache.

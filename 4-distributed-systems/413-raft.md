@@ -4,7 +4,7 @@ Link: https://web.stanford.edu/~ouster/cgi-bin/papers/raft-atc14.pdf
 
 Read: July 12th, 2024
 
-> Our approach was unusual in that our primary goal was understandability: could we define a consensus algorithm for practical systems and describe it in a way that is significantly easier to learn than Paxos? 
+* Our approach was unusual in that our primary goal was understandability: could we define a consensus algorithm for practical systems and describe it in a way that is significantly easier to learn than Paxos? 
 
 ## Novel features
 

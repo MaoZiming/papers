@@ -10,7 +10,7 @@ This paper proposes a practical design for **paravirtualized** virtual machine. 
 
 ## Motivation: inefficiency of full virtualization 
 
-> This paper presents Xen, an x86 virtual machine monitor which allows multiple commodity operating systems to share conventional hardware in a safe and resource managed fashion, but without sacrificing either performance or functionality. 
+* This paper presents Xen, an x86 virtual machine monitor which allows multiple commodity operating systems to share conventional hardware in a safe and resource managed fashion, but without sacrificing either performance or functionality. 
 
 * Requirements
   * Isolation
@@ -21,14 +21,14 @@ This paper proposes a practical design for **paravirtualized** virtual machine. 
 
 * This technique is **complex** and has **high performance cost** particularly for update-intensive operations (i.e. trap every update to maintain consistency with virtual tables). Also, **sometimes it is desirable for guest OS to see real resources** (e.g. TCP message out, VM gets descheduled, message gets queued, VM gets re-scheduled, how to tell the time. Virtual time stops when not using the CPUs. ): i.e. real and virtual time (virtual time is useful for scheduling threads on guest OS! ), expose real machine addresses to improve performance. 
 
-- There are situations in which it is desirable for the hosted operating systems to see real as well as virtual resources: providing both real and virtual time allows a guest OS to better support time-sensitive tasks, and to correctly handle TCP timeouts and RTT estimates. 
+* There are situations in which it is desirable for the hosted operating systems to see real as well as virtual resources: providing both real and virtual time allows a guest OS to better support time-sensitive tasks, and to correctly handle TCP timeouts and RTT estimates. 
 
-- In Denali, applications are linked explicitly against an instance of the Ilwaco guest OS in a manner rather reminiscent of a libOS in the Exokernel. Each virtual machine essentially hosts a single-user single-application un-protected “operating system”. In Xen, by contrast, a single virtual machine hosts a real operating system which may itself securely multiplex thousands of unmodified user-level processes.
+* In Denali, applications are linked explicitly against an instance of the Ilwaco guest OS in a manner rather reminiscent of a libOS in the Exokernel. Each virtual machine essentially hosts a single-user single-application un-protected “operating system”. In Xen, by contrast, a single virtual machine hosts a real operating system which may itself securely multiplex thousands of unmodified user-level processes.
 
 ## Interface 
-1. Domain
-   1. A running virtual machine within which a guest OS executes. 
-2. Memory 
+* Domain
+   * A running virtual machine within which a guest OS executes. 
+* Memory 
    *  guests have read access to PT but must update them through VMM. In other words, when the guest VM registers the Page table with Xen, it relinquishes direct write privileges to the PT memory; all subsequent updates must be **validated** by Xen. 
    *  The guest OS Hypercall to ask Xen to change the PT can do batching of updates to lower overhead. 
    *  Challenge: x86 does not have software-managed TLB; instead, TLB misses are serviced automatically by the processor by walking the page table structure in hardware. 
@@ -38,7 +38,7 @@ This paper proposes a practical design for **paravirtualized** virtual machine. 
    *  They load Xen, the entire hypervisor is under 64MB, into the address space of **every guest VM**.
       *  When I make hypercalls, I don't have to flush the TLBs! I can allow TLB entries to coexist with the OS itself. 
       *  Guest OS doesn't have access to these addresses. 
-1. CPU
+* CPU
    *  replaces nonvirtualizable instructions with **hypercalls** that communicate directly with the VMM
       * Hypercall vs. Systems call. 
       * Making hypercall is expensive, at least a context switch. 
@@ -47,8 +47,8 @@ This paper proposes a practical design for **paravirtualized** virtual machine. 
       *  Guest OS (on Ring 1) is prevented from directly executing privileged instructions.
    *  Guest **registers a descriptor table for exception handling with VMM**. 
    *  Guests are aware of virtual and real time
-   *  Xen improves the performance of system calls by allowing **each guest OS to register a ‘fast’ exception handler** which is accessed directly by the processor without indirecting via ring 0 (i.e. such fast exception handler does not need to interact with Xen); this handler is validated before installing it in the hardware exception table. **This system call can be handled just in the guest OS!**
-2. I/O
+   *  Xen improves the performance of system calls by allowing **each guest OS to register a ‘fast’ exception handler** which is accessed directly by the processor without indirecting via ring 0 (i.e. such fast exception handler does not need to interact with Xen); this handler is **validated** before installing it in the **hardware exception table**. **This system call can be handled just in the guest OS!**
+* I/O
    *  I/O data is transferred to and from each domain (of the guest OS) via Xen, using shared-memory, asynchronous buffer- descriptor rings.
    *  Xen supports a lightweight event-delivery mechanism which is used for sending asynchronous notifications to a domain.
       *  **The event mechanism replaces hardware interrupt for notifications.**

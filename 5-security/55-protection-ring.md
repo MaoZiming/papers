@@ -2,7 +2,7 @@
 
 Link: https://dl.acm.org/doi/pdf/10.1145/361268.361275
 
-Read: July 4th, 2024. 
+Read: July 4th, 202* 
 
 The paper discusses protection of segment-based virtual memory as found in Multics. Read, write, and execute permissions are set based on the access level of the process and recorded in segment descriptor words. **Flags corresponding to these permissions are checked by hardware upon each reference.**
 
@@ -33,4 +33,4 @@ The paper discusses protection of segment-based virtual memory as found in Multi
 
 ![alt text](images/55-protection-ring/example-ring.png)
 
-- The hardware does not implement upward calls and downward returns without software intervention. 
+* The hardware does not implement upward calls and downward returns without software intervention. 

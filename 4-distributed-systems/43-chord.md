@@ -2,7 +2,7 @@
 
 Link: https://pdos.csail.mit.edu/papers/chord:sigcomm01/chord_sigcomm.pdf
 
-Read: Dec 25th, 2023. 
+Read: Dec 25th, 202* 
 
 This paper is about a new scalable distributed protocol for lookup in a dynamic p2p system with frequent node arrivals and departures. They achieve this by having a routing table with information of fewer other nodes, and consistent hashing to create identifiers for keys & nodes. 
 

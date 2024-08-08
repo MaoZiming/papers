@@ -8,7 +8,7 @@ Read: July 10th, 2024.
 * The paper addresses the trade-off between isolation and efficiency in Virtual Machines (VMs) and containers. While containers are lightweight, they lack the security guarantees that VMs provide. The paper proposes techniques **LightVM** based on Xen to make VMs as efficient as containers without compromising on security.
 
 * Lightweight VMs use **unikernels**.
-* A unikernel is a machine image that contains everything necessary for application execution, including the operating system component. This property makes unikernels completely self-sufficient and able to run independently on top of a bare metal hypervisor.
+* A unikernel is a machine image that contains everything necessary for application execution, including the operating system component. This property makes unikernels completely self-sufficient and able to run independently on top of **a bare metal hypervisor**.
 
 ## Tradeoffs 
 * Containers are lightweight but less secure, while VMs offer strong isolation at the expense of being resource-heavy and slow to boot.
@@ -35,14 +35,14 @@ Read: July 10th, 2024.
 * Insight: typically a VM runs one application, and that application is only using a small subset of libraries and services. We can shrink the size of the VM to only those services and libraries.
 
 ![alt text](images/72-lightvm/xenstore-vs-noxs.png)
-- Xen runs the special VM `dom0` that is in charge of managing the machine. 
-- XenStore is talked to by all VMs, and used to store configuration data and synchronize virtual machines. 
+* Xen runs the special VM `dom0` that is in charge of managing the machine. 
+* XenStore is talked to by all VMs, and used to store configuration data and synchronize virtual machines. 
 
-1. Lightweight guest: TinyX 
+* Lightweight guest: TinyX 
    *  automate **creations of trimmed-down Linux VMs** just enough to run the applications
    *  take standard Linux Distro and make it smaller.
    *  Fast instantiation, destruction and migration, 10s of milliseconds or less.  
-2. Re-architect toolstack
+* Re-architect toolstack
    *  re-architect Xen's toostack (i.e. control plane)
        *  **get rid of Xenstore**: store data, guest comm, sync
           * introduce  `noxs`, or no XenStore. 
@@ -72,7 +72,7 @@ Read: July 10th, 2024.
 * As we increase the number of VMs, so does the load on this protocol. 
 * one fundamental problem with the XenStore is its centralized, filesystem-like API which is simply too slow for use during VM creation and boot, requiring tens of interrupts and privilege domain crossings.
 
-> The insight here is that the hypervisor already acts as a sort of centralized store, so we can extend its functionality to implement our noxs (no XenStore) mechanism [based on shared memory].
+* The insight here is that the hypervisor already acts as a sort of centralized store, so we can extend its functionality to implement our noxs (no XenStore) mechanism [based on shared memory].
 
 ## Use cases 
 * JIT service instantiation in mobile edge computing, lightweight compute services like AWS Lambda 

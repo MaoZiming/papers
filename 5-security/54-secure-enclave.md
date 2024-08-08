@@ -11,7 +11,7 @@ _Purpose_: Create a secure environment for data processing where you don't have 
 ## Secure Enclave 
 _definition_: a specialized area in computing that's isolated from everything else, including the operating system and users with high-level access.
 
--  Ensures that **not even users with root access** can see or interfere with the data or code in the enclave
+*  Ensures that **not even users with root access** can see or interfere with the data or code in the enclave
 
 ### Comparisons with traditional encryption 
 * Data protection types 
@@ -81,28 +81,28 @@ This is suitable for
 * Collaborative computing, financial services, healthcare, manufacturing, etc. 
 
 Example steps
-1. _Initial Communication_: User communicates with the cloud service via **SSL/TLS** to establish a secure channel.
-2. _Remote Attestation_: Intel SGX enclave on the cloud server can provide a proof of its legitimacy through remote attestation. This ensures the user that they are communicating with a genuine, secure enclave.
-3. _Encrypting the Images_: User uses a symmetric (asymmetric) encryption algorithm to encrypt the sensitive medical images. 
-4. _Transmitting the Encrypted Images and Key_: The encrypted images and encryption key are sent to the cloud server over secure channel.
-5. _Enclave Processing_: The enclave decrypts and subsequently processes the images, maintaining the confidentiality and integrity of the sensitive data.
-6. _Storing Encrypted Images_: storing and receiving encrypted data outside enclave does not expose sensitive information
+* _Initial Communication_: User communicates with the cloud service via **SSL/TLS** to establish a secure channel.
+* _Remote Attestation_: Intel SGX enclave on the cloud server can provide a proof of its legitimacy through remote attestation. This ensures the user that they are communicating with a genuine, secure enclave.
+* _Encrypting the Images_: User uses a symmetric (asymmetric) encryption algorithm to encrypt the sensitive medical images. 
+* _Transmitting the Encrypted Images and Key_: The encrypted images and encryption key are sent to the cloud server over secure channel.
+* _Enclave Processing_: The enclave decrypts and subsequently processes the images, maintaining the confidentiality and integrity of the sensitive data.
+* _Storing Encrypted Images_: storing and receiving encrypted data outside enclave does not expose sensitive information
 
 ### How SGX works: 
 
-1. At runtime, your application is split into two parts: a secure portion and a non-secure portion.
-2. When the application launches, the enclave is created, and that enclave is placed into the protected portion.
-3. When an enclave function is called, only the code within the enclave can see its data. External accesses are always denied. When it returns, enclave data stays in the protected memory.
-4. At runtime, Intel SGX instructions build and execute the enclave into a special encrypted memory region with restricted entry/exit location defined by the developer. This helps prevent data leakage. Enclave code and data inside the CPU perimeter runs in the clear, and enclave data written to memory is encrypted and its integrity checked, helping provide some assurance that no unauthorized access or memory snooping of the enclave occurs.
+* At runtime, your application is split into two parts: a secure portion and a non-secure portion.
+* When the application launches, the enclave is created, and that enclave is placed into the protected portion.
+* When an enclave function is called, only the code within the enclave can see its data. External accesses are always denied. When it returns, enclave data stays in the protected memory.
+* At runtime, Intel SGX instructions build and execute the enclave into a special encrypted memory region with restricted entry/exit location defined by the developer. This helps prevent data leakage. Enclave code and data inside the CPU perimeter runs in the clear, and enclave data written to memory is encrypted and its integrity checked, helping provide some assurance that no unauthorized access or memory snooping of the enclave occurs.
 ### Overhead:
 
-1. Security checks when allocating chunks of memory, including being measured using a 256-bit SHA-2 secure hash function.
-2. Secure enclave is limited to CPUs, with limited support to GPUs and other PCI devices. 
-3. Secure enclave implementations, such as Intel SGX, require rewriting applications by partitioning the code into secure and insecure parts. Any code that lives outside of TCB is only able to interact with enclave code via a narrow interface. 
-4. Introduce latency for the clients due to post-verification. 
-5. Enclave Page Cache (EPC) in Intel processors have been limited to 256MB. 
-6. Recently, several side-channel vulnerabilities have been found for hardware-based enclaves. 
-7. Using secure enclaves lock you to a specific cloud. Some clouds only support specific implementations.
+* Security checks when allocating chunks of memory, including being measured using a 256-bit SHA-2 secure hash function.
+* Secure enclave is limited to CPUs, with limited support to GPUs and other PCI devices. 
+* Secure enclave implementations, such as Intel SGX, require rewriting applications by partitioning the code into secure and insecure parts. Any code that lives outside of TCB is only able to interact with enclave code via a narrow interface. 
+* Introduce latency for the clients due to post-verification. 
+* Enclave Page Cache (EPC) in Intel processors have been limited to 256MB. 
+* Recently, several side-channel vulnerabilities have been found for hardware-based enclaves. 
+* Using secure enclaves lock you to a specific cloud. Some clouds only support specific implementations.
 
 However: homomorphic encryption (HE) is still too slow for practical use and violate data integrity.
 * Homomorphic encryption: An attacker with access to the encrypted data cannot decrypt the underlying data (unless they posses a decryption key), but they could transform and replace the data without detection, hence violating data integrity. 

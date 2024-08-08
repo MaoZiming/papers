@@ -49,7 +49,7 @@ I will call such a request a prepare request with number $n$.
 
 ## Accept
 
-> An acceptor needs to remember only the highest- numbered proposal that it has ever accepted and the number of the highest- numbered prepare request to which it has responded.
+* An acceptor needs to remember only the highest- numbered proposal that it has ever accepted and the number of the highest- numbered prepare request to which it has responded.
 
 ## Learners
 
@@ -61,4 +61,4 @@ We can have the acceptors respond with their acceptances to a distinguished lear
 
 To guarantee progress, a distinguished proposer must be selected as the only one to try issuing proposals.
 
-> In its consensus algorithm, each process plays the role of proposer, acceptor, and learner. The algorithm chooses a leader, which plays the roles of the distinguished proposer and the distinguished learner.
+* In its consensus algorithm, each process plays the role of proposer, acceptor, and learner. The algorithm chooses a leader, which plays the roles of the distinguished proposer and the distinguished learner.

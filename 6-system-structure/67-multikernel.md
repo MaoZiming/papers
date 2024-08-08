@@ -2,7 +2,7 @@
 
 Link: https://www.sigops.org/s/conferences/sosp/2009/papers/baumann-sosp09.pdf
 
-June 29th, 2024. 
+June 29th, 202* 
 
 Increasing heterogenity and scalability in hardware (i.e. CPU cores) motivates modeling multicore systems as distributed systems. Three principles guide multikernel design 
 
@@ -23,13 +23,13 @@ Increasing heterogenity and scalability in hardware (i.e. CPU cores) motivates m
 
 * Protocol: think of multi-core as a distributed system.
 
-  - Message passing is good for non-coherent interconnect (PCIe) and hetereogenous cores (arm-offload process).
+  * Message passing is good for non-coherent interconnect (PCIe) and hetereogenous cores (arm-offload process).
 
 * instead of sequentially manipulating shared data structures, which is limited by the latency of remote data access, the ability to **pipeline and batch messages encoding remote operations** allows a single core to achieve greater throughput. 
 * This is the paper on **Barrelfish**
-  - ![alt text](images/67-multikernel/barrelfish-structure.png)
-    - IPI: Inter-process Interrupt 
-    - CPU drivers handle traps and exceptions, while monitor is responsible for mediating on local operations on global states, executing the replica maintenance protocols. 
+  * ![alt text](images/67-multikernel/barrelfish-structure.png)
+    * IPI: Inter-process Interrupt 
+    * CPU drivers handle traps and exceptions, while monitor is responsible for mediating on local operations on global states, executing the replica maintenance protocols. 
 * Core heterogeneity means cores can no longer share a single OS kernel instance, either because the performance tradeoffs vary, or because the ISA is simply different.
 * Shared memory model has an inherent lack of scalability: 
   * Although a single core can perform the update operation in under 30 cycles, when 16 cores are modifying the same data it takes almost 12,000 extra cycles to perform each update. All of these extra cycles are spent with the core stalled on cache misses and therefore unable to do useful work while waiting for an update to occur.

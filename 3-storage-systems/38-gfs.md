@@ -3,23 +3,23 @@
 Link: https://static.googleusercontent.com/media/research.google.com/en//archive/gfs-sosp2003.pdf
 Useful notes: https://pages.cs.wisc.edu/~thanhdo/qual-notes/fs/fs4-gfs.txt
 
-Read: Dec 25th, 2023. 
+Read: Dec 25th, 202* 
 
 GFS is a scalable distributed file system for large distributed data-intensive applications. It provides **fault tolerance** running on inexpensive commodity hardware, and it delivers high aggregate performance to large number of clients. 
 
 ## Motivation 
-1. Component failures are norm, not exception
-2. Large files
+* Component failures are norm, not exception
+* Large files
    *  **multi-GB, TB**
    *  Untenable to manage billions of smaller files, even when the FS can support it. 
    *  v.s. LFS: lots of small files
-3. Workloads: append-only 
+* Workloads: append-only 
    *  e.x. log collections, web search, archival storage. 
    *  Random accesses are practically non-existent
    *  large streaming reads, small random reads
    *  many large, **sequential** writes; none random writes
 
-4. Requirements: multiple clients concurrently append to the same file. Our files are often used as producer-consumer queues or for many-way merging.
+* Requirements: multiple clients concurrently append to the same file. Our files are often used as producer-consumer queues or for many-way merging.
    * Hundreds of producers, running one per machine, will concurrently append to the same file.
    * Atomicity with minimal synchronization overhead is essential. 
 
@@ -41,26 +41,26 @@ GFS is a scalable distributed file system for large distributed data-intensive a
       
 ## Fault tolerance & scalability: Replication 
 **Chunks**: are replicated **3-way** to handle faults
-- Use large chunk size (64MB) 
-    -  Handle lots of operations on a given chunks
-    -  Reduce size of **metadata** stored on server and network communication in-between
-    -  Beneficial for sequential writes
-    -  **Reason**: clients can easily cache all the chunk location information for a multi-TB working set. 
-    -  A **persistent TCP** to chunk server since the clients can operate more on the chunk for an extended period of time. 
-- Lease: maintain a consistent mutation order across replicas
-- **Chunk lease to one replica for each chunk (i.e. primary replica), which decides serial order for all mutations to the chunk**
-- Check data integrity using checksum blocks in each chunkserver
-- Data forwarding is pipelined for efficiency, and is also network-aware
+* Use large chunk size (64MB) 
+    * Handle lots of operations on a given chunks
+    * Reduce size of **metadata** stored on server and network communication in-between
+    * Beneficial for sequential writes
+    * **Reason**: clients can easily cache all the chunk location information for a multi-TB working set. 
+    * A **persistent TCP** to chunk server since the clients can operate more on the chunk for an extended period of time. 
+* Lease: maintain a consistent mutation order across replicas
+* **Chunk lease to one replica for each chunk (i.e. primary replica), which decides serial order for all mutations to the chunk**
+* Check data integrity using checksum blocks in each chunkserver
+* Data forwarding is pipelined for efficiency, and is also network-aware
 
 **Master**: 
-- replicated logs and checkpoints, has a shadow master 
-- Operation log of all metadata changes. 
-- Store metadata in memory, does not keep a persistent record of which chunkservers has a replica of a given chunk. It simply polls upon startup. 
-- A single master simplifies the design; however, we must minimize its involvement in read and write so it doesn't become a bottleneck. 
-- Client asks master which chunk server it should contact. 
-- Client caches this information from the master, and interacts with the chunk server directly for many subsequent operations. 
-  - Using the fixed chunk size, the client translates the file name and byte offset specified by the application into a **chunk index** within the file. Then, it sends the master a request containing the file name and chunk index. The master replies with the corresponding chunk handle and locations of the replicas.
-  - The request includes chunk handle and **byte offset within that chunk**.
+* replicated logs and checkpoints, has a shadow master 
+* Operation log of all metadata changes. 
+* Store metadata in memory, does not keep a persistent record of which chunkservers has a replica of a given chunk. It simply polls upon startup. 
+* A single master simplifies the design; however, we must minimize its involvement in read and write so it doesn't become a bottleneck. 
+* Client asks master which chunk server it should contact. 
+* Client caches this information from the master, and interacts with the chunk server directly for many subsequent operations. 
+  * Using the fixed chunk size, the client translates the file name and byte offset specified by the application into a **chunk index** within the file. Then, it sends the master a request containing the file name and chunk index. The master replies with the corresponding chunk handle and locations of the replicas.
+  * The request includes chunk handle and **byte offset within that chunk**.
 
 ## Relaxed consistency 
 
@@ -75,9 +75,9 @@ GFS is a scalable distributed file system for large distributed data-intensive a
 
 * GFS may insert padding or record duplicates in between. GFS assumes that client applications can handle the inconsistent state: i.e. filter out occasional padding and duplicate using checksums (or unique IDs in the records). This also helps improving performance. 
 
-> As a result, replicas of the same chunk may contain different data possibly including duplicates of the same record in whole or in part. GFS does not guarantee that all replicas are bytewise identical. It only guarantees that the data is written **at least once** (the reason why it is defined but interspersed with inconsistent) as an atomic unit.
+* As a result, replicas of the same chunk may contain different data possibly including duplicates of the same record in whole or in part. GFS does not guarantee that all replicas are bytewise identical. It only guarantees that the data is written **at least once** (the reason why it is defined but interspersed with inconsistent) as an atomic unit.
 
-> This property follows readily from the simple observation that for the operation to report success, the data must have been written at the same offset on all replicas of some chunk.
+* This property follows readily from the simple observation that for the operation to report success, the data must have been written at the same offset on all replicas of some chunk.
 
 Just use a future / higher record if the past one fails. 
 * In terms of our consistency guarantees, the regions in which successful record append operations have written their data are defined (hence consistent), whereas intervening regions are inconsistent (hence undefined).

@@ -2,31 +2,31 @@
 
 Link: https://amplab.cs.berkeley.edu/wp-content/uploads/2011/06/Dominant-Resource-Fairness-Fair-Allocation-of-Multiple-Resource-Types.pdf
 
-Read: July 10th, 2024. 
+Read: July 10th, 202* 
 
-- To address the problem of fair resource allocation in a system containing different resource types, the paper proposes Dominant Resource Fairness (DRF), a generalization of max-min fairness to multiple resource types. 
-- All the prior works on fair resource allocation focuses on a single resource. 
-- For systems with multiple resources, prior works (e.g. Hadoop and Dryad) use a single resource abstraction: allocate resources at the level of fixed-size partitions of the nodes called slots. 
+* To address the problem of fair resource allocation in a system containing different resource types, the paper proposes Dominant Resource Fairness (DRF), a generalization of max-min fairness to multiple resource types. 
+* All the prior works on fair resource allocation focuses on a single resource. 
+* For systems with multiple resources, prior works (e.g. Hadoop and Dryad) use a single resource abstraction: allocate resources at the level of fixed-size partitions of the nodes called slots. 
  
 DRF **allocates resources according to agents’ proportional demands, in a way that equalizes the shares that agents receive of their most highly demanded resources**. 
 
-- Dominant resource: resource user has the biggest share of
-- Dominant share: fraction of the dominant resource user is allocated
-- **DRF approach:** equalize the dominant share of users
-  - or maximize the minimum dominant share across all users. 
-- **Algorithm:** whenever there are available resources, schedule a task to the user with the smallest dominant share
+* Dominant resource: resource user has the biggest share of
+* Dominant share: fraction of the dominant resource user is allocated
+* **DRF approach:** equalize the dominant share of users
+  * or maximize the minimum dominant share across all users. 
+* **Algorithm:** whenever there are available resources, schedule a task to the user with the smallest dominant share
 
 ### Properties 
-- **Sharing incentive**: user is no worse off than a cluster with $\frac{1}{n}$ resources
-- **Strategy proof**: user should not benefit by lying about demands
-- **Pareto efficiency**: not possible to increase one user without decreasing another
-- **Envy free**: user should not desire the allocation of another user
+* **Sharing incentive**: user is no worse off than a cluster with $\frac{1}{n}$ resources
+* **Strategy proof**: user should not benefit by lying about demands
+* **Pareto efficiency**: not possible to increase one user without decreasing another
+* **Envy free**: user should not desire the allocation of another user
 
 ### Examples
 
-- System resources = <9, 18>
-- Task A requires <1, 4>, and Task B requires <3, 1>
-- DRF repeatedly selects the user with the lowest dominant share to launch a task, until no more tasks can be allocated
+* System resources = <9, 18>
+* Task A requires <1, 4>, and Task B requires <3, 1>
+* DRF repeatedly selects the user with the lowest dominant share to launch a task, until no more tasks can be allocated
 
 ### Comparison and extension
 
@@ -45,6 +45,6 @@ DRF can be applied to general resource allocation in multi-tenant setup to ensur
 
 ### Thoughts:
 
-> Furthermore, any policy that satisfies the sharing in- centive property also provides performance isolation, as it guarantees a minimum allocation to each user (i.e., a user cannot do worse than owning n1 of the cluster) irre- spective of the demands of the other users.
+* Furthermore, any policy that satisfies the sharing incentive property also provides performance isolation, as it guarantees a minimum allocation to each user (i.e., a user cannot do worse than owning n1 of the cluster) irrespective of the demands of the other users.
 
 * Performance isolation remains on theory. 

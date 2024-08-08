@@ -15,15 +15,15 @@ Read: June 17th.
 
 ## Key techniques: active messages
 
-1. **User-Level Handler**: This is essentially a code pointer that indicates a specific, small piece of code that needs to be executed when the message is received. **The handler is shared and known across all machines in the network.**
-2. **Message Body**: This portion contains **the actual data or arguments** that the handler will use when it executes its code.
+* **User-Level Handler**: This is essentially a code pointer that indicates a specific, small piece of code that needs to be executed when the message is received. **The handler is shared and known across all machines in the network.**
+* **Message Body**: This portion contains **the actual data or arguments** that the handler will use when it executes its code.
 
 ## Workflows
 
-1. _Message Sending_: wraps the data and the handler's address into an Active Message and sends
-2. _Asynchronous Operation_: sender does not wait for an ACK from the receiver and continues its own computation.
-3. _Message Receiving_: receiver reads the Active Message, **immediately executes the handler, passing in the provided arguments.**
-4. _Handler Execution_: The handler, being a lightweight piece of code, carries out its operation quickly and integrates the received data into the ongoing computation at the receiver's end. The idea is to **get the data "out of the network and into computation"** as quickly as possible.
+* _Message Sending_: wraps the data and the handler's address into an Active Message and sends
+* _Asynchronous Operation_: sender does not wait for an ACK from the receiver and continues its own computation.
+* _Message Receiving_: receiver reads the Active Message, **immediately executes the handler, passing in the provided arguments.**
+* _Handler Execution_: The handler, being a lightweight piece of code, carries out its operation quickly and integrates the received data into the ongoing computation at the receiver's end. The idea is to **get the data "out of the network and into computation"** as quickly as possible.
 
 ## Use today
 
@@ -33,23 +33,23 @@ Read: June 17th.
 
 ### Advantages
 
-- Async communication
-  - Non-blocking send / receive for overlap
-- No buffering
-  - Only buffering within network is needed
-  - Software handles other necessary buffers
-- Improved performance
-  - Close association with network protocol
-- **Handlers are kept simple**
-  - Serve as an interface between network and computation
-- Concern becomes overhead, not latency
+* Async communication
+  * Non-blocking send / receive for overlap
+* No buffering
+  * Only buffering within network is needed
+  * Software handles other necessary buffers
+* Improved performance
+  * Close association with network protocol
+* **Handlers are kept simple**
+  * Serve as an interface between network and computation
+* Concern becomes overhead, not latency
 
 ### Weakness
 
-- Restricted to **Single Program Multiple Data (SPMD)** model
-  - Active Messages simply generalize the hardware functionality by allowing the sender to specify the address of the handler to be invoked on message arrival. **Note that this relies on a uniform code image on all nodes, as is commonly used (the SPMD programming model).**
-- Handler code is restricted
-  - Can’t block and has to get the message out of the network as fast as possible
-- Performance evaluation is not presented well in the paper
-- Possible hardware support very speculative
+* Restricted to **Single Program Multiple Data (SPMD)** model
+  * Active Messages simply generalize the hardware functionality by allowing the sender to specify the address of the handler to be invoked on message arrival. **Note that this relies on a uniform code image on all nodes, as is commonly used (the SPMD programming model).**
+* Handler code is restricted
+  * Can’t block and has to get the message out of the network as fast as possible
+* Performance evaluation is not presented well in the paper
+* Possible hardware support very speculative
 

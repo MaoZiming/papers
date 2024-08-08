@@ -7,9 +7,9 @@ Read: June 30th, 2024.
 
 ## Key Insights
 
-> Application control of physical memory. In this approach, a sophisticated application is able to **monitor and control the amount of physical memory it has available for execution**, the exact contents of this memory, and the scheduling and nature of page-in and page-out under the abstraction of a page frame cache provided by the kernel. 
+* Application control of physical memory. In this approach, a sophisticated application is able to **monitor and control the amount of physical memory it has available for execution**, the exact contents of this memory, and the scheduling and nature of page-in and page-out under the abstraction of a page frame cache provided by the kernel. 
 
-> For example, a database management system can ensure that critical pages, **such as those containing central indices and directories, are in physical memory**. The query optimizer and transaction scheduler can also benefit from knowing which pages are in memory, because the cost of a page fault can increase the overall cost of a query.
+* For example, a database management system can ensure that critical pages, **such as those containing central indices and directories, are in physical memory**. The query optimizer and transaction scheduler can also benefit from knowing which pages are in memory, because the cost of a page fault can increase the overall cost of a query.
 
 ### Main Problem: want application control 
 

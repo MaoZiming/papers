@@ -2,7 +2,7 @@
 
 Link: https://www.usenix.org/legacy/event/nsdi11/tech/full_papers/Murray.pdf
 
-Read: June 30th, 2024. 
+Read: June 30th, 202* 
 
 * Ciel introduces **dynamic** task graphs which are extended at runtime, as opposed to static graphs in earlier models (e.x. MapReduce, Dryad). 
   * **Data-dependent or recursive applications.**
@@ -50,7 +50,7 @@ Read: June 30th, 2024.
     * Since task inputs and outputs may be very large (on the order of gigabytes per task), all bulk data is stored on the workers themselves.
 
 ## SkyWriting
-> However, we do not expect programmers to construct dynamic task graphs manually, and instead we provide the Skywriting script language for generating these graphs programmaticall
+* However, we do not expect programmers to construct dynamic task graphs manually, and instead we provide the Skywriting script language for generating these graphs programmaticall
 
   * Skywriting is a language for expressing task-level parallelism that runs on top of CIEL. Skywriting is Turing-complete, and can express arbitrary data-dependent control flow using constructs such as while loops and recursive functions. 
 

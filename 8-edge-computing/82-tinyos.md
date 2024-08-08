@@ -7,13 +7,13 @@ Read: June 28th, 2024.
 Traditional OS models were not fit for the constrained resources available on low-power, integrated networked sensor nodes. TinyOS is a tiny **event-driven** operating system that provides support for efficient modularity and **concurrency-intensive** operation that fits for this context. 
 
 Discusison on hardware:
-> Small physical size, modest active power load and tiny inactive load are provided by the hardware design.
+* Small physical size, modest active power load and tiny inactive load are provided by the hardware design.
 
 _The key requirements_ under this type of low power wireless communication environment are
-1. _Resource Efficiency_: Sensor nodes are constrained by power, computation, and storage resources
-2. _Modularity_: Easy to compose yet sufficiently decoupled components.
-3. _Fine-grained concurrency_: sensing, processing, and communication
-    1. information may be simultaneously captured from sensors, manipulated, and streamed onto a network 
+* _Resource Efficiency_: Sensor nodes are constrained by power, computation, and storage resources
+* _Modularity_: Easy to compose yet sufficiently decoupled components.
+* _Fine-grained concurrency_: sensing, processing, and communication
+    * information may be simultaneously captured from sensors, manipulated, and streamed onto a network 
 
 ## Key Ideas 
 * Support concurrency
@@ -51,7 +51,7 @@ A component is an independent computational entity that exposes one or more inte
 * TinyOS achieves high concurrency by allowing tasks and events to run in small, non-blocking chunks, which allows the system to handle multiple operations 'simultaneously' without needing a heavy-weight OS layer
 
 ## Compared 
-> TinyOS: The problem we must tackle is strikingly similar to that of building efficient network interfaces, which also must maintain a large number of concurrent flows and juggle numerous outstanding events
+* TinyOS: The problem we must tackle is strikingly similar to that of building efficient network interfaces, which also must maintain a large number of concurrent flows and juggle numerous outstanding events
 
 * Thread-based model: scheduler activations, cappricio
 * Event-based system like TinyOS: SEDA
@@ -60,21 +60,21 @@ A component is an independent computational entity that exposes one or more inte
 
 ## Questions
 
-- How is fine-grained concurrency achieved?
-    - Multi-source of events: sensor reading, network messages, etc.
-    - Event-driven model: appropriate event handler is triggered
-    - Tasks as units of work: when event initiates responses
-    - Command chain: layer by layer (each command is a small piece of the overall operation)
-    - Integration with physical hardware (wrapped in commands and event handlers)
-    - Avoiding blocking operations
+* How is fine-grained concurrency achieved?
+    * Multi-source of events: sensor reading, network messages, etc.
+    * Event-driven model: appropriate event handler is triggered
+    * Tasks as units of work: when event initiates responses
+    * Command chain: layer by layer (each command is a small piece of the overall operation)
+    * Integration with physical hardware (wrapped in commands and event handlers)
+    * Avoiding blocking operations
 
-- Static Frame allows us to know the memory footprint at compile time; as well as knowing the variable locations statically at compile time rather than accessing state via pointers. 
+* Static Frame allows us to know the memory footprint at compile time; as well as knowing the variable locations statically at compile time rather than accessing state via pointers. 
 
-- The communication across the components takes the form of a function call, which has low overhead and provides compile time type checking.
+* The communication across the components takes the form of a function call, which has low overhead and provides compile time type checking.
 
 ## Limitations
 
-- Scalability and performance
-    - lightweight design and event-driven model may not suit the apps with high-performance requirements or those that need to scale to larger networks
-- Difficult to program
-    - CPU-intensive application can cause a problem (i.e. break it down into $N$ separate computations)
+* Scalability and performance
+    * lightweight design and event-driven model may not suit the apps with high-performance requirements or those that need to scale to larger networks
+* Difficult to program
+    * CPU-intensive application can cause a problem (i.e. break it down into $N$ separate computations)

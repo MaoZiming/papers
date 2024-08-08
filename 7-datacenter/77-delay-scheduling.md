@@ -33,7 +33,7 @@ Read: August 4th, 2024
   * Wait for running tasks to finish.
     * Negatively impact fairness. 
 
-> Our principal result in this paper is that, counterintuitively, an algorithm based on waiting can achieve both high fairness and high data locality. 
+* Our principal result in this paper is that, counterintuitively, an algorithm based on waiting can achieve both high fairness and high data locality. 
 
 * Tasks finish at such a high rate that resources can be reassigned to new jobs on a timescale much smaller than job durations
 * Delay scheduling, in which a job waits for a limited amount of time for a scheduling opportunity on a node that has data for it. 
@@ -74,7 +74,7 @@ Read: August 4th, 2024
 * Usually, bandwidth per node within a rack is much higher than bandwidth per node between racks. 
 * Therefore, when a task cannot be placed on a node that contains its data, it is preferable to place it on a rack that contains the data.
 
-> Each job begins at a “locality level” of 0, where it can only launch node-local tasks. If it waits at least $W1$ seconds, it goes to locality level 1 and may launch rack-local tasks. If it waits a further $W2$ seconds, it goes to level 2 and may launch off-rack tasks.
+* Each job begins at a “locality level” of 0, where it can only launch node-local tasks. If it waits at least $W1$ seconds, it goes to locality level 1 and may launch rack-local tasks. If it waits a further $W2$ seconds, it goes to level 2 and may launch off-rack tasks.
 
 ## Illustration
 

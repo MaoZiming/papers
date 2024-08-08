@@ -35,9 +35,9 @@ For X86 pre 2005, if trap-and-emulate:
     1) hypervisor inspects code to be executed by the guest OS 
     2) translates kernel code to replace nonvirtualizable instructions with new sequences of instructions that have the intended effect on the virtual hardware.
     3) if needed, translate to alternative instruction sequence
-       - e.g. to emulate desired behavior, possibly even avoiding trap
+       * e.g. to emulate desired behavior, possibly even avoiding trap
     4) otherwise, run at hardware speeds
-       - cache translated blocks to amortize translation costs 
+       * cache translated blocks to amortize translation costs 
 *  Pros: best isolation and security, excellent compatibility
 *  **Cons: performance** (trap to hypervisor)
 
@@ -46,12 +46,12 @@ For X86 pre 2005, if trap-and-emulate:
 *  Replace non-virtualizable instructions with **hypercalls**
 *  The open-source Xen project is an example of paravirtualization. 
 *  Approach: **paravirtualization** == **modify guest OS so that**
-     - **it knows it's running virtualized**
-     - **it makes explicit calls to the hypervisor (hypercalls)**
+     * **it knows it's running virtualized**
+     * **it makes explicit calls to the hypervisor (hypercalls)**
 *  Hypercalls (~system calls)
-     - package context info
-     - specify desired hypercall
-     - trap to VMM 
+     * package context info
+     * specify desired hypercall
+     * trap to VMM 
 *  Pros: lower virtualization overhead
 *  Cons: poor compatibility, requires OS kernel modifications 
 
@@ -66,27 +66,29 @@ For X86 pre 2005, if trap-and-emulate:
 
 ## Memory Virtualization 
 
-- ![memory-virtualization](images/71-virtualization/memory-virtualization.png)
+* ![memory-virtualization](images/71-virtualization/memory-virtualization.png)
 
 ### Full virtualization 
 The guests expect contiguous physical memory, start at 0 (just like it owns the machine). We should distinguish virtual v.s physical v.s machine addresses and page frame numbers, and still leverages hardware MMU and TLB. 
+* Binary translation. the Host program would scan the guest binary for such instructions and replace them with either a call to hypervisor or some dummy opcode (which will cause a trap). 
+  * In the case of para-virtualization, the source code has already been modified. Such an image directly calls hypervisor APIs. In the case of Binary translation, the native OS must first scan the guest OS instruction stream and make modifications to the stream as needed. Thus between the two, Para-Virtualization incurs lower overhead. 
 
 **Option 1:**: expensive on every single memory reference 
-- guest page table: VA => PA
-- hypervisor: PA => MA 
+* guest page table: VA => PA
+* hypervisor: PA => MA 
 
 **Option 2:**
-- guest page table: VA => PA
-- hypervisor shadow PT: VA => MA
-  - VMM uses TLB hardware to map the virtual memory directly to the machine memory to avoid the two levels of translation on every access. 
-- hypervisor maintains consistency between guest PT and hypervisor shadow PT 
-  - When the guest OS changes the virtual memory to physical memory mapping, the VMM updates the shadow page tables to enable a direct lookup.
-  - e.g. invalidate on context switch
+* guest page table: VA => PA
+* hypervisor shadow PT: VA => MA
+  * VMM uses TLB hardware to map the virtual memory directly to the machine memory to avoid the two levels of translation on every access. 
+* hypervisor maintains consistency between guest PT and hypervisor shadow PT 
+  * When the guest OS changes the virtual memory to physical memory mapping, the VMM updates the shadow page tables to enable a direct lookup.
+  * e.g. invalidate on context switch
 
 ### Paravirtualization
 The guest is aware of virtualization, and there is no longer strict requirement on contiguous physical memory starting at 0. 
 
-The guest can *explicitly* registers page tables with the hypervisor. Every update to the page table will cause a trap to the hypervisor, but we can do tricks like "batch" page table updates and issue a single hypercall. Other optimizations can be useful.
+**The guest can *explicitly* registers page tables with the hypervisor. Every update to the page table will cause a trap to the hypervisor, but we can do tricks like "batch" page table updates and issue a single hypercall. Other optimizations can be useful.**
 
 ## Device and I/O virtualization 
 When we look at CPU and memory, there is a significant level of standardization of interface at ISA-level and less diversity. We don't care much about the lower differences about the hardware. 
@@ -95,7 +97,7 @@ For devices, there is higher diversity, and there is lack of specificaiton of de
 
 ![alt text](images/71-virtualization/device-driver.png)
 
-1. Passthrough model: VMM-level driver configures device access permissions
+* Passthrough model: VMM-level driver configures device access permissions
      *  Pros
          *  VM provided with *exclusive* access to device
          *  VM can directly access the device (**VMM-bypass**)
@@ -103,7 +105,7 @@ For devices, there is higher diversity, and there is lack of specificaiton of de
          *  device sharing difficult
          *  VMM must have exact type of device as what VM expects
          *  VM migration tricky (i.e. device-specific states)
-2. Hypervisor-direct model: VMM intercepts all device accesses
+* Hypervisor-direct model: VMM intercepts all device accesses
      *   Emulate device operation
            *  translate generic I/O operation
            *  traverse VMM-resident I/O stack
@@ -114,7 +116,7 @@ For devices, there is higher diversity, and there is lack of specificaiton of de
      *   Cons
          *  latency of device operations
          *  device driver ecosystem complexities in hypervisor
-3. Split-device driver model: device access control split between
+* Split-device driver model: device access control split between
      *  front-end driver in guest VM (device API)
      *  back-end driver in service VM (or host)
      *  modified guest drivers
@@ -124,15 +126,15 @@ For devices, there is higher diversity, and there is lack of specificaiton of de
          *  allow for better management of shared devices     
 
 ## List of Questions 
-1. What is virtualization? how are they used today?
-   - how do you virtualize hardware (cpu, memory, device)?
-   - what is the design goal of Xen? and how does it accomplish it? 
-2. What is container? how are they used today?
-   - how do you implement containerization?
-   - should we use centralized or decentralized schedulers to handle containers 
-   - what are some problems associated with containers? 
-3. What are the trade-offs between virtulization and container?
-4. How does exokernel compared to hypervisors?
+* What is virtualization? how are they used today?
+   * how do you virtualize hardware (cpu, memory, device)?
+   * what is the design goal of Xen? and how does it accomplish it? 
+* What is container? how are they used today?
+   * how do you implement containerization?
+   * should we use centralized or decentralized schedulers to handle containers 
+   * what are some problems associated with containers? 
+* What are the trade-offs between virtulization and container?
+* How does exokernel compared to hypervisors?
 
 ## Containers 
 * Containers are lightweight, encapsulated environments that run applications and their dependencies.

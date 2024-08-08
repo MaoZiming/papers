@@ -8,12 +8,12 @@ Read: July 11th, 2024.
 
 * Pages and segments.
 
-> Therefore we have arranged the whole system as a society of sequential processes, progressing with un-defined speed ratios.
+* Therefore we have arranged the whole system as a society of sequential processes, progressing with un-defined speed ratios.
 
 Three contributions:
-1. A demonstration of the concept of software layering and how it leads to better verification and testing of a system.
-2. The idea of software page-based virtual memory.
-3. The idea of semaphore for use in concurrency.
+* A demonstration of the concept of software layering and how it leads to better verification and testing of a system.
+* The idea of software page-based virtual memory.
+* The idea of semaphore for use in concurrency.
 
 
 _Key Techniques_: Layering of system components, process scheduling, and semaphores for IPC.

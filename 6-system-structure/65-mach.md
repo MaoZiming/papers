@@ -2,9 +2,9 @@
 
 Link: https://dl.acm.org/doi/pdf/10.1145/37499.37507
 
-Read: June 30th, 2024. 
+Read: June 30th, 202* 
 
-> Mach implements virtual memory by mapping process addresses onto memory objects which are represented as communication channels and accessed via messages.
+* Mach implements virtual memory by mapping process addresses onto memory objects which are represented as communication channels and accessed via messages.
 
 Treating memory and communication as duals. 
 
@@ -22,12 +22,12 @@ In Mach, memory is viewed as **"abstract objects"** comprising collections of by
 
 ## Semantics 
 _Memory Objects_: memory abstracted as objects with actions 
-- Tasks can access the memory object by mapping portions of an object (or the entire object) into their address spaces. The object can be managed by a user-mode external memory manager.
+* Tasks can access the memory object by mapping portions of an object (or the entire object) into their address spaces. The object can be managed by a user-mode external memory manager.
 
 _Tasks and Threads_: tasks are similar to processes in UNIX, and each task can have multiple threads. Tasks allocate memory by mapping to these memory objects, which can be shared. 
 
 _Ports and Messages_: **each memory object has an associated port. Tasks and threads communicate with these objects through ports using messages (i.e. data, pointers, or commands for RPCs).**
-  - Almost everything in Mach is an object, and all objects are addressed via their communication **ports**. Messages (containing a fixed-length header and variable number of typed data objects) are sent to these ports to initiate operations on the objects by the routines that implement the objects.
+  * Almost everything in Mach is an object, and all objects are addressed via their communication **ports**. Messages (containing a fixed-length header and variable number of typed data objects) are sent to these ports to initiate operations on the objects by the routines that implement the objects.
 * E.x. File reading (similar to microkernel)
     * application sends IPC message to FS service in user space
     * FS service read data from disk (i.e. communicate with disk driver through IPC)
