@@ -29,10 +29,12 @@ Increasing heterogenity and scalability in hardware (i.e. CPU cores) motivates m
 * This is the paper on **Barrelfish**
   * ![alt text](images/67-multikernel/barrelfish-structure.png)
     * IPI: Inter-process Interrupt 
-    * CPU drivers handle traps and exceptions, while monitor is responsible for mediating on local operations on global states, executing the replica maintenance protocols. 
+      * In Linux and Windows, **inter-processor interrupts (IPIs)** are used: a core that wishes to change a page mapping writes the operation to a well-known location and sends an interrupt to every core that might have the mapping in its TLB. Each core takes the trap, acknowl- edges the IPI by writing to a shared variable, invalidates the TLB entry, and resumes.
+    * CPU drivers handle **traps and exceptions**, while monitor is responsible for mediating on local operations on global states, executing the replica maintenance protocols. 
+    * Barrelfish at present therefore uses a variant of **user-level RPC (URPC)** [10] between cores: a region of shared memory is used as a channel to transfer cache-line-sized messages point-to-point between single writer and reader cores.
 * Core heterogeneity means cores can no longer share a single OS kernel instance, either because the performance tradeoffs vary, or because the ISA is simply different.
 * Shared memory model has an inherent lack of scalability: 
-  * Although a single core can perform the update operation in under 30 cycles, when 16 cores are modifying the same data it takes almost 12,000 extra cycles to perform each update. All of these extra cycles are spent with the core stalled on cache misses and therefore unable to do useful work while waiting for an update to occur.
+  * **Although a single core can perform the update operation in under 30 cycles, when 16 cores are modifying the same data it takes almost 12,000 extra cycles to perform each update.** All of these extra cycles are spent with the core stalled on cache misses and therefore unable to do useful work while waiting for an update to occur.
 * Message passing has two issues:
   * There are two principal concerns, the first to do with not being able to access shared data, and the second to do with the event-driven programming style that results from asynchronous messaging.
 * design and reason about the OS as a distributed, non-shared system, and then employ sharing to optimize the model where appropriate.
@@ -40,13 +42,12 @@ Increasing heterogenity and scalability in hardware (i.e. CPU cores) motivates m
 * Message passing allows operations that might require communication to be **split-phase**, by which we mean that the operation sends a request and immediately continues, with the expectation that a reply will arrive at some time in the future.
 
 ## Message passing v.s shared memory 
-* Ousterhout describes that core speed is increasing faster than disk and memory latency. So operating systems still block on memory and disk. Message passing is more efficient than shared memory at scale. So the multikernel embraces message passing (much like Mach).
+* Ousterhout describes that core speed is increasing faster than disk and memory latency. So operating systems still block on memory and disk. **Message passing is more efficient than shared memory at scale. So the multikernel embraces message passing (much like Mach).**
+  * Message passing - copying message out of a buffer. When a process sends a message, the message is copied from the sender’s address space into a buffer managed by the kernel or IPC service. The receiving process retrieves the message by reading it from this buffer.
 
 * Consider a set of cores that are row updating a shared array, the cache coherence protocol of the processor has to migrate the cachelines between all the cores performing the updates. The overall updates is limited by the latency of fetching cachelines. 
 
-* sHowever, the drawback of a idealist message-passing abstraction here is that certain platform-specific performance optimizations may be sacrificed, such as making use of a **shared L2 cache** between cores.
-
-* the message passing itself is implemented on shared memory ring buffer. 
+* However, the drawback of a idealist message-passing abstraction here is that certain platform-specific performance optimizations may be sacrificed, such as making use of a **shared L2 cache** between cores.
 
 * Not only that, the model supports multiple implementations of the agreement protocols used to maintain consistency. This increases the burden on the developer who must understand the consistency requirements for the data, but on the other hand, can also precisely control the degree of consistency.
 
@@ -54,7 +55,7 @@ Increasing heterogenity and scalability in hardware (i.e. CPU cores) motivates m
 
 * Device interrupts are routed in hardware to the appropriate core, demultiplexed by that core’s CPU driver, and delivered to the driver process as a message.
 
-* a CPU driver abstracts very little but performs dispatch and fast local messaging between processes on the core. It also delivers hardware interrupts to user-space drivers, and locally time-slices user-space processes. The CPU driver is invoked via standard system call instructions with a cost comparable to Linux on the same hardware.
+* a **CPU driver abstracts very little** but performs dispatch and fast local messaging between processes on the core. It also delivers hardware interrupts to user-space drivers, and **locally time-slices user-space processes**. The CPU driver is invoked via standard system call instructions with a cost comparable to Linux on the same hardware.
 
 
 * Monitors collectively coordinate system-wide state, and encapsulate much of the mechanism and policy that would be found in the kernel of a traditional OS. The monitors are single-core, user-space processes and therefore schedulable. Hence they are well suited to the split-phase, message-oriented inter-core communication of the multikernel model, in particular handling queues of messages, and long-running remote operations.

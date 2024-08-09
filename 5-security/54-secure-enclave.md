@@ -9,7 +9,7 @@ Reference:
 _Purpose_: Create a secure environment for data processing where you don't have to **trust service providers**.
 
 ## Secure Enclave 
-_definition_: a specialized area in computing that's isolated from everything else, including the operating system and users with high-level access.
+_definition_: a specialized area in computing that's **isolated** from everything else, including the operating system and users with high-level access.
 
 *  Ensures that **not even users with root access** can see or interfere with the data or code in the enclave
 
@@ -19,7 +19,7 @@ _definition_: a specialized area in computing that's isolated from everything el
   * Data-in-motion: data being transferred (e.g. over internet) 
   * Data-in-use: data being actively used or processed
 * _Current state_: most systems protect data-at-rest and data-in-motion with encryption technologies like SSL/TLS
-* _Problem_: *data-in-use* is vulnerable, you must trust the application and the platform it runs on
+* _Problem_: *data-in-use* is vulnerable, **you must trust the application and the platform it runs on**
     *  Access control: suspectible for human error, does not protect against info leakage
     *  Homomorphic encryption (HE): allow compute on encrypted data, but too slow  
 
@@ -28,8 +28,8 @@ Intel's Software Guard Extensions (SGX) offers **hardware-based** security.
 * SGX is a **security instruction set** baked into many of Intel's x86-based **CPUs**. 
 * Memory protection: create a "safe box" or **enclaves** within your computer's memory that's encrypted and accessible to only specific **code** (running within the enclave)
 * Computing environment: where code to be executed is protected, even the OS cannot access it.
-  * So in case when OS, BIOS, VMM are compromised, sensitive data is still placed within an isolated, encrypted portion of memory. 
-* At runtime, SGX builds an encrypted area in memory. Code and data can freely operate inside this area but are encrypted when stored or moved outside it, preventing unauthorized access.
+  * So in case when **OS, BIOS, VMM are compromised**, sensitive data is still placed within an isolated, encrypted portion of memory. 
+* At runtime, SGX builds an encrypted area in memory. **Code and data** can freely operate inside this area but are **encrypted when stored or moved outside it**, preventing unauthorized access.
    
 ![intel-sgx](images/54-secure-enclave/intel-sgx.png)
 
@@ -44,18 +44,18 @@ To use SGX, BIOS needs to enable it.
   * the application contains its own code, data, and the enclave;
   * the enclave contains its own code and its own data too;
   * SGX protects the confidentiality and integrity of the enclave code and data;
-  * enclave entry points are pre-defined during **compilation**;
+  * enclave entry points **are pre-defined** during **compilation**;
   * multi-threading is supported (but not trivial to implement properly);
   * an enclave can access its application's memory, but not the other way around.
 * ![alt text](images/54-secure-enclave/PRM-EPC-EPCM.png)
 * Processor Reserved Memory (PRM)
-  * A subset of DRAM that cannot be directly accessed by other software
+  * **A subset of DRAM that cannot be directly accessed by other software**
 * Enclave code and data are placed in a special memory area called the **Enclave Page Cache** (EPC). 
   * This memory area is encrypted using the Memory Encryption Engine (MEE), a new and dedicated chip.
   * External reads on the memory bus can only observe encrypted data. 
-  * Pages are only decrypted when inside the physical processor core. Keys are generated at boot-time and are stored within the CPU.
+  * **Pages are only decrypted when inside the physical processor core. Keys are generated at boot-time and are stored within the CPU.**
   * EPC is split into 4KB pages that can be assigned to different enclaves, enabling multi-processing. 
-  * Non-enclave software cannot directly access the EPC, as it is contained in the PRM. 
+  * **Non-enclave software** cannot directly access the EPC, as it is contained in the **PRM**. 
 * **Enclave Page Cache Map (EPCM)**
   * SGX design expects the software to allocate EPC pages to enclaves. Since the system software is not trusted, SGX processors have to check the correctness of system software's allocation decisions with EPCM (e.g. assigning a EPC to two enclaves). 
   * The traditional page check is extended to prevent external accesses to EPC pages. 
@@ -66,7 +66,8 @@ To use SGX, BIOS needs to enable it.
   * ![alt text](images/54-secure-enclave/flow-chart.png)
 
 * SGX Enclave Control Structure (SECS)
-  * Each SECS is stored in a dedicated EPC page with the page type `PT_SECS`.
+  * Each SECS is stored in a dedicated **EPC** page with the page type `PT_SECS`.
+  * Given that SGX instructions use SECS addresses to identify enclaves, the system software must create entries in its page tables pointing to the SECS of the enclaves it manages.
   * The first step in bringing an enclave to life allocates an EPC page to serve as the enclave’s SECS, and the last step in destroying an enclave deallocates the page holding its SECS. 
   * Enclave code cannot access SECS pages. SECS pages are not mapped into enclaves' virtual address space. 
 * Thread Control Structure (TCS)
@@ -82,7 +83,7 @@ This is suitable for
 
 Example steps
 * _Initial Communication_: User communicates with the cloud service via **SSL/TLS** to establish a secure channel.
-* _Remote Attestation_: Intel SGX enclave on the cloud server can provide a proof of its legitimacy through remote attestation. This ensures the user that they are communicating with a genuine, secure enclave.
+* _Remote Attestation_: Intel SGX enclave on the cloud server can provide a proof of its legitimacy through remote attestation. This ensures the user that they are communicating with a genuine, secure enclave. Decryption key is provisioned to the enclave by a trusted external entity through a secure channel (TLS).
 * _Encrypting the Images_: User uses a symmetric (asymmetric) encryption algorithm to encrypt the sensitive medical images. 
 * _Transmitting the Encrypted Images and Key_: The encrypted images and encryption key are sent to the cloud server over secure channel.
 * _Enclave Processing_: The enclave decrypts and subsequently processes the images, maintaining the confidentiality and integrity of the sensitive data.
@@ -98,7 +99,7 @@ Example steps
 
 * Security checks when allocating chunks of memory, including being measured using a 256-bit SHA-2 secure hash function.
 * Secure enclave is limited to CPUs, with limited support to GPUs and other PCI devices. 
-* Secure enclave implementations, such as Intel SGX, require rewriting applications by partitioning the code into secure and insecure parts. Any code that lives outside of TCB is only able to interact with enclave code via a narrow interface. 
+* **Secure enclave implementations, such as Intel SGX, require rewriting applications by partitioning the code into secure and insecure parts. Any code that lives outside of TCB is only able to interact with enclave code via a narrow interface**. 
 * Introduce latency for the clients due to post-verification. 
 * Enclave Page Cache (EPC) in Intel processors have been limited to 256MB. 
 * Recently, several side-channel vulnerabilities have been found for hardware-based enclaves. 

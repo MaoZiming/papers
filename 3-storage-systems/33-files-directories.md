@@ -130,7 +130,8 @@ fread(x, 10, 1, f); // read 10 bytes from f
 read(fd, y, 10); // assumes that this returns data starting at offset 10
 ```
 The `fread()` reads a big chunk of file into user-level buffer.
-Might be all of the file
+Might be all of the file.
+* > If you want automatic buffering of input and output to reduce the number of system calls (which can be expensive), FILE * is the preferred choice.
 
 ## FSYNC: communicating requirements
 
@@ -149,6 +150,7 @@ Might be all of the file
 
 * `fstat`: contain information stored in places such as inode.
 * Inode is a persistent data structure, but are cached in memory for performance reasons.
+  * The inode number `d_ino` indexes a table of inodes on the file system. From the inode number, the kernel's file system driver can access the inode contents, including the location of the file, thereby allowing access to the file.
 
 ## Reading directories
 * `opendir()`, `readdir()`, and `closedir()`
@@ -291,6 +293,8 @@ typedef struct {
                 * **Pointer v.s Extent**
                     * Pointer: more flexible but use large amount of metadata per file (particularly for large file)
                     * Extent: **less flexible but more compact**, work well when there is enough free space on the disk and files can be laid out **contiguously** (this is why it is less flexible, usually requiring laying out files contiguously). 
+            * **A single indirect block** contains an array of pointers (typically 4 or 8 bytes each, depending on the architecture) that each point to a data block.
+              * If each block is 4 KB and pointers are 4 bytes, a single indirect block can contain 1024 pointers, allowing it to address 4 MB of data.
 
 ## Directory Organization
 

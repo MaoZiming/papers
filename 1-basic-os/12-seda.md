@@ -4,7 +4,7 @@ Link: https://sosp.org/2001/papers/welsh.pdf
 
 Read: June 16th, 10:41AM. 
 
-* Staged event-driven architecture (SEDA), a new design for highly concurrent Internet services. 
+* Staged **event-driven** architecture (SEDA), a new design for highly concurrent Internet services. 
 * Key components:
     * **Stages**: The application is divided into multiple stages, each associated with an incoming event queue.
     * **Dynamic Resource Controllers**: Controllers dynamically adjust the number of threads and the batching sizes within each stage to adapt to workload changes.
@@ -22,7 +22,7 @@ Read: June 16th, 10:41AM.
         * Static content replaced by dynamic content, extensive computation and I/O
     * Service logic tends to change rapidly 
         * Increase engineering complexity and deployment  
-    * Services increasingly hosted on general-purpose facilities 
+    * Services increasingly hosted on **general-purpose facilities** 
         * Rather than carefully-engineered platform
 
 ### Thread-based concurrency
@@ -59,6 +59,9 @@ Read: June 16th, 10:41AM.
         * Modularity is difficult to achieve
             * Code implements each state must be trusted not to **block**
             * Or consume large # of resources that stall the event-handling thread
+* Primary reason why Seda and TinyOS use event-driven architecture is to handle a large number of simultaneous connections, wihtout the overhead of managing many threads or processes. 
+  * An event-driven architecture will allow a single thread to handle multiple events. 
+
 
 ### Key Ideas
 
@@ -66,9 +69,9 @@ Read: June 16th, 10:41AM.
     * Combine threads and event-based programming model
     * Applications are constructed as network of *stages*
         * Each associated with *incoming event queue* (explicit)
-        * Stage threads pull batch of events off the incoming event queue
+        * **Stage** threads pull batch of events off the incoming event queue
         * And invoke application-supplied event handler
-        * The event handler processes each batch of event, and dispatches 0 or more event by queueing them on event queues of other stages
+        * The event handler **processes each batch of event**, and dispatches 0 or more event by queueing them on event queues of other stages
         * A pool of threads for each stage, relies on the underlying OS for scheduling.
     * Use *dynamic resource throttling*
         * Each stage is managed by a controller that affects scheduling and thread allocation
@@ -85,6 +88,7 @@ Read: June 16th, 10:41AM.
         * Periodically sample input queue and add a thread when the queue length exceeds some threshold 
         * Threads are removed when they are idle for a specified period of time 
     * ***Batching controller***: **adjust # of events processed by each invocation of the event handler within a stage**
+        * It has been observed that processing many events at once increases throughput, as cache locality and task aggregation can be performed. However, a large batching factor can also increase response time. 
         * Observes output rate of events from a stage (by maintaining moving average across samples), and decreases batching factor until throughput starts to degrade 
         * Responds to sudden drops in load by resetting batching factor to max 
 

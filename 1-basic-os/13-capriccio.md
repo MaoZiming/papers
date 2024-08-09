@@ -10,7 +10,7 @@ Its approach is three-fold:
 
 * **Scalability**: Capriccio uses user-level threads coupled with cooperative scheduling to manage many threads efficiently. User-level threads are preferred over kernel threads for their flexibility and performance advantages,
 
-* **Linked Stack**: Traditional stack allocation methods are not suitable for programs managing many threads. Capriccio uses a dynamic stack allocation technique that employs **linked chunks**, which are managed through compile-time analysis and runtime checks.
+* **Linked Stack**: Traditional stack allocation methods are not suitable for programs managing many threads. **Capriccio uses a dynamic stack allocation technique** that employs **linked chunks**, **which are managed through compile-time analysis and runtime checks.**
 
 * **Resource-aware Scheduler**: The scheduler views the application as a sequence of stages, separated by blocking points, forming a "**blocking graph**". This graph is used to make application-specific scheduling decisions to maximize resource utilization without reaching bottlenecks.
 
@@ -43,10 +43,44 @@ Same motivation as SEDA: Internet services have ever-increasing scalability dema
     * Stack ripping
         * Creating these call/return pairs require the programmer to manually save and restore live state
 
+### Stack Ripping
+
+In traditional synchronous programming:
+```cpp
+void processRequest() {
+    int data = readFromNetwork();
+    processData(data);
+    writeToDatabase(data);
+}
+```
+In event-driven architecture with stack ripping:
+```cpp
+void processRequest() {
+    initiateReadFromNetwork();  // Non-blocking call
+}
+
+void onNetworkReadComplete(int data) {
+    processData(data);
+    initiateWriteToDatabase(data);  // Non-blocking call
+}
+
+void onDatabaseWriteComplete() {
+    // Finalization steps
+}
+```
+In this "ripped" version:
+* The initial function `processRequest()` initiates a non-blocking network read.
+* When the network read is complete, the system triggers `onNetworkReadComplete()`, which processes the data and initiates a non-blocking write to the database.
+* Finally, once the database write is complete, the system calls `onDatabaseWriteComplete()` to finish the operation.
+
+* Key aspects of stack ripping
+  * Manually manage the state of the operations across multiple callbacks or event handlers
+  * More complex and harder-to-maintain code.
+* Syntactic sugar: `async/await` : performs stack ripping behind the scene. It abstracts and automates the process of stack ripping, making it more manageable and less error-prone for developers.
+
 ### Main Proposal
 
-* *“Any apparent advantages of events are better viewed as arguments for app-specific optimization and need for efficient thread runtime”*
-* 
+* “Any apparent advantages of events are better viewed as arguments for app-specific optimization and need for efficient thread runtime”
 
 Just improve the thread runtime! 
 
@@ -54,7 +88,7 @@ Goals:
 
 * Allow high performance without high complexity 
 * Support existing thread’s API (POSIX)
-* Scalability to 100,000 threads
+* Scalability to **100,000** threads
 * Flexibility to app-specific needs 
 * Little or no modification to the application itself 
 
@@ -63,7 +97,9 @@ Goals:
 There are three parts:
 
 * Scalability
-    * User-level threads + cooperative scheduling 
+    * User-level threads + **cooperative** scheduling 
+    * This is the main technique for addressing the overhead of context switching. 
+    * Since Capriccio manages threads within user space, the context switch operations do not require expensive system calls or kernel interventions.
 * Linked stack 
     * Stack allocation for large # of threads
     * Compile-time analysis + runtime checks 
@@ -115,7 +151,8 @@ There are three parts:
     * E.x. 1GB virtual memory with just 500 threads
       * For example, LinuxThreads allocates two megabytes per stack by default; 
 * Most threads consume only a few kilobytes of stack space at any given time
-  * Significantly reduce the size of virtual memory dedicated to stacks if we adopt a **dynamic stack allocation policy** wherein stack space is allocated to threads on demand in relatively small increments and is deallocated when the thread requires less stack space.
+  * Significantly reduce the size of virtual memory dedicated to stacks if we adopt a **dynamic stack allocation policy** wherein stack space is allocated to threads on demand in **relatively small increments** and is deallocated when the thread requires less stack space.
+    * Stack grows and shrinks dynamically based on the needs of the thread. 
 * Idea: dynamic stack allocation with linked chunks
     * Alleviates VM pressure and improve paging behavior
 * Method: compile-time analysis and checkpoint injection

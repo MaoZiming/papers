@@ -306,3 +306,19 @@ reads.
     * For each process $P_k$, update $MC_j[j, k]$ to be the maximum of $MC_j[j, k]$ and $MC_i[i, k]$.
     * Additionally, for the sender $P_i$, update $MC_j[i, i]$ to be the maximum of $MC_j[i, i]$ and $MC_i[i, i] + 1$.
 
+### Two phased commit 
+
+* Two-Phase Commit (2PC) is a distributed algorithm that ensures all participants in a distributed system agree on a transaction before it is committed
+* Phases of Two-Phase Commit:
+    * Prepare Phase (Voting Phase):
+    * The coordinator sends a "prepare" request to all participants.
+    * Each participant performs the necessary operations to ensure it can commit the transaction (e.g., locking resources, writing data to a log).
+    * Participants respond with either "vote-commit" (if they can commit) or "vote-abort" (if they cannot commit).
+* Commit Phase:
+    * If all participants respond with "vote-commit," the coordinator sends a "commit" message to all participants, instructing them to commit the transaction.
+    * If any participant responds with "vote-abort," the coordinator sends an "abort" message to all participants, instructing them to roll back the transaction.
+    * Participants then perform the commit or abort operation and acknowledge back to the coordinator.
+* How does the Two-Phase Commit protocol handle failures during the commit phase?
+    * If a failure occurs during the commit phase, the coordinator must ensure that the transaction is completed once the system recovers. The protocol assumes that the coordinator and participants can eventually recover and re-attempt the commit or abort based on the decision recorded before the failure. This might involve logging or other recovery mechanisms.
+* What is the primary disadvantage of the Two-Phase Commit protocol?
+    * The primary disadvantage of the Two-Phase Commit protocol is its blocking nature. If the coordinator crashes after sending the prepare message but before sending the commit/abort decision, participants can be left in an uncertain state, blocking further transactions until the coordinator recovers. This can lead to inefficiencies and delays in distributed systems.

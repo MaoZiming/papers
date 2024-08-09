@@ -6,6 +6,8 @@ Read: June 28th, 2024.
 
 Traditional OS models were not fit for the constrained resources available on low-power, integrated networked sensor nodes. TinyOS is a tiny **event-driven** operating system that provides support for efficient modularity and **concurrency-intensive** operation that fits for this context. 
 
+Develop a small device that is representative of the class, design a tiny event-driven operating system, and show that it provides support for efficient modularity and concurrency-intensive operation.
+
 Discusison on hardware:
 * Small physical size, modest active power load and tiny inactive load are provided by the hardware design.
 
@@ -20,6 +22,8 @@ _The key requirements_ under this type of low power wireless communication envir
     * **Event-driven** architecture: high performance in concurrency intensive application! 
       * No polling.
       * Unused CPU cycles are spent in the sleep state as opposed to actively looking for an interesting event. 
+    * Events are driven by hardware interrupts. TinyOS executes short tasks and event handlers that are triggered by these events.
+      * This allows TinyOS to be in low power states when no events are pending.
     * Why not thread?
        * stack-based: reserved for each execution context
        * need to be multi-task between execution contexts at rate of **40,000 switches per second**
@@ -38,6 +42,7 @@ _The key requirements_ under this type of low power wireless communication envir
 A component is an independent computational entity that exposes one or more interfaces. It has the following four interrelated parts: 
 
 * Frame (storage) 
+  * The fixed size frames are statically allocated which allows us to know the memory requirements of a component at compile time. 
 * A set of command handlers: cause actions to be initiated 
    * deposit request parameters into frame, post tasks 
 * Event: 
@@ -47,8 +52,28 @@ A component is an independent computational entity that exposes one or more inte
 * A bundle of simple tasks (computation): perform the primary work
    * background computation, not time critical 
    * task scheduler: FIFO  
-* Layers of components: higher level components issue commands to lower level components, and lower level components signal events to the higher level components. 
+* Layers of components: **higher level components issue commands to lower level components, and lower level components signal events to the higher level components. Physical hardware represents the lowest level of components.**
 * TinyOS achieves high concurrency by allowing tasks and events to run in small, non-blocking chunks, which allows the system to handle multiple operations 'simultaneously' without needing a heavy-weight OS layer
+  * The lowest level components have handlers connected directly to hardware interrupts, which may be external interrupts, timer events, or counter events.
+* Commands are non-blocking calls to the lower level components. 
+* An event handler can deposit information into its frame, post tasks, signal higher level events or call lower level commands.
+
+
+### Component Types
+
+* Hardware abstractions
+  * The RFM radio component. This component exports commands to ma- nipulate the individual I/O pins connected to the RFM transceiver and posts events informing other components about the transmission and reception of bits.
+* Synthetic hardware
+  * It shifts data into or out of the underlying RFM module and signals when an entire **byte** has completed.
+  * This component is an enhanced state machine that could be directly cast into hardware.
+* High level software components.
+  * E.g. perform control, routing and all data transformations.
+
+## Task scheduler
+
+* Currently FIFO. 
+* our prototype puts the processor to sleep when the task queue is empty, but leaves the peripherals operating, so that any of them can wake up the system. 
+
 
 ## Compared 
 * TinyOS: The problem we must tackle is strikingly similar to that of building efficient network interfaces, which also must maintain a large number of concurrent flows and juggle numerous outstanding events
@@ -67,6 +92,10 @@ A component is an independent computational entity that exposes one or more inte
     * Command chain: layer by layer (each command is a small piece of the overall operation)
     * Integration with physical hardware (wrapped in commands and event handlers)
     * Avoiding blocking operations
+
+* Why does TinyOS use an event-driven model
+  * TinyOS is specifically designed for low-power, resource-constrained devices such as wireless sensor nodes. The event-driven model allows TinyOS to remain in a low-power state when no events are pending, only waking up to process events such as sensor readings or network packets.
+* In both Seda and TinyOS, the threads sleep when there is no event, conserving systems resources. 
 
 * Static Frame allows us to know the memory footprint at compile time; as well as knowing the variable locations statically at compile time rather than accessing state via pointers. 
 

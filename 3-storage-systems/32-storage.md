@@ -29,7 +29,7 @@
 * **Organizations**
     * Some number of flash chips (for persistent storage)
         * Use multiple flash chips in parallel.
-        * reduce write amplifications (i.e. total write traffic issued to flash chips by FTL / total write traffic issued by the client) 
+        * reduce **write amplifications** (i.e. total write traffic issued to flash chips by **FTL** / total write traffic issued by the client) 
     * Some amount of volatile (i.e. non-persistent) memory (e.g. SRAM)  for caching
     * Control logic to orchestrate device operation: FTL (Flash Translation Layer)
         * Transform reads and writes from a client into reads, erases, and programs to underlying flash chips
@@ -63,18 +63,17 @@
             * **Cannot re-program a page!!**
 * **Reliability**
     * Primary concern: wear out
-        * Explain: if a block is erased and programmed too often, it becomes unusable
+        * Explain: **if a block is erased and programmed too often**, it becomes unusable. Can only do 10k erases. 
         * Extra charge builds up, difficult to differentiate between 0 and 1
         * Sol: *wear leveling*
             * FTL should try its best to spread that work across all the blocks of the device evenly
-            * Sol: Log-structured FTL
+            * Sol: Log-structured **FTL**
                 * Spread out the write load (v.s. overwriting the same block)
                 * Garbage collection helps as well
                     * I.e. finding a block that contains garbage pages, read in live pages, write out those to log, reclaim entire block in writing
             * Another situation: long-lived data never got over-written, GC won’t collect it
               * FTL need to periodically read all the live data out of such blocks and re-write it somewhere else, making the block available for writing again
               * This process of wear leveling increases write amplification of SSD, decrease performance as extra I/O
-  
     * Another issue: *disturbance*
         * When accessing a particular page, it is possible that some bits get flipped in neighboring pages
         * Sol: program pages within an erased block in order, from low page to high page
@@ -86,7 +85,6 @@
               * Severe write amplification (prop. to # of pages in a block)
           * Reliability
               * Same block is erased and programmed over and over, wear out issue
-
 
 # Flash-based SSDs 
 
@@ -302,7 +300,8 @@
         * Forcing data write to complete is not required for correctness
         * It will be fine to concurrently issue writes to data, the transaction begin log and journaled metadata
         * The real requirement: step 1 and 2 complete before issuing journal commit
-            * rule of “**write the pointed-to object before the object that points to it**” (data before metadata) is at core of crash consistency
+            * rule of “**write the pointed-to object before the object that points to it**” (data before metadata) is **at core of crash consistency**
+            * > data before metadata!
     * Recovery
         * After commit, before checkpoint completes: recover update by replay the log (i.e. **redo logging**)
             * It completes transactions that were committed but not yet checkpointed and ignores or rolls back incomplete transactions.
@@ -319,7 +318,7 @@
     * Larger log, longer recovery
     * When log is full, no further transactions can be committed to disk, making FS useless
 * JFS: treat log as a circular data structure (i.e. circular log)
-    * Journal superblock: record enough information to know which transactions have not yet been checkpoint, thus reduce recovery time and enable re-use of log in circular fashion
+    * Journal **superblock**: record enough information to know which transactions have not yet been checkpoint, thus reduce recovery time and enable re-use of log in circular fashion
 * ![alt text](images/32-storage/journal-superblock.png)
 
 

@@ -2,7 +2,7 @@
 
 Link: https://cacm.acm.org/research/the-tail-at-scale/
 
-Read: July 5th, 202* 
+Read: July 5th, 2024
 
   *   Insights
       *  Rare performance hiccups affect many requests in large-scale DS 

@@ -28,7 +28,7 @@ Thus we want to build an FS that focus on write performance, and try to make use
 ## Motivation: optimize writes 
 * System memories are growing, can be used for cache
 * Existing FS perform poorly on common workloads: small-write problem 
-    *  FFS performs many writes to create a small file (5 writes)
+    *  **FFS performs many writes to create a small file (5 writes)**
     *  Too many small writes. 
 * When writing small files in such a system, less than 5% of the disk’s potential bandwidth is used for new data; the rest of the time is spent seeking.
    * Another problem is synchronous writes. 
@@ -36,7 +36,7 @@ Thus we want to build an FS that focus on write performance, and try to make use
 
 * a log-structured file system converts the **many small synchronous random writes** of traditional file systems into **large asynchronous sequential transfers** that can utilize nearly 100% of the raw disk bandwidth.
 
-The crux is: how can a file system tranform all writes into sequential writes? how to read data, and how to free space? 
+The crux is: how can a file system **tranform all writes into sequential writes**? how to read data, and how to free space? 
 
 ## How it works 
 
@@ -46,16 +46,17 @@ The crux is: how can a file system tranform all writes into sequential writes? h
 
 Problem: finding inode is hard in LFS 
 
-* FFS finding inode: easy, organized, put at fixed location
+* FFS finding **inode**: easy, organized, put at fixed location
   * This is really nice!
 * LFS: scatter the inodes all throughout the disk! Worse, we never overwrite in place, and thus the latest version of an inode (i.e., the one we want) keeps moving.
 
 Solution: **inode map**
 
-* Inode map: takes an inode number as input and produce disk address of most recent address of the inode
+* Inode map: takes an **inode number** as input and produce disk address of most recent address of the inode
 * Inode map: **persistent**
     * Keep track of locations of inodes across crashes
     * Chunks of inode map is placed right next to where it is writing all of the other new information
+* Inode map tracks inode locations across segments. 
 
 Unfortunately, as it gets updated frequently, this would then require updates to file structures to be followed by writes to the imap, and hence performance would suffer (i.e., there would be more disk seeks, between each update and the fixed location of the imap).
 
@@ -74,7 +75,7 @@ Unfortunately, as it gets updated frequently, this would then require updates to
 LFS uses write buffering to keep track of updates in memory before writing to disk 
   *  _Segment_: unit of buffering
   *  How to read?
-      *  _Inode map_: inode number maps to the disk address of the inode
+      *  _Inode map_: **inode number maps to the disk address of the inode**
           *  Placed right next to where it is writing all other new information
       *  _Checkpoint region_: contains pointers to the latest pieces of inode map
           *  Updated periodically
@@ -93,6 +94,8 @@ LFS uses write buffering to keep track of updates in memory before writing to di
 
 * Threading vs. Copying
   * Threading: leave the live data in place and *thread* the log through the free extents.
+    * The log skips over the active blocks and overwrites blocks of files that have been deleted or overwritten. Pointers between the blocks of the log are maintained so that the log can be followed during crash recovery. 
+    * Threading leads to severe segmentation. 
   * Copying: copy live data out of the log in order to leave large free extents for writing.
 
 *  Segment-level cleaning
@@ -105,9 +108,10 @@ LFS uses write buffering to keep track of updates in memory before writing to di
     *  Free up old ones for writing
 *  Determine block liveness with _segment summary block_
     *  Segment summary block is part of each segment. 
-    *  For each file data block the summary block contains the file number and block number for the block.
+    *  For each file data block the **summary block** contains the file number and block number for the block.
    *  Cleaner is **very** workload dependent. 
       *  LFS forsakes read locality. 
+*  The version number combined with the inode number form an unique identifier (uid) for the contents of the file. The segment summary block records this uid for each block in the segment; if the uid of a block does not match the uid currently stored in the inode map when the segment is cleaned, the block can be discarded immediately without examining the file’s inode.
       
 ## Crash consistency 
 *  LFS organizes writes in a **log**

@@ -53,7 +53,7 @@ Map Reduce is a simple data-parallel programming model designed for **scalabilit
 
 ## Reduce task
 * When a reduce worker is notified by the master about these locations, it uses **remote procedure calls** to read the buffered data from the local disks of the map workers. When a reduce worker has read all intermediate data, it sorts it by the intermediate keys so that all occurrences of the same key are grouped together.
-* The reduce worker iterates over the sorted intermediate data and for each unique intermediate key en- countered, it passes the key and the corresponding set of intermediate values to the user’s Reduce function. The output of the Reduce function is appended to a final output file for this reduce partition.
+* The reduce worker iterates over the sorted intermediate data and for each unique intermediate key encountered, it passes the key and the corresponding set of intermediate values to the user’s Reduce function. The output of the Reduce function is appended to a final output file for this reduce partition.
 
 
 * Each in-progress task writes its output to private temporary files. A reduce task produces one such file, and a map task produces R such files (one per reduce task)
