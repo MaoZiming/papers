@@ -10,6 +10,14 @@ Read: April 14th, 2024
 * Resilient Distributed Datasets (RDDs), a distributed memory abstraction that lets programmers perform in-memory computations on large clusters in a fault-tolerant manner.
 * RDDs are motivated by two types of applications that current computing frameworks handle inefficiently: iterative algorithms and interactive data mining tools.
 * RDDs provide an interface based on coarse-grained transformations (e.g., map, filter and join) that apply the same operation to many data items. This allows them to efficiently **provide fault tolerance by logging the transformations used to build a dataset (its lineage)** rather than the actual data.
+* Partition. Dataset is partitioned (default size of 128MB.) for parallelism. The number of tasks equals the number of partitions. 
+  * **Narrow transformations**: These are transformations in which data in each partition does not require access to data in other partitions in order to be fully executed. For example, functions like map, filter, and union are narrow transformations.
+  * **Wide transformations**: These are transformations in which data in each partition is not independent, requiring data from other partitions in order to be fully executed. For example, functions like reduceByKey, groupByKey, and join are wide transformations.
+    * Wide transformation requies a shuffle. This is a rather expensive operation. 
+  * Recommended number of partitions: you have ~3x the number of partitions than available cores in cluster, to maximize parallelism along side with the overhead of spinning more executors. 
+* Spark RDD contains the partition information. This can be retrieved just with `getNumPartitions`. 
+  * RDD represents an immutable, **partitioned** collection of elements that can be operated on in parallel
+
 
 ## RDD
 
@@ -23,7 +31,7 @@ Read: April 14th, 2024
 * RDD can be constructed in four ways
   * From a file in a shared file system, such as the Hadoop Distributed File System (HDFS).
   * By “parallelizing” a Scala collection (e.g., an array) in the driver program, which means dividing it into a number of slices that will be sent to multiple nodes.
-  * By transforming an existing RDD. `flatmap`, `map`, `filter`. 
+  * By transforming an existing RDD. `flatmap` (`map` on all elements of the RDD, then flattening the results), `map`, `filter`. 
   * By altering the persistence of an existing RDD.
     * The cache action leaves the dataset lazy, but hints that it should be kept in memory after the first time it is computed, because it will be reused.
       * We note that our cache action is only a hint: if there is not enough memory in the cluster to cache all partitions of a dataset, Spark will recompute them when they are used.

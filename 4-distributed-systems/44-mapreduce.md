@@ -2,7 +2,7 @@
 
 Link: https://static.googleusercontent.com/media/research.google.com/en//archive/mapreduce-osdi04.pdf
 
-Read: April 16th, 202* 
+Read: April 16th, 2024
 
 Map Reduce is a simple data-parallel programming model designed for **scalability and fault-tolerance**. It provides a limited but general functional API including map, reduce, and sort, and it requires no other synchronization and communication. It achieve fault recovery, and straggler mitigation through retries. 
 
@@ -41,6 +41,11 @@ Map Reduce is a simple data-parallel programming model designed for **scalabilit
         * Applications without shuffle: grep, or simple transformation on the data, data sampling
 * Reduce function: $(K_{inter}, list(V_{inter}))->list(V_{out})$
     * Accept one key and all the values for that key and merges the values together
+* Partitioning:
+  * https://stackoverflow.com/questions/17734468/how-does-partitioning-in-mapreduce-exactly-work
+  * Partitioning of the keys of the intermediate map output is controlled by the Partitioner. By hash function, key (or a subset of the key) is used to derive the partition. According to the key value each mapper output is partitioned and records having the same key value go into the same partition (within each mapper), and then each partition is sent to a reducer. 
+  * Partition class determines which partition a given (key, value) pair will go. Partition phase takes place after map phase and before reduce phase.
+  * The number of partitions is equal to the number of reducers. 
  
 ## Map task
 

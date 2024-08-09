@@ -2,6 +2,8 @@
 
 Link: https://www.usenix.org/legacy/event/nsdi11/tech/full_papers/Murray.pdf
 
+Helpful slides: https://www.cl.cam.ac.uk/~ey204/teaching/ACS/R244_2018_2019/presentation/S2/CIEL_Tejas.pdf
+
 Read: June 30th, 202* 
 
 * Ciel introduces **dynamic** task graphs which are extended at runtime, as opposed to static graphs in earlier models (e.x. MapReduce, Dryad). 
@@ -14,6 +16,13 @@ Read: June 30th, 202*
 * **No data-dependent control flow**, so the work in each computation must be statically pre-determined. 
 * CIEL is designed for coarse-grained parallelism across large data sets, as are MapReduce and Dryad. For fine-grained tasks, a work-stealing scheme is more appropriate 
 
+
+* Add iteration to Hadoop with Mahout. 
+* ![alt text](images/47-ciel/hadoop-mahout.png)
+  * **Problems:**
+    * Job overhead every iteration
+    * No fault-tolerance between iterations
+
 ### Dynamic Task Graph
 
 ![alt text](images/47-ciel/dynamic-task-graph.png)
@@ -21,6 +30,14 @@ Read: June 30th, 202*
 
 * It allows for more adaptive and flexible task execution. This dynamic approach, coupled with a runtime that can adjust execution strategies based on current conditions, makes it possible to support a wider range of applications efficiently. 
 * Examples of usecases include iterative, low-latency chained events like k-means, E-M, PageRank, and so on. 
+
+### How does CIEL prevent cycles
+
+* A child task can depend only on:
+  * Concrete references
+  * Future references from already running tasks. 
+    * "Already running" prevents cycles. 
+  * ![alt text](images/47-ciel/legal-child-task.png)
 
 * **SkyWriting: a scripting language** that allows the straightforward expression of iterative and recursive task-parallel algorithms using imperative and functional language syntax.
   * However CIEL extends previous models by **dynamically building the DAG** as tasks execute. As we will show, this conceptually simple extension allowing tasks to create further tasks—enables CIEL to support data-dependent iterative or recursive algorithms
@@ -39,11 +56,20 @@ Read: June 30th, 202*
     * > CIEL requires that all tasks compute a deterministic function of their dependencies.
     * > A task also has one or more expected outputs, which are the names of objects that the task will either create or delegate another task to create.
   * Prevent deadlock by preventing circles in the dependency graphs. 
+  * Tasks are dispatched to workers who are nearest to data. 
   * ![alt text](images/47-ciel/ciel-cluster.png)
     * Single master: 
       * keeps record of **obj** and task tables
       * Dispatch tasks to workers
       * Persistent logging of tables. 
+      * Master failures are detected using heart beats. 
+      * On recovery, a master node can rebuild its object table using workers' object stores. 
+    * **Object Table**: Maintains references to objects stored on workers.
+    * **Worker Table**: Holds worker nodes and used to track their health.
+      * Worker failures are detected using periodic heatbeat messages
+      * Master invalidates object references at the failed worker
+      * Master schedules the re-computation of any lost object according to the lazy policy
+    * **Task Table**: Contains references to spawned tasks, as well as their dependencies.
     * Multiple workers:
       * Heartbeat messages for availability to master
       * Update master with spawn/publish
