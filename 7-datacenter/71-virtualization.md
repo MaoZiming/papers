@@ -7,6 +7,12 @@ Virtualization allows multiple guest OSes (and their applications) to share the 
   * A **hosted architecture** installs and runs the virtualization layer as an application on top of an operating system and supports the broadest range of hardware configurations
   * In contrast, a **hypervisor** (bare-metal) architecture installs the virtualization layer directly on a clean x86-based system. Since it has direct access to the hardware resources rather than going through an operating system, a hypervisor is more efficient than a hosted architecture and delivers greater scalability, robustness and performance.
 
+## Bare metal servers
+
+* Bare metal servers are physical servers that are dedicated entirely to a single tenant or customer. Unlike virtualized environments where multiple virtual machines (VMs) share the same physical hardware, bare metal servers offer full access to all of the server's resources. 
+* When you get a VM on AWS, it is not a bare metal server. Instead, it is a virtualized instance running on top of AWS's physical infrastructure, which is shared among many customers.
+* AWS does offer bare metal instances (such as the i3.metal, m5.metal, and r5.metal instance types) where you have direct access to the physical hardware without a hypervisor.
+
 ## Challenges: trap-and-emulate 
 * Guest instructions executed directly by hardware
     * Non-privileged operations: hardware speed
