@@ -1021,7 +1021,7 @@ This approach ensures that the MapReduce framework can handle slow tasks effecti
 
 # Disco and ESX
 
-![alt text](image.png)
+![alt text](images/wisconsin-prelim/disco-and-esx.png)
 
 **NOTE: unsure**
 

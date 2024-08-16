@@ -174,3 +174,13 @@ For example, UNIX provides isolation:
 * Full Virtualization with Binary Translation is the Most Established Technology Today
 * Hardware Assist is the Future of Virtualization, but the Real Gains Have Yet to Arrive
 * Xen’s CPU Paravirtualization Delivers Performance Benefits with Maintenance Costs
+
+
+## Type I Virtualization vs. Type II Virtualization
+
+* Type 1 hypervisor
+  * A type 1 hypervisor, or a bare metal hypervisor, interacts directly with the underlying machine hardware. A bare metal hypervisor is installed directly on the host machine’s physical hardware, not through an operating system. In some cases, a type 1 hypervisor is embedded in the machine’s firmware.
+  * The type 1 hypervisor negotiates directly with server hardware to allocate dedicated resources to VMs. It can also flexibly share resources, depending on various VM requests.
+* Type 2 hypervisor
+  * A type 2 hypervisor, or hosted hypervisor, interacts with the underlying host machine hardware through the host machine’s operating system. You install it on the machine, where it runs as an application.
+  * The type 2 hypervisor negotiates with the operating system to obtain underlying system resources. However, the host operating system prioritizes its own functions and applications over the virtual workloads.

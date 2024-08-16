@@ -1,0 +1,48 @@
+# Disco: Running Commodity Operating Systems on Scalable Multiprocessors
+
+Time: August 16th, 2024
+
+Disco uses virtual machines to run multiple commodity operating systems on large-scale shared-memory multiprocessors. Disco VMM hides NUMA-ness from non-NUMA aware OSes, requires low effort to implement, and introduces moderate overhead due to virtualization.
+
+* Our experience shows that the overheads of the monitor are small and that the approach prpovides scalability as well as the ability to deal with the nonuniform memory access time of these systems. 
+* Virtual machines transparently share major data structures such as prpogram code and file system buffer cache. 
+  * Maintian a global buffer cache which is transparently shared by all the virtual machines, even when the virutal machiens communicate through standard distributed protocols. 
+* Additional layer acts as a virtual machine monitor in that multiple copies of "commodity" OS can be run on a single scalable computer. 
+* Disco allows OS running on different virtual machiens to be coupled using standard distributed systems protocols such as TCP/IP and NFS. 
+* This layer of software, called a virtual machine monitor, virtualizes all the resources of the machine, exporting a more conventional hardware interface to the operating system.
+
+
+## Design of Disco
+
+* Emulate all instructions, the memory management unit, the trap architecture of the processor running unmodified applications, and the existing OS to run on virtual machines.
+*  Disco provides an abstraction of main memory residing in a contiguous physical address space starting at address zero.
+*  Disco intercepts all communication to and from I/O devices to translate or emulate the operations. 
+*  Disco acts as a gateway that uses the network interfaces of the machine to send and receive packets.
+*  
+
+## NUMA-aware and Cache-aware
+* A small code segment of DISCO is replicated into all the memories of the FLASH machine so that all instruction cache misses can be satisfied from local node. 
+* Machine wide data structures are partitioned so that parts that are accessed only or mostly by a single processor are in a memory local to that processor. 
+* Virtual machines are placed in supervisor mode. Supervisor mode allows the operating system to use a protected portion of the address space (the supervi- sor segment), but does not give access to privileged instructions or physical memory. 
+* Disco has a simple scheduler that allows the virtual processor to be time-shared across the physical processors of the machine. The scheduler cooperates with the memory managmeent to support affinity scheduling that increases data locality. 
+* When an operating system attempts to insert a virtual-to-physical mapping into the TLB, Disco emulates this operation by translating the physical address into the corresponding machine address and inserting this corrected TLB entry into the TLB.
+
+## Disco/VMware/IBM: Complete virtualization – runs unmodified OSs and applications
+
+* Use software emulation to shadow system data structures
+* Dynamic binary rewriting of OS code that modifies system structures, or
+* Hardware virtualization support
+
+## Virtual CPUs. 
+
+* Direct execution on real CPU:
+  *  Set real CPU registers to those of virtual CPU/Jump to current PC of VCPU
+  *  Privileged instructions must be emulated, since we won’t run the OS in privileged mode
+  *  Disco runs privileged, OS runs supervisor mode, apps in user mode
+* An OS privileged instruction causes a trap which causes Disco to emulated the intended instruction
+* Maintains data structure for each virtual CPU for trap emulation
+   *  Trap examples: page faults, system calls, bus errors
+*  Scheduler multiplexes virtual CPU on real processor
+
+* Extra level of indirection: physical-to-machine address mappings. 
+* Transparent page sharing. 

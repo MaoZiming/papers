@@ -107,6 +107,8 @@ Use standard copy on write mechanism.
 * When the master receives snapshot requests, it revokes outstanding lease on the chunks that is about to snapshot. Any subsequent write to that chunk requires an interaction with the master.
 * Master logs the snapshot operation to disk. 
 * Upon a new write, copy the replica on the same chunkserver, and then update the metadata with the new chunk handle. 
+* The first time a client wants to write to a chunk C after the snapshot operation, it sends a request to the master to find the current lease holder. It defers replying to the client request and instead picks a new chunk handle C'. It then asks each chunkserver that has a current replica of C to create a new chunk called C'. Data is copied locally and not over the network. 
+  * The master then grants one of the replicas a lease on the new chunk C' and replies to the client, which can write the chunk normally. 
 
 ## Stale replica
 * Detect stale replica with version number.
@@ -133,10 +135,64 @@ Use standard copy on write mechanism.
 	- Minimize latency:
 		+ pipelining the data transfer over TPC connections
 		+ once a chunkserver receives some data, it starts forwarding right away
-  
+
+
+## Error detection. 
+* To detect padding, applications can put a predictable magic number
+at the start of a valid record, or include a checksum that will likely
+only be valid if the record is valid. The application can detect
+duplicates by including unique IDs in records. Then, if it reads a
+record that has the same ID as an earlier record, it knows that they
+are duplicates of each other. GFS provides a library for applications
+that handles these cases. This aspect of the GFS design effectively
+moves complexity from GFS to applications, which is perhaps not ideal.
 
 ## Questions:
 * Data consistency is unclear. 
 * Concurrent *successful* mutations leave the region undefined but consistent: all clients see the same data, but it may not reflect what any one mutation has written.
   * WHY IS THAT successful?
 * A failed mutation makes the region inconsistent (hence also undefined): different clients may see different data at different times.
+
+## Internal fragmentation
+
+Q: What is internal fragmentation? Why does lazy allocation help?
+
+A: Internal fragmentation is the space wasted when a system uses an
+allocation unit larger than needed for the requested allocation. If
+GFS allocated disk space in 64MB units, then a one-byte file would
+waste almost 64MB of disk. GFS avoids this problem by allocating disk
+space lazily. Every chunk is a Linux file, and Linux file systems use
+block sizes of a few tens of kilobytes; so when an application creates
+a one-byte GFS file, the file's chunk consumes only one Linux disk
+block, not 64 MB.
+
+
+## Benefit of less consistency
+
+Q: What benefit does GFS obtain from the weakness of its consistency?
+
+A: It's easier to think about the additional work GFS would have to do
+to achieve stronger consistency.
+
+The primary should not let secondaries apply a write unless all the
+secondaries will be able to do it. This likely requires two rounds of
+communication -- one to ask all secondaries if they are alive and are
+able to promise to do the write if asked, and (if all answer yes) a
+second round to tell the secondaries to commit the write.
+
+If the primary dies, some secondaries may have missed the last few
+update messages the primary sent. This will cause the remaining secondaries
+to have slightly differing copies of the data. Before resuming
+operation, a new primary should ensure that all the secondaries have
+identical copies.
+
+Since clients re-send requests if they suspect something has gone
+wrong, primaries would need to filter out operations that have already
+been executed.
+
+Clients cache chunk locations, and may send reads to a chunkserver
+that holds a stale version of a chunk. GFS would need a way to
+guarantee that this cannot succeed.
+
+Optimized Write Operations: GFS allows multiple clients to append data to the same file concurrently without requiring strict consistency checks like locking mechanisms. This reduces overhead and significantly improves write throughput, which is essential for workloads like log writing and data streaming.
+

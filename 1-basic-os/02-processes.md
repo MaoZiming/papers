@@ -239,3 +239,88 @@
 * `vCPU` is a hyperthread.
 * Intuition: one instruction doesn't use all components of the core. 
 * Take advantage of that and to put a second thread. 
+
+
+# Non-Uniform Memory Access (NUMA)
+
+## Overview
+NUMA is a memory design used in multiprocessor systems where the memory access time depends on the memory location relative to a processor. In NUMA, the system is divided into multiple nodes, each containing a processor or processors and memory. The memory is physically distributed, meaning each processor has its own local memory, but all processors can access all memory in the system.
+
+### Key Features:
+- **Local Memory:** Each processor can access its local memory faster than non-local memory (memory associated with other processors).
+- **Distributed Memory:** Memory is spread across different nodes, but all memory is accessible by all processors.
+
+## Benefits of NUMA
+- **Scalability:** NUMA allows for better scaling in multiprocessor systems, as each processor has direct access to its memory, reducing bottlenecks.
+- **Performance:** By optimizing memory access patterns, NUMA can offer better performance for workloads that are designed to take advantage of memory locality.
+
+## Problems Associated with NUMA
+
+### 1. **Memory Access Latency**
+   - **Problem:** The time it takes to access memory can vary significantly depending on whether the memory is local to the processor or on a remote node.
+   - **Impact:** If a process frequently accesses remote memory, it may experience higher latencies, leading to degraded performance.
+
+### 2. **Load Balancing**
+   - **Problem:** Uneven distribution of workloads can result in some nodes being overloaded while others are underutilized.
+   - **Impact:** This imbalance can cause inefficient use of resources and reduce overall system performance.
+
+### 3. **Memory Bandwidth Contention**
+   - **Problem:** When multiple processors try to access the same memory node simultaneously, it can lead to contention and reduced memory bandwidth.
+   - **Impact:** Contention can slow down memory access and negatively affect the performance of memory-intensive applications.
+
+### 4. **Complex Programming**
+   - **Problem:** Developers must explicitly manage memory placement and data locality to optimize performance on NUMA architectures.
+   - **Impact:** This added complexity increases the development effort and the potential for errors, especially in large-scale systems.
+
+### 5. **Operating System and Application Support**
+   - **Problem:** Not all operating systems and applications are NUMA-aware, meaning they may not be optimized to take advantage of NUMA's benefits.
+   - **Impact:** Non-NUMA-aware software may suffer from poor performance due to inefficient memory access patterns.
+
+# Non-NUMA Systems (Uniform Memory Access - UMA)
+
+## Overview of UMA (Uniform Memory Access)
+In a UMA system, all processors share the same physical memory, and the memory access time is uniform regardless of which processor accesses the memory or where the memory is located. This means that any processor can access any memory location with the same latency, leading to a simpler memory architecture.
+
+### Characteristics of UMA:
+- **Uniform Access Time:** All processors experience the same memory access time, regardless of the memory location.
+- **Shared Memory:** A single memory space is shared by all processors, with no distinction between local and remote memory.
+- **Simpler Programming Model:** Since memory access times are consistent, developers do not need to manage memory placement or worry about memory locality.
+
+### Examples of UMA Systems:
+- **SMP (Symmetric Multiprocessing) Systems:** These systems typically employ a UMA architecture where multiple processors share a single, centralized memory.
+- **Single-Processor Systems:** These inherently use UMA, as there is only one processor accessing the memory.
+- **Older Multiprocessor Systems:** Many older multiprocessor systems are based on UMA, where the memory is not distributed across nodes.
+
+### Benefits of UMA:
+- **Simpler Design:** UMA systems are easier to design and program because memory access times are uniform.
+- **Ease of Development:** Developers do not need to optimize for memory locality, simplifying application development.
+
+### Drawbacks of UMA:
+- **Scalability Issues:** As the number of processors increases, the memory bus can become a bottleneck, leading to reduced performance.
+- **Limited Performance for Large Systems:** In large-scale systems, UMA can struggle with performance issues due to contention on the shared memory bus.
+
+# Symmetric Multiprocessing (SMP)
+
+## Overview
+Symmetric Multiprocessing (SMP) is a parallel processing architecture where two or more identical processors are connected to a single, shared main memory and operate under a single operating system instance. In SMP systems, all processors have equal access to memory, I/O devices, and other system resources, allowing them to perform tasks independently while sharing the workload.
+
+### Key Features of SMP:
+- **Multiple Identical Processors:** All processors in an SMP system are identical and can execute any task or process.
+- **Shared Memory:** All processors share the same physical memory space, and any processor can access any part of the memory with uniform latency.
+- **Single Operating System Instance:** A single operating system manages all processors, memory, and I/O resources, providing a unified view of the system.
+- **Load Balancing:** The system can dynamically balance the workload across all processors, helping to optimize performance and resource utilization.
+
+## Benefits of SMP:
+- **Improved Performance:** By distributing tasks across multiple processors, SMP systems can execute more instructions in parallel, leading to better performance, especially for multi-threaded applications.
+- **Simplified Programming:** Developers can write applications without needing to manage memory placement or processor affinity, as the operating system handles resource allocation and scheduling.
+- **Scalability:** SMP systems can scale up to a certain extent by adding more processors, although this is typically limited by the memory and I/O bandwidth.
+
+## Drawbacks of SMP:
+- **Scalability Limitations:** As the number of processors increases, contention for shared memory and other resources can become a bottleneck, limiting the system's ability to scale effectively.
+- **Memory Bandwidth Contention:** All processors share the same memory bus, which can lead to contention and reduced performance as more processors are added.
+- **Complex Cache Coherency:** Maintaining cache coherency (i.e., ensuring all processors have a consistent view of memory) becomes increasingly complex as the number of processors increases, potentially impacting performance.
+
+## Common Use Cases:
+- **Servers:** SMP is commonly used in server environments where workloads can benefit from parallel processing, such as web servers, database servers, and application servers.
+- **Workstations:** High-performance workstations, especially those used for tasks like video editing, 3D rendering, and scientific simulations, often use SMP to leverage multiple processors.
+- **Mainframes:** Large-scale mainframe systems may use SMP to handle extensive and diverse workloads efficiently.

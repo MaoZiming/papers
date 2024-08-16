@@ -69,3 +69,91 @@
     * Then, care about data integrity?
         * Take crypto hash of the data, encrypt only that hash, send both the encrypted hash and unencrypted data to partner
         * If opponent fiddles with the data in transit, decrypt the hash and repeating the hashing operation on data, find mismatch
+
+### Digital Signatures
+
+**Digital signatures** are a cryptographic technique that ensures the authenticity and integrity of a message or file. Here's how they work:
+
+1. **Key Pair Generation**: 
+   - A user generates a pair of cryptographic keys: a private key and a public key.
+   - The private key is kept secret, while the public key is shared with others.
+
+2. **Signing a File**:
+   - When a file is created or modified, the owner uses their private key to generate a digital signature for the file.
+   - This is done by creating a hash of the file (using a cryptographic hash function like SHA-256) and then encrypting the hash with the private key. The result is the digital signature.
+   - The digital signature is unique to both the file and the private key.
+
+3. **Verifying a File**:
+   - When someone else wants to verify the file, they take the file and the digital signature.
+   - They use the same cryptographic hash function to generate a hash of the file.
+   - Then, they decrypt the digital signature using the public key to retrieve the original hash that was signed.
+   - If the newly computed hash matches the hash retrieved from the signature, the file is authentic and has not been tampered with. If they do not match, the file has either been altered or was not signed by the holder of the private key.
+
+**Key Benefits**:
+- **Integrity**: Ensures the file has not been modified.
+- **Authenticity**: Confirms that the file was signed by the legitimate owner of the private key.
+
+### Merkle Trees
+
+**Merkle Trees** are a data structure used to efficiently and securely verify the integrity of large datasets or collections of files. Here's how they work:
+
+1. **Structure**:
+   - A Merkle tree is a binary tree where each leaf node represents the hash of a data block (e.g., a file).
+   - Each non-leaf (intermediate) node is the hash of the concatenation of its two child nodes' hashes.
+   - The root node, known as the **Merkle root**, is a hash representing the entire dataset.
+
+2. **Creating a Merkle Tree**:
+   - Start by hashing each file or data block to create the leaf nodes.
+   - Pair up the leaf nodes and hash each pair to create the parent nodes.
+   - Repeat this process up the tree until a single hash (the Merkle root) is obtained at the top.
+
+3. **Verifying Data**:
+   - To verify a specific file, you only need the file's hash and the hashes of its sibling nodes up to the root.
+   - You can recompute the necessary parent hashes and compare the resulting hash with the stored Merkle root.
+   - If they match, the file is part of the original dataset and has not been tampered with.
+
+**Key Benefits**:
+- **Efficiency**: You can verify the integrity of a specific file without needing to rehash the entire dataset, just the path from the file to the root.
+- **Scalability**: Works well with large datasets since the size of the proof (the number of hashes needed for verification) is logarithmic in relation to the number of files.
+
+## SSL/TLS Overview
+
+### What is SSL/TLS?
+
+**SSL (Secure Sockets Layer)** and **TLS (Transport Layer Security)** are cryptographic protocols designed to provide secure communication over a computer network. SSL is the predecessor of TLS; TLS is an improved and more secure version of SSL.
+
+### How Does SSL/TLS Work?
+
+1. **Handshake Process**:
+    - When a client (e.g., a web browser) connects to a server (e.g., a website), the SSL/TLS handshake begins.
+    - The client and server agree on the encryption methods and protocols to use.
+    - The server sends its SSL/TLS certificate, which includes its public key.
+    - The client verifies the certificate's authenticity against a trusted Certificate Authority (CA).
+    - If verified, the client generates a session key, encrypts it with the server's public key, and sends it to the server.
+    - The server decrypts the session key using its private key, establishing a secure encrypted session.
+
+2. **Data Encryption**:
+    - Once the handshake is complete, the session key is used to encrypt all data exchanged between the client and the server.
+    - This ensures that any data transmitted is secure and cannot be intercepted or tampered with.
+
+### Key Concepts
+
+- **Certificates**: Digital documents issued by a Certificate Authority (CA) that authenticate the identity of the server.
+- **Public/Private Key Pair**: Used during the handshake to encrypt and decrypt the session key.
+- **Symmetric Encryption**: Used after the handshake to encrypt the communication using the session key.
+
+### Importance of SSL/TLS
+
+- **Confidentiality**: Data is encrypted, ensuring that only the intended recipient can read it.
+- **Integrity**: Ensures that the data has not been altered during transmission.
+- **Authentication**: Verifies the identity of the parties involved in the communication.
+
+### Common Uses of SSL/TLS
+
+- **HTTPS**: The most common use of SSL/TLS is in securing HTTP traffic, resulting in HTTPS (HTTP Secure).
+- **Email**: Securing email communication using protocols like SMTPS, IMAPS, and POP3S.
+- **VPNs**: Virtual Private Networks (VPNs) use SSL/TLS to secure the connection between the client and the VPN server.
+
+### Conclusion
+
+SSL/TLS is essential for ensuring the **security and privacy of online communications**. With the continuous evolution of security threats, TLS has become the standard for secure communication, replacing the older SSL protocol.

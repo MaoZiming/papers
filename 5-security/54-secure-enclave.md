@@ -8,6 +8,8 @@ Reference:
 ## Why secure enclave? 
 _Purpose_: Create a secure environment for data processing where you don't have to **trust service providers**.
 
+**TEE**: Trusted Execution Environment (TEE). TEE is a segregated area of memory and CPU that is protected from the rest of the CPU using encryption, any data in the TEE can't be read or tampered with by any code outside that environment. 
+
 ## Secure Enclave 
 _definition_: a specialized area in computing that's **isolated** from everything else, including the operating system and users with high-level access.
 
@@ -46,7 +48,7 @@ To use SGX, BIOS needs to enable it.
   * SGX protects the confidentiality and integrity of the enclave code and data;
   * enclave entry points **are pre-defined** during **compilation**;
   * multi-threading is supported (but not trivial to implement properly);
-  * an enclave can access its application's memory, but not the other way around.
+  * An enclave can access its application's memory, but not the other way around.
 * ![alt text](images/54-secure-enclave/PRM-EPC-EPCM.png)
 * Processor Reserved Memory (PRM)
   * **A subset of DRAM that cannot be directly accessed by other software**
@@ -95,8 +97,8 @@ Example steps
 * When the application launches, the enclave is created, and that enclave is placed into the protected portion.
 * When an enclave function is called, only the code within the enclave can see its data. External accesses are always denied. When it returns, enclave data stays in the protected memory.
 * At runtime, Intel SGX instructions build and execute the enclave into a special encrypted memory region with restricted entry/exit location defined by the developer. This helps prevent data leakage. Enclave code and data inside the CPU perimeter runs in the clear, and enclave data written to memory is encrypted and its integrity checked, helping provide some assurance that no unauthorized access or memory snooping of the enclave occurs.
-### Overhead:
 
+### Overhead:
 * Security checks when allocating chunks of memory, including being measured using a 256-bit SHA-2 secure hash function.
 * Secure enclave is limited to CPUs, with limited support to GPUs and other PCI devices. 
 * **Secure enclave implementations, such as Intel SGX, require rewriting applications by partitioning the code into secure and insecure parts. Any code that lives outside of TCB is only able to interact with enclave code via a narrow interface**. 

@@ -316,6 +316,11 @@ typedef struct {
 * **Pre-allocation policy**: look for contiguous blocks
   * For example, some Linux file systems, such as ext2 and ext3, will look for a sequence of blocks (say 8) that are free when a new file is created and needs data blocks; by finding such a sequence of free blocks, and then allocating them to the newly-created file, the file system guarantees that a portion of the file will be contiguous on the disk, thus improving performance.
 
+## ext2, ext3, ext4
+* Ext3: journaling, write-back, and order are available. 
+* Ext4: has the largest individual file size and volume file system size. 
+  * Includes advanced features such as extend, directory indexing, and defragmentation. 
+
 ## Access paths: reading and writing 
 
 ### Reading

@@ -48,3 +48,9 @@ DRF can be applied to general resource allocation in multi-tenant setup to ensur
 * Furthermore, any policy that satisfies the sharing incentive property also provides performance isolation, as it guarantees a minimum allocation to each user (i.e., a user cannot do worse than owning n1 of the cluster) irrespective of the demands of the other users.
 
 * Performance isolation remains on theory. 
+
+
+### Max-min Fairness
+
+* The idea is to maximize the allocation to the user with the smallest share, under the constraint that no user's allocation can be increased without decreasing the allocation of another user who already has an equal or smaller share.
+* 

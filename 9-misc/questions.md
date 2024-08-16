@@ -1,6 +1,6 @@
 # Questions
 
-## Question * Storing Objects
+## Question 1 Storing Objects
 * ![alt text](images/questions/question-1-storing-objects.png)
 
 ### ext4 vs. raw block storage device
@@ -10,14 +10,14 @@
     * compatibility: with existing tool and software
     * easier debugging and maintenance
 * cons
-    * small write problem: one logical write leads to multiple physical writes
+    * **small write problem**: **one logical write** leads to multiple physical writes
     * overhead: with journaling
     * limited customization and complexity
 
 * raw block storage device:
 
 * pros
-    * complete control to optimize data layouts, indexing structures according to your need
+    * **complete control to optimize data layouts**, indexing structures according to your need
     * efficiency: design your own storage formats based on workloads
     * direct access: simpler abstraction
 * cons
@@ -77,7 +77,7 @@
   * Reduce write amplification. 
 * Not needed
     * Cylinder group management: SSD doesn’t have cylinder group
-    * Block contiguity: SSD can access any block in constant time (very good random read performance), so contiguous block allocation not too critical for performance
+    * Block contiguity (when allocating blocks addressed by direct and indirect pointers): SSD can access any block in constant time (very good random read performance), so contiguous block allocation not too critical for performance
 
 ### C. mapping table 
 
@@ -156,6 +156,7 @@
 ### How standard memory-management hardware can be used to implement copy-on-write cheaply
 
 * Shared Page Tables: When a process is duplicated or when data needs to be shared, the same physical memory page can be mapped to multiple page table entries. This allows multiple processes to point to the same physical memory location.
+  * Each process has its own page table. 
 * Reference count.
 * PTE initially marks the page as Read only for both parent and child.
 * Write triggers a page fault.
@@ -170,12 +171,12 @@
 
 ### Describe how cow can be used to improve system performance for (i) message passing (ii) forking a new process, and (iii) file I/O operations
 
-* Message passing: Scenario: In systems that use shared memory for message passing, processes often need to share large amounts of data. Copy-on-write can optimize this by minimizing unnecessary data duplication.
+* Message passing: Scenario: In systems that use shared memory for message passing, processes often need to share large amounts of data. Copy-on-write can optimize this by minimizing unnecessary data **duplication**.
 * Forking a new process: Scenario: When a process creates a new process (e.g., using fork() in UNIX-like systems), the new process inherits the address space of the parent process. Without COW, this would require copying the entire memory space of the parent, which is inefficient.
 * File I/O opereation: Scenario: File I/O operations often involve reading and writing data to and from disk. Copy-on-write can be used to optimize file systems and reduce the cost of modifying files.
   * Multiple processes can read a memory-mapped file without needing to create multiple physical copies of the file's content. Modifications would trigger COW, saving memory.
   * Cache Sharing: Read-only data from files can be shared among multiple processes, improving cache utilization and reducing disk reads.
-  * Efficient File Modifications: When a file is modified, COW allows the system to only copy the pages of the file that are being changed, rather than duplicating the entire file. This is especially useful for large files where only a small portion is updated.
+  * Efficient File Modifications: **When a file is modified, COW allows the system to only copy the pages of the file that are being changed, rather than duplicating the entire file. This is especially useful for large files where only a small portion is updated.**
   * Same goes for snapshot. No need to copy entire file content. 
   * Reduced Write Amplification: In systems that use COW, write amplification is minimized because only modified pages are written to new locations. This reduces the overall amount of writing to storage and can extend the lifespan of SSDs by reducing the number of write operations.
 

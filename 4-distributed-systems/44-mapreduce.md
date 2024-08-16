@@ -64,6 +64,13 @@ Map Reduce is a simple data-parallel programming model designed for **scalabilit
 * Each in-progress task writes its output to private temporary files. A reduce task produces one such file, and a map task produces R such files (one per reduce task)
 * We guarantee that within a given partition, the intermediate key/value pairs are processed in increasing key order. Each output partition is sorted by keys. 
 
+## Master:
+
+* Master keeps several data structures. For each map task and reduce task, it stores the state (*idle*, *in-progress*, or *completed*), and the identity of the worker machine
+* The master is the conduit through which the location of the intermediate file regions is propagated from map tasks to reduce tasks.
+* For each completed map tasks, the master stores the location and sizes of R intermediate file regions produced by the map task. Updates to this location and size information are received as map tasks are completed. 
+* The information is pushed incrementally to workers that have in-progress reduce tasks. 
+
 ## Combiner functions
 * Example: a lot of $<the, 1>$. 
 * The **Combiner** function is executed on each machine that performs a map task. 
