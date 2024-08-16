@@ -1,6 +1,7 @@
 # Resilient Distributed Datasets: A Fault-Tolerant Abstraction for In-Memory Cluster Computing
 
 Link: https://www.usenix.org/system/files/conference/nsdi12/nsdi12-final138.pdf
+
 Another Link: https://www.usenix.org/legacy/event/hotcloud10/tech/full_papers/Zaharia.pdf
 
 Read: April 14th, 2024
@@ -10,7 +11,7 @@ Read: April 14th, 2024
 * Resilient Distributed Datasets (RDDs), a distributed memory abstraction that lets programmers perform in-memory computations on large clusters in a fault-tolerant manner.
 * RDDs are motivated by two types of applications that current computing frameworks handle inefficiently: iterative algorithms and interactive data mining tools.
 * RDDs provide an interface based on coarse-grained transformations (e.g., map, filter and join) that apply the same operation to many data items. This allows them to efficiently **provide fault tolerance by logging the transformations used to build a dataset (its lineage)** rather than the actual data.
-* Partition. Dataset is partitioned (default size of 128MB.) for parallelism. The number of tasks equals the number of partitions. 
+* Partition. **Dataset is partitioned (default size of 128MB.) for parallelism. The number of tasks equals the number of partitions.** 
   * **Narrow transformations**: These are transformations in which data in each partition does not require access to data in other partitions in order to be fully executed. For example, functions like map, filter, and union are narrow transformations.
   * **Wide transformations**: These are transformations in which data in each partition is not independent, requiring data from other partitions in order to be fully executed. For example, functions like reduceByKey, groupByKey, and join are wide transformations.
     * Wide transformation requies a shuffle. This is a rather expensive operation. 

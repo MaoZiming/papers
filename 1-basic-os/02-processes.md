@@ -5,7 +5,7 @@
 * Setting managed by the CPU to restrict types of operations that can be executed
 * **X86**: four **privilege levels**
     * **Ring 0:** highest privilege level, generally used for most trusted functions of OS kernel
-    * **Ring 1, Ring 2:** seldom use
+    * **Ring 1, Ring 2:** seldom use. Ring 1 is used for paravirtualization. 
     * **Ring 3:** lowest privilege levels, typically used for user-mode
 * Connections
     * Kernel mode: typically high hardware privilege level (e.g., Ring 0)
@@ -102,9 +102,8 @@
   * Processor (Von Neumann model of computing):
   * Fetch an instruction from memory
   * Decode the instruction (Figure out what instruction it is)
-    * During decoding, the processor needs to: determine what instruction is represented by the opcode; prefixes, and other values attached to the instruction and pass the relevant information to the relevant circuitry (in most modern processor designs) break the instruction down into its corresponding micro-operations With modern processors, this can be a complex operation that requires multiple stages in the pipeline. To speed this process up, a dedicated cache may be used to store micro-operations for frequently-executed instructions.
+    * During decoding, the processor needs to: determine what instruction is represented by the opcode; prefixes, and other values attached to the instruction and pass the relevant information to the relevant circuitry (in most modern processor designs) break the instruction down into its corresponding micro-operations With modern processors.
   * Execute the instruction
-  * Contents of memory is in its address space.
 * Contents of CPU registers (including the program counter and stack pointer).
   * program counter (PC), or instruction pointer (IP): which instruction will execute next
   * stack pointer & frame pointer: manage the stack for function parameters, local variables, and return addresses

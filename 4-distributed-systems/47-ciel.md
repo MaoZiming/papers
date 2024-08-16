@@ -4,7 +4,7 @@ Link: https://www.usenix.org/legacy/event/nsdi11/tech/full_papers/Murray.pdf
 
 Helpful slides: https://www.cl.cam.ac.uk/~ey204/teaching/ACS/R244_2018_2019/presentation/S2/CIEL_Tejas.pdf
 
-Read: June 30th, 202* 
+Read: June 30th, 2024 
 
 * Ciel introduces **dynamic** task graphs which are extended at runtime, as opposed to static graphs in earlier models (e.x. MapReduce, Dryad). 
   * **Data-dependent or recursive applications.**
@@ -40,10 +40,10 @@ Read: June 30th, 202*
   * ![alt text](images/47-ciel/legal-child-task.png)
 
 * **SkyWriting: a scripting language** that allows the straightforward expression of iterative and recursive task-parallel algorithms using imperative and functional language syntax.
-  * However CIEL extends previous models by **dynamically building the DAG** as tasks execute. As we will show, this conceptually simple extension allowing tasks to create further tasks—enables CIEL to support data-dependent iterative or recursive algorithms
-* In MapReduce, the data flow is limited to a **bipartite** graph parameterised by the number of map and reduce tasks; Dryad allows data flow to follow a more general directed acyclic graph (DAG), but it must be fully specified before starting the job. 
+  * However CIEL extends previous models by **dynamically building the DAG** as tasks execute. As we will show, this conceptually simple extension allowing tasks to create **further tasks—enables CIEL** to support data-dependent iterative or recursive algorithms
+* In MapReduce, the data flow is limited to a **bipartite** graph parameterised by the **number of map and reduce tasks**; Dryad allows data flow to follow a more general directed acyclic graph (DAG), but it must be fully specified before starting the job. 
 * In general, to support iterative or recursive algorithms within a single job, we need **data-dependent control flow** — i.e. the ability to create more work dynamically, based on the results of previous computations. 
-* At the same time, we wish to retain the existing benefits of task-level parallelism: transparent fault tolerance, locality-based scheduling and transparent scaling.
+* At the same time, we wish to retain the existing benefits of task-level parallelism: transparent fault tolerance, **locality-based scheduling** and transparent scaling.
 * Having **data-dependent control flow** means that each computation doesn't need to be pre-determined. 
 * **Primitives**:
   * **Objects**: Goal of a CIEL job is to produce one or more output objects. An object is an unstructured, finite-length sequence of bytes.
@@ -62,7 +62,7 @@ Read: June 30th, 202*
       * keeps record of **obj** and task tables
       * Dispatch tasks to workers
       * Persistent logging of tables. 
-      * Master failures are detected using heart beats. 
+      * Master failures are detected using heartbeats. 
       * On recovery, a master node can rebuild its object table using workers' object stores. 
     * **Object Table**: Maintains references to objects stored on workers.
     * **Worker Table**: Holds worker nodes and used to track their health.
@@ -77,9 +77,7 @@ Read: June 30th, 202*
 
 ## SkyWriting
 * However, we do not expect programmers to construct dynamic task graphs manually, and instead we provide the Skywriting script language for generating these graphs programmaticall
-
   * Skywriting is a language for expressing task-level parallelism that runs on top of CIEL. Skywriting is Turing-complete, and can express arbitrary data-dependent control flow using constructs such as while loops and recursive functions. 
-
   * Skywriting functions are pure: functions cannot have side-effects, and all arguments are passed by value. 
   *  **The dereference (unary-) operator can be applied * to any reference**; it loads the referenced data into the **Skywriting** execution context, and evaluates to the resulting data structure.
   *  A Skywriting task has a single output, which is the value of the expression in the return statement. On termination, the runtime stores the output in the local object store, publishes a **concrete reference** to the object, and sends a list of spawned tasks to the master, in order of creation.
@@ -110,7 +108,7 @@ Read: June 30th, 202*
 
 ## Eager Evaluation
 
-* Since the task dependencies form a DAG, at least one task must have only concrete dependencies. Start by executing the tasks with only concrete dependencies; subsequently execute tasks when all of their dependencies become concrete.
+* **Since the task dependencies form a DAG, at least one task must have only concrete dependencies**. **Start by executing the tasks with only concrete dependencies; subsequently execute tasks when all of their dependencies become concrete.**
 
 ## Lazy Evaluation
 

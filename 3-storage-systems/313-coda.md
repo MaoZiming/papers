@@ -4,7 +4,7 @@ Link: [Coda File System](https://www.cs.cmu.edu/afs/cs/project/coda-www/Research
 
 Read June 25th, 2024.
 
-* This paper presents Coda File System, based on AFS. It was designed for mobile clients that disconnect as their machines move. 
+* This paper presents Coda File System, based on AFS. It was designed for **mobile clients** that disconnect as their machines move. 
 
 * To make disconnected operation transparent, each client keep a cached copy of remote files once connecting to the server. When disconnected, clients can work on the local cached copy without accessing to server. Once connected back to the server, clients synchronize updated contents with the server and download new files to its cache. 
 
@@ -143,7 +143,7 @@ Availability is the major concern
 
 ## Replay Log
 
-* During emulation, Venus records sufficient information to replay update activity when it reinteWates. It maintains this information in a per-volume log of mutating operations called a replay log.
+* During emulation, Venus records sufficient information to replay update activity when it reintegrates. It maintains this information in a per-volume log of mutating operations called a replay log.
 * Venus uses a number of optimizations to reduce the length of the replay log, resulting in a log size that is typically a few percent of cache size. 
 * Since Coda uses whole-file caching, the close after an open of a file for modification installs a completely new copy of the file. Rather than logging the open, close, and intervening write operations individually, Venus logs a single store record during the handling of a close.
 * Coda discards a previous store record for a file when a new one is appended to the log.

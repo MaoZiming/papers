@@ -43,8 +43,8 @@ Dryad is designed to allow developers to build distributed data-parallel program
 ## Summary:
 
 * A job in Dryad is a DAG where each vertex is an executable program and **edges represent data channels** (e.g. files, TCP pipes, and shared memory FIFOs.). 
-* The job manager contains the application-specific code to construct the job’s communication graph along with library code to schedule the work across the available resources. 
-* To discover available resources, each computer in the cluster has a proxy daemon running, and they are registered into a central name server, the job manager queries the name server to get available computers.
+* The **job manager contains the application-specific code** to construct the job’s communication graph along with library code to schedule the work across the available resources. 
+* To discover available resources, each computer in the cluster has a proxy daemon running, and they are registered into a central name server, **the job manager queries the name server to get available computers**.
 
 * Authors designed a **simple graph description language** that empowers the developer with explicit graph construction and refinement to fully take advantage of the rich features of the Dryad execution engine. 
   * Multi-graph: multiple vertices between the vertices. 

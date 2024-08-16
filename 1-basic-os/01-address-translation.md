@@ -4,14 +4,13 @@
   * Contains
     * Code: the instructions
     * Stack
-      * Grows due to function calls, etc.
-      * The program, while it is running, uses a stack to keep track of where it is in the function call chain as well as to allocate local variables and pass parameters and return values to and from routines.
+      * Function call chain
+      * Local variables and input and output. 
     * Heap: heap is used for dynamically-allocated, user-managed memory
+    * Data: Global Variables, static variables. 
   * Why placing the stack and heap like this?
     * Each wishes to grow
       * ![stack-heap-grow](images/01-address-translation/stack-heap-grow.png)
-      * Stack: Local Variables, Function Call Information
-      * Data: Global Variables, Static Variables
   * The heap thus starts just after the code (at 1KB) and grows downward (say when a ser requests more memory via `malloc()`); the stack starts at 16KB and grows upward (say when a user makes a procedure call).
 * Goals:
   * The address space of a process contains all of the memory state of the running program.
@@ -25,25 +24,21 @@
 * Virtualizing memory: **hardware-based address translation**
 
   * Hardware transforms each memory access (e.g. instruction fetch, load, or store), changing the **virtual address** provided by the instruction to a **physical address** where the desired information is actually located
-* Dynamic (Hardware-based) Relocation, or Base and Bounds
+* Base and Bounds
   * PA = VA + base. VA + base has to compare with bounds. 
   * Need two hardware registers within each CPU
     * Hardware structures kept on the chip (one pair per CPU)
       * The part that helps with address translation: **memory management unit (MMU)**
     * **Base** register: Translation
     * **Bounds** (or limit) register
-      * Protection: “size” of the address space, and physical address of the end of address space
-    * **Base and bounds**
-      * Place the address space anywhere we like in physical memory
-      * While ensure each process can only access its own address space
+      * Protection: “size” of the address space.
   * Memory reference is translated by the processor in this manner: `physical address = virtual address + base`
-  * CPU is able to generate exceptions when user program tries to access memory illegally —> arrange for OS exception handler to run
-    * in this case, the CPU should stop executing the user program and arrange for the OS “out-of-bounds” exception handler to run.
-    * Similarly, if a user program tries to change the values of the (privileged) base and bounds registers, the CPU should raise an exception and run the “tried to execute a privileged operation while in user mode” handler. These instructions require kernel (privileged) mode.
+  * CPU generates exceptions when user program tries to access memory illegally —> arrange for OS exception handler to run
+    * Similarly, if a user program tries to change the values of the (privileged) base and bounds registers, the CPU should raise an exception and run the handler handler. 
   * When a new process is created, the OS will have to search a data structure (often called a **free list**) to find room for the new address space and then mark it used.
   * The OS must save and restore the base-and-bounds pair when it switches between processes.
-    * In per-process structure such as process control block (PCB).
-    * To move a process’s address space, the OS first deschedules the process; then, the OS copies the address space from the current location to the new location; finally, the OS updates the saved base register (in the process structure) to point to the new location.
+    * In per-process structure such as **process control block** (PCB).
+    * To move a process’s address space, the OS first deschedules the process; then, the OS copies the address space from the current location to the new location; finally, the OS updates the saved base register to point to the new location.
 * Some inefficiency of base-and-bounds
   * **Internal fragmentation** (space inside the allocated unit is not all used)
     * Unallocated space between stack and heap. 
@@ -62,9 +57,9 @@
     * Better support sparse address spaces
   * Segment map resides in processor
     * Segment table has protection. 
-    * E.g. Code segment should be read-only. Data and stack would be read-write (stores allowed)
+      * E.g. Code segment should be read-only. Data and stack would be read-write (stores allowed)
   * Cons
-    * External fragmentation: allocate variable-sized segments chop up free memory into odd-sized pieces
+    * External fragmentation.
     * Not flexible enough to support fully generalized, sparse address space
       * if our model of how the address space is being used doesn’t match how the segmentation has been designed, segmentation doesn’t work very well
 * Instead of having just one base and bounds pair in MMU, have a base-and-bound pair per **logical segment** of the address space

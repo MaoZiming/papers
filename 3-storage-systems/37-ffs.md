@@ -84,7 +84,6 @@ The old UNIX file system data structures look like this:
 * Basic idea: *keep related stuff together (keep unrelated stuff far apart!)*
 
 * Since data blocks for a file are typically accessed together, the policy routines try to place all data blocks for a file in the same cylinder group, preferably at rotationally optimal positions in the same cylinder. 
-
 * Rules
     * Put directory entries near directory inodes
     * Put inodes near directory entries 

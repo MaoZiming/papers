@@ -2,7 +2,7 @@
 
 Link: https://pdos.csail.mit.edu/6.828/2008/readings/engler95exokernel.pdf
 
-Read: June 29th, 202* 
+Read: June 29th, 2024
 
 Exokernels are an attempt to separate security from abstraction, making non-overrideable parts of the operating system do next to nothing but securely multiplex the hardware.
 
@@ -46,7 +46,7 @@ it exports hardware resources rather than emulating them, which allows an effici
 
 * An exokernel uses visible revocation for most resources. 
 
-* If a library operating system fails to comply with the revocation protocol, an exokernel simply breaks all existing secure bindings to the resource and informs the library operating system.
+* If a library operating system **fails to comply with the revocation protocol**, an exokernel simply breaks all existing secure bindings to the resource and informs the library operating system.
 
 * To record the forced loss of a resource, we use a repossession vector. When an exokernel takes a resource from a library operating system, this fact is registered in the vector and the library operating system receives a **“repossession”** exception so that it can update any mappings that use the resource. For resources with state, an exokernel can write the state into another memory or disk resource. The library operating system can pre-load the repossession vector with a list of resources, watching for notifications. 
 
@@ -78,7 +78,7 @@ Cons
 ### Others
 Today’s trends is that hardware is becoming faster, this might make exokernel design principals more valuable 
 * E.x DB system that needs high performance often completely forgo FS all together and manage raw block
-* DPDK in Linux: let application bypass kernel abstraction (i.e. storage, networking stack) and go directly to the raw hardware.
+* **DPDK** in Linux: let application bypass kernel abstraction (i.e. storage, networking stack) and go directly to the raw hardware.
   * E.g. Poll Mode Drivers (PMDs): These drivers are used to interact directly with network interface cards (NICs) to process packets without the overhead of kernel space processing.
 
 # Sample Questions 

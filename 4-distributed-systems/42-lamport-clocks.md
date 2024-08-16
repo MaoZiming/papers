@@ -27,7 +27,7 @@ Lamport introduces **logical clock**, which is the way to count number of events
 
 * $a \rightarrow b$  implies $C(a) < C(b)$
 * **Partial ordering** is defined
-    * $C_i(a) < C_i(b)$ if $a$ happens before $b$ in the same process $i$. This can be implemented using a simple counter in the given process.
+    * $C_i(a) < C_i(b)$ if $a$ happens before $b$ in the same process $i$. This can be implemented using a **simple counter** in the given process.
     * When process $i$ sends message at event $a$ and process $j$ ack the message at event $b$, then $C_i(a) < C_j(b)$
   
 ### Synchronization Algorithm 
@@ -76,7 +76,7 @@ Scenarios where they are insufficient:
 
 ## Vector clock vs. logical clock
 
-* **Logical Clocks**: Simple, single counter per process, provides a total order but limited causal information.
+* **Logical Clocks**: Simple, single counter per process, provides a total order (can be extended with tie breaking. ) but limited causal information.
 * **Vector Clocks**: More complex, vector of counters per process, provides detailed causal ordering and concurrency detection.
   * **Causal ordering**: Event $A$ causally precedes event $B$ if $VC_A \leq VC_B$ (i.e., for all $k$, $VC_A[k] \leq VC_B[k]$) and $VC_A \neq VC_B$.
   * **Concurrency Detection**: Two events are concurrent if their vector clocks are incomparable. 

@@ -2,10 +2,12 @@
 
 Link: https://pmg.csail.mit.edu/papers/osdi99.pdf
 
+https://pmg.csail.mit.edu/papers/vr-to-bft.pdf
+
 Data: June 30th, 202* 
 
 * PBFT is **efficient** replication protocol extended from Viewstamp Replication that allows the group to survice **Byzantine (arbitrary) failures**. By this time, there was a realization that malicious attacks and Byzantine behavior needed to be dealt with.
-* Asynchronous environment (no timeouts). Prior works are either too efficient to be used in practice, or assumes synchrony (relying on known bounds on message delays and process speed). Synchrony assumption is dangerous, as delaying non-faulty nodes or the communication between them until they are tagged as faulty and excluded from the replica group. 
+* Asynchronous environment (no timeouts). Prior works are either too inefficient to be used in practice, or assumes synchrony (relying on known bounds on message delays and process speed). **Synchrony assumption** is dangerous, as delaying non-faulty nodes or the communication between them until they are tagged as faulty and excluded from the replica group. 
 * Describes the first state-machine replication protocol that correctly survives Byzantine faults in asynchronous networks.
 * A key assumption is that: we assume independent node failures. Each node should run different implementations, etc. Adversary is able to coordinate and delay correct nodes, but they cannot delay correct nodes indefinitely. Adversary are computationally bound so that it is unable to subvert cryptographic techniques. 
 * The algorithm does not rely on synchrony to provide safety. Therefore, it must rely on synchrony to provide liveness; otherwise it could be used to implement consensus in an asynchronous system, which is not possible.
@@ -18,6 +20,8 @@ Data: June 30th, 202*
 ### System model 
 * Byzantine faults: allow replicas to behave arbitrarily (e.x. not reply, reply bad, accept request but discard state)
 * Partial synchrony model: message eventually delivered
+* In an asynchronous system no fixed upper bounds Δ and Φ exist. In one version of partial synchrony, fixed bounds Δ and Φ exist, but they are not known a priori
+* In a synchronous system, there is a known fixed upper bound A on the time required for a message to be sent from one processor to another and a known fixed upper bound % on the relative speeds of different processors.
 
 ### Replica Group 
 * Up to $f$ replicas are faulty
@@ -58,7 +62,7 @@ Data: June 30th, 202*
   * The pre-pare and prepare phases of the algorithm guarantees that non-faulty replicas agree on a total order for the requests within a view. 
 * After a replica is prepared, it multicasts a `COMMIT` message to all other replicas.
 * Each replica ensures that prepare phase was successful and it has accepted **2f + 1** `COMMIT` type messages from different replicas that match the pre-prepare for the request. If everything so far is successful, then the replica executes (or computes) the request. The commit phase now ends.
-* A replica sends the ‘REPLY’ type message to the client. The message contains (1) information of view number (similar to block height), (2) timestamp, (3) result of executing the requested operation, and (4) the unique number of replica who sends this message.
+* A replica sends the `REPLY` type message to the client. The message contains (1) information of view number (similar to block height), (2) timestamp, (3) result of executing the requested operation, and (4) the unique number of replica who sends this message.
 * The client waits for **f+1** valid replies from different replicas before finally accepting the result of the operation. At least one honest client has replied. 
 
 * ![alt text](images/411-pbft/normal-case.png)
@@ -113,8 +117,20 @@ Techniques
 *   _certificate_: a collection of **matching valid signed messages** from $2f+1$ different replicas, representing **a proof that certain thing has happened**
       *   messages are signed, so replica is able to evaluate a certificate and decide for itself whether it is valid    
 *  Need to use `PREPARE` certificates (i.e. composed of the messages replicas received while running the protocol)
-      *  Consists of the `PREPARE` message from primary and $2f$ `PREPARE` message all for the same request (i.e. represented as the message digest) from the same viewstamp. 
+      *  Consists of a `PRE-PREPARE` message from primary and $2f$ `PREPARE` message all for the same request (i.e. represented as the message digest) from the same viewstamp. 
+* ![alt text](images/411-pbft/view-change.png)
+* Difference from VR:
+  * 2f+1
+  * Replicas have to prove what they have using certificates, rather than just reporting.
+  * To re-run the protocol in the next view, the primary must produce the `PRE-PREPARE` message for all the requests, since they need to be combined with `PREPARE` messages to produce certificates in the later view. 
+* An individual replica can force a view change by proving that the primary is lying. 
 
 ### Limitations 
 * Drawback: all-to-all communication with $O(n^2)$ 
   * There is one more weakness in PBFT: heavy network consumption. To finalize a single view, the system requires roughly three phases that need for the message multicast. One-to-many messaging protocol consumes network bandwidth exponentially even though the number of participant nodes grows linearly
+
+
+### PBFT vs. VR
+* Changing the number of replicas from $f+1$ to $2f+1$ is not sufficient to get a correct protocol.
+* The problem is that in VR some decisions are made by just one replica. e.g. primary tells the replica the viewstamp assigned to each client request.
+* 

@@ -24,7 +24,7 @@ Read: July 3rd 202*
 ## Architecture
 
 * Server Group
-  * A server node in the server group maintains a partition of the globally shared parameters.
+  * A server node in the server group maintains a **partition** of the globally shared parameters.
   * A server manager node maintains a consistent view of the metadata of the servers, such as node liveness and the assignment of parameter partitions.
 * Worker group
   * Each worker group runs an application. 

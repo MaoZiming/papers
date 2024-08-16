@@ -36,7 +36,7 @@ Read June 30th, 2024.
 
 * **Perpetual existence**: Perpetual existence: actors are purely logical entities that always exist, virtually. An actor cannot be explicitly created or destroyed and its virtual existence is unaffected by the failure of a server that executes it.
 
-* **Automatic instantiations**: Orleans’ runtime automatically creates in-memory instances of an actor called activations. An actor can have **zero or more activations.**
+* **Automatic instantiations**: Orleans’ runtime automatically creates in-memory instances of an actor called **activations**. An actor can have **zero or more activations.**
   * An actor will not be instantiated if there are no requests pending for it. When a new request is sent to an actor that is currently not instantiated, the Orleans runtime automatically creates an activation by picking a server, instantiating on that server the .NET object that implements the actor, and invoking its ActivateAsync method for initialization
 * If the server fails, the runtime will automatically re-instantiates it on a new server on its next invocation. 
 * An unused actor's in-memory instance is automatically reclaimed as part of the runtime resource management. 

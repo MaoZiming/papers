@@ -4,7 +4,7 @@ Link: https://people.eecs.berkeley.edu/~brewer/cs262/LFS.pdf
 
 Read: July 11th, 2024
 
-* LFS is a copy-on-write (COW) based file system that introduces **a new approach of writing** to disk: instead of overwriting file in place, **LFS buffers all updates into in-memory segment and write them out together sequentially**. LFS performs garbage collection periodically to reclaim free segments.  
+* **Sprite LFS** is a copy-on-write (COW) based file system that introduces **a new approach of writing** to disk: instead of overwriting file in place, **LFS buffers all updates into in-memory segment and write them out together sequentially**. LFS performs garbage collection periodically to reclaim free segments.  
 
 * Compared to FFS: disk bandwidth is getting better. Computers are having more memory. Disk seek is still **really slow**. We can use some of the memory as buffer cache (help with the reads but not the writes).
 
@@ -52,7 +52,7 @@ Problem: finding inode is hard in LFS
 
 Solution: **inode map**
 
-* Inode map: takes an **inode number** as input and produce disk address of most recent address of the inode
+* **Inode map**: takes an **inode number** as input and produce disk address of most recent address of the inode
 * Inode map: **persistent**
     * Keep track of locations of inodes across crashes
     * Chunks of inode map is placed right next to where it is writing all of the other new information
@@ -135,8 +135,6 @@ LFS uses write buffering to keep track of updates in memory before writing to di
 
 # Log File System (LFS)
 
-## Summary
-
 * LFS introduces a new approach of writing to disk
   * Instead of overwriting files in place, write to an unused portion of the disk, later reclaims that old space through cleaning
   * In DB this is called: **shadow paging**, and in FS it is called **copy-on-write**
@@ -144,6 +142,7 @@ LFS uses write buffering to keep track of updates in memory before writing to di
     * The old data isn't immediately "erased" but is instead "shadowed" by the new data until the space is reclaimed
     * Enables highly efficient writing
     * Gather all updates into an in-memory segment and write them out together sequentially
+* No free-block list or bitmap in Sprite.
 
 ### Segments
 

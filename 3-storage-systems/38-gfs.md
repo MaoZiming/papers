@@ -5,7 +5,7 @@ Useful notes: https://pages.cs.wisc.edu/~thanhdo/qual-notes/fs/fs4-gfs.txt
 
 Read: Dec 25th, 202* 
 
-GFS is a scalable distributed file system for large distributed data-intensive applications. It provides **fault tolerance** running on inexpensive commodity hardware, and it delivers high aggregate performance to large number of clients. 
+GFS is a **scalable distributed file system** for large distributed data-intensive applications. It provides **fault tolerance** running on inexpensive commodity hardware, and it delivers high aggregate performance to large number of clients. 
 
 ## Motivation 
 * Component failures are norm, not exception
@@ -15,7 +15,7 @@ GFS is a scalable distributed file system for large distributed data-intensive a
    *  v.s. LFS: lots of small files
 * Workloads: append-only 
    *  e.x. log collections, web search, archival storage. 
-   *  Random accesses are practically non-existent
+   *  **Random accesses are practically non-existent**
    *  large streaming reads, small random reads
    *  many large, **sequential** writes; none random writes
 
@@ -71,9 +71,12 @@ GFS is a scalable distributed file system for large distributed data-intensive a
   * Basically, contains mingle fragments of multiple mutations.
 * GFS deploys a relaxed consistency model: data is appended **_atomically_ _at least once_** even in the presence of concurrent mutations, but at an offset of GFS' choosing. 
   * Concurrent writes only specify the data, and not the offset!
+  * In a record append, however, the client specifies only the data. GFS appends it to the file at least once atomically (i.e., as one continuous sequence of bytes) at an offset of GFS’s choosing and returns that offset to the client
 * Stale replicas will never be involved in a mutation or given to clients asking the master for chunk locations. They are garbage collected at earliest opportunity. 
 
+*  The offset is returned to the client and marks the beginning of a **defined** region that contains the record.
 * GFS may insert padding or record duplicates in between. GFS assumes that client applications can handle the inconsistent state: i.e. filter out occasional padding and duplicate using checksums (or unique IDs in the records). This also helps improving performance. 
+* Applications deal with the padding with checksums. 
 
 * As a result, replicas of the same chunk may contain different data possibly including duplicates of the same record in whole or in part. GFS does not guarantee that all replicas are bytewise identical. It only guarantees that the data is written **at least once** (the reason why it is defined but interspersed with inconsistent) as an atomic unit.
 
@@ -116,7 +119,7 @@ Use standard copy on write mechanism.
 
 * Separation of control plane (namespace) and data plane (chunk servers) allows for scalability.
 * **contact closest servers to propagate data**.
-* primary propagate order. (after data is propagated)
+* **primary propagate order. (after data is propagated)**
 * Clients push data to closest replicas (can be secondary replica A, primary replica, then secondary replica B). 
 
 ## Pipelining writes

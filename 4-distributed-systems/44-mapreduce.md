@@ -57,7 +57,7 @@ Map Reduce is a simple data-parallel programming model designed for **scalabilit
 * The locations of these buffered pairs on the local disk are passed back to the master, who is responsible for forwarding these locations to the reduce workers.
 
 ## Reduce task
-* When a reduce worker is notified by the master about these locations, it uses **remote procedure calls** to read the buffered data from the local disks of the map workers. When a reduce worker has read all intermediate data, it sorts it by the intermediate keys so that all occurrences of the same key are grouped together.
+* When a reduce worker is notified by the master about these locations, it uses **remote procedure calls** to **read the buffered data from the local disks of the map workers**. When a reduce worker has read all intermediate data, it sorts it by the intermediate keys so that all occurrences of the same key are grouped together.
 * The reduce worker iterates over the sorted intermediate data and for each unique intermediate key encountered, it passes the key and the corresponding set of intermediate values to the user’s Reduce function. The output of the Reduce function is appended to a final output file for this reduce partition.
 
 
@@ -66,8 +66,8 @@ Map Reduce is a simple data-parallel programming model designed for **scalabilit
 
 ## Combiner functions
 * Example: a lot of $<the, 1>$. 
-* The Combiner function is executed on each machine that performs a map task. 
-* Typically, combiner function is the same as the reduce function.
+* The **Combiner** function is executed on each machine that performs a map task. 
+* Typically, **combiner** function is the same as the reduce function.
 
 
 ### Sorting ensures that occurrences of the same keys are grouped together. 

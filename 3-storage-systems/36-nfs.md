@@ -54,7 +54,7 @@ There are a few techniques used to achieve these goals
     *  server fails: client retires
 *  * Stateful protocol
     * **Shared / distributed state complicates crash recovery**
-      * A client that opens a file crashd.
+      * A client that opens a file crashed.
     * Server maintain a file descriptor to actual file relationship
 
 ### * Transparency: mounting
