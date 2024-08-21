@@ -44,13 +44,24 @@ DRF **allocates resources according to agents’ proportional demands, in a way 
 DRF can be applied to general resource allocation in multi-tenant setup to ensure fair usage of multiple resource types. For example, in a cloud environment where VMs are competing for CPU, memory, and bandwidth, DRF can allocate resources in such a way that no single VM or container can monopolize any single resource, thus providing a balanced and fair environment.
 
 ### Thoughts:
-
 * Furthermore, any policy that satisfies the sharing incentive property also provides performance isolation, as it guarantees a minimum allocation to each user (i.e., a user cannot do worse than owning n1 of the cluster) irrespective of the demands of the other users.
-
 * Performance isolation remains on theory. 
 
 
 ### Max-min Fairness
-
 * The idea is to maximize the allocation to the user with the smallest share, under the constraint that no user's allocation can be increased without decreasing the allocation of another user who already has an equal or smaller share.
-* 
+
+### Resource Monotonicity
+* DRF does not provide resource monotonicity. 
+
+### Does DRF maximize system utility?
+* No. DRF does not maximize system utility.
+* Fairness and utility has a trade-off.
+
+### Others
+* Resources might not be divisible.
+* Dynamic changes in resource demands. 
+* DRF assumes homogeneity in resource quality, which might not hold true in clouds where different instances or services might offer varying performance. 
+
+### What if the same bottlenecked resource?
+* In scenarios where one resource becomes a bottleneck for all users, DRF essentially reduces to max-min fairness for that resource. 

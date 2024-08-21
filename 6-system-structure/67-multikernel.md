@@ -2,7 +2,7 @@
 
 Link: https://www.sigops.org/s/conferences/sosp/2009/papers/baumann-sosp09.pdf
 
-June 29th, 202* 
+June 29th, 2024
 
 Increasing heterogenity and scalability in hardware (i.e. CPU cores) motivates modeling multicore systems as distributed systems. Three principles guide multikernel design 
 
@@ -63,3 +63,36 @@ Increasing heterogenity and scalability in hardware (i.e. CPU cores) motivates m
 * Barrelfish at present therefore uses a variant of user-level RPC (URPC) [10] between cores: a region of shared memory is used as a channel to transfer **cache-line-sized messages point-to-point** between single writer and reader cores.  At present, dispatchers poll incoming channels for a predetermined time before blocking, however this can be improved by adaptive strategies similar to those used in deciding how long to spin on a shared-memory spinlock.
 
 * All virtual memory management, including allocation and manipulation of page tables, is performed entirely by user-level code
+Question: In a multikernel OS like Barrelfish, how is the concept of "hardware neutrality" implemented, and what benefits does this offer?
+Answer: Barrelfish's hardware neutrality is achieved by isolating the OS from direct hardware interactions through a layer of abstraction where each core runs its own kernel instance. This abstraction allows the OS to be easily ported across different hardware architectures without significant changes, promoting flexibility and reducing the need for hardware-specific optimizations in the kernel code.
+
+
+# Barrelfish Architecture Components
+
+## CPU Driver
+- **Role:** Interface between the OS and physical CPU.
+- **Functions:**
+  - **Context Switching:** Manages transitions between tasks, saving and restoring CPU state.
+  - **Interrupt Handling:** Processes hardware interrupts, directing them to appropriate software components.
+  - **Power Management:** Handles CPU power states, though this might be abstracted at higher levels.
+
+## Monitor
+- **Role:** Acts as a hypervisor or privileged kernel component for system oversight.
+- **Functions:**
+  - **Resource Management:** Allocates CPU time, memory, and other resources to system components.
+  - **Isolation:** Ensures different applications or services run in isolated environments for security and stability.
+  - **Security:** Enforces policies, manages hardware access, and handles privileged operations.
+  - **Inter-Component Communication:** Facilitates communication via message passing or shared memory.
+
+## Hardware
+- **Role:** Physical components like CPUs, memory, and I/O devices that Barrelfish interacts with through drivers and the monitor.
+- **Interaction with Barrelfish:**
+  - **CPU:** Executes OS instructions for scheduling, interrupt management, and system calls.
+  - **Memory:** Managed for allocation, protection, and virtual memory mapping.
+  - **I/O Devices:** Drivers facilitate interaction with peripherals like network cards and storage devices.
+
+### Key Points:
+- **Decentralized Control:** Each core can run its own kernel instance, reducing contention and enhancing scalability.
+- **Microkernel Design:** The monitor provides minimal essential services, with most OS functionality as user-level services.
+
+In Barrelfish, these components work together to maximize performance and scalability, particularly in multi-core environments, by minimizing bottlenecks and enhancing parallel processing capabilities.

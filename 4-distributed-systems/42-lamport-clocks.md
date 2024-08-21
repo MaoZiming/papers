@@ -80,3 +80,28 @@ Scenarios where they are insufficient:
 * **Vector Clocks**: More complex, vector of counters per process, provides detailed causal ordering and concurrency detection.
   * **Causal ordering**: Event $A$ causally precedes event $B$ if $VC_A \leq VC_B$ (i.e., for all $k$, $VC_A[k] \leq VC_B[k]$) and $VC_A \neq VC_B$.
   * **Concurrency Detection**: Two events are concurrent if their vector clocks are incomparable. 
+
+## Mutual Exclusion example
+
+* Three type of messages ( REQUEST, REPLY and RELEASE) are used and communication channels are assumed to follow FIFO order.
+  * A site send a REQUEST message to all other site to get their permission to enter critical section.
+  * A site send a REPLY message to requesting site to give its permission to enter the critical section.
+  * A site send a RELEASE message to all other site upon exiting the critical section.
+* Every site Si, keeps a queue to store critical section requests ordered by their timestamps. request_queuei denotes the queue of site Si
+* A timestamp is given to each critical section request using Lamport’s logical clock.
+* Timestamp is used to determine priority of critical section requests. Smaller timestamp gets high priority over larger timestamp. The execution of critical section request is always in the order of their timestamp.
+
+* To enter Critical section:
+* When a site Si wants to enter the critical section, it sends a request message Request(tsi, i) to all other sites and places the request on request_queuei. Here, Tsi denotes the timestamp of Site Si
+* When a site Sj receives the request message REQUEST(tsi, i) from site Si, it returns a timestamped REPLY message to site Si and places the request of site Si on request_queuej
+* To execute the critical section:
+* A site Si can enter the critical section if it has received the message `REPLY` with timestamp larger than (tsi, i) from all other sites and its own request is at the top of request_queuei
+* To release the critical section:
+* When a site Si exits the critical section, it removes its own request from the top of its request queue and sends a timestamped RELEASE message to all other sites
+* When a site Sj receives the timestamped RELEASE message from site Si, it removes the request of Si from its request queue
+
+### Drawbacks
+
+* Unreliable approach: failure of any one of the processes will halt the progresse of the entire system.
+* High message complexity: Algorithm requires $3(N-1)$ messages for each critical section request.
+  * $(N-1)$ messages for REQUEST, $(N-1)$ messages for REPLY and $(N-1)$ messages for RELEASE.

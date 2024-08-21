@@ -85,3 +85,10 @@ Read: July 10th, 2024.
 
 * This is a solution requiring Xen-based hypervisor: majority of the users on the clouds are running in some cloud VMs. 
 * For containers on Linux, user namespace is the default mechanism. But the paper did not compare against these. 
+
+## Xen Store vs. Ring buffer
+
+* Xen Store uses message passing for communication. It's a form of inter-process communication where domains send messages to each other through the Xen Store, which acts as an intermediary. This is particularly useful for configuration management, control operations, and signaling between domains.
+Ring Buffers, on the other hand, utilize shared memory for communication. Here, domains share a portion of memory where they can write and read data. This method is highly efficient for transferring large amounts of data or for high-frequency operations like I/O, as it avoids the overhead of traditional message passing.
+
+* So, while the Xen Store facilitates message passing for control and configuration, ring buffers leverage shared memory for direct, high-speed data transfer between domains.

@@ -29,6 +29,7 @@
             * E.x. device drivers, networking, file system, etc.
         * Communication between components is provided by IPC (i.e. applications R/W through IPC)
           * **IPC is slower than function calls in monolithic kernel.**
+          * Monolithic kernel shares the same addres space.
     * Pros
         * Scalability: kernel smaller, separation of services at separate layers
         * Extensibility: new services can be easily added
@@ -37,6 +38,11 @@
     * Cons
         * Bad performance: lots of system calls (i.e. IPC) and context switches
     * ![alt text](images/61-os-kernels/comparison.png)
+
+## Microkernel and exokernel
+
+* Microkernels have more context switching due to their reliance on separate user-space processes for many services, requiring frequent transitions between kernel and user space.
+* Exokernels reduce context switching by allowing applications to directly manage hardware resources, minimizing the need for kernel intervention.
 
 * **Hybrid kernel**
     * E.x. Windows, Android
@@ -81,3 +87,24 @@
         * better isolation
     * Cons
         * Recompile, and each libraries are untrusted
+
+
+## What are the performance trade-offs associated with the use of IPC (Inter-Process Communication) in microkernel-based systems?
+
+* IPC is crucial in microkernel systems since many services run as separate user-space processes. However, frequent context switches and the overhead of message passing between these services can lead to performance degradation compared to monolithic kernels. Optimizing IPC mechanisms, such as using lightweight message-passing protocols or reducing the number of context switches, is critical to mitigate these trade-offs.
+
+## Real-time applications
+
+* Achieving real-time performance with microkernels is challenging due to the overhead of IPC and context switching. To achieve real-time capabilities, microkernels must minimize these overheads, provide deterministic scheduling, and ensure low-latency IPC. Techniques such as preemptive scheduling and optimizing the IPC mechanisms are essential. Some microkernels are specifically designed for real-time applications, focusing on minimalism and efficient context switching.
+
+## How does the unikernel approach to application deployment differ from traditional container-based or VM-based methods?
+
+* Unikernels compile an application along with only the necessary operating system components into a single binary, which runs directly on a hypervisor. Unlike traditional containers or VMs, unikernels eliminate the need for a general-purpose OS, resulting in a smaller footprint and potentially faster boot times. However, unikernels lack the general-purpose flexibility of traditional OSes and require a specialized build process for each application, making them less versatile but highly optimized for specific tasks.
+
+## How does the microkernel architecture handle device drivers compared to a monolithic kernel, and what are the security implications of this design?
+
+* In a microkernel architecture, device drivers operate in user space, not in kernel space. This design inherently enhances security because if a driver fails or is compromised, it does not directly affect the kernel's stability or security. Conversely, in a monolithic kernel, device drivers run in kernel mode, which means a failure or exploit in a driver can crash the entire system or expose kernel-level privileges to attackers. This separation in microkernels reduces the kernel's attack surface, making it more secure by isolating potential vulnerabilities to user space.
+
+## Discuss the performance implications of message passing in microkernel systems compared to direct function calls in monolithic kernels.
+
+* Message passing in microkernels introduces an overhead due to the need for context switches and the marshaling of data between processes. This can lead to slower service calls compared to the direct function calls in monolithic kernels where all services share the same address space. However, optimizations like shared memory and fast inter-process communication (IPC) mechanisms can mitigate this overhead. The trade-off is that while performance might be slightly reduced for individual operations, the system's overall reliability and modularity can lead to better long-term performance and maintainability.

@@ -128,7 +128,7 @@ Link: https://www.cs.wisc.edu/operating-systems-quals/
 * HDD: Seek time. 
 * RAID 5: sequential writes reduce the complexity of parity calculations. Reduces the overhead of writing to multiple disks. 
 * Data structures:
-  * Segment Summary Block:
+  * **Segment Summary Block**:
     * Purpose: Keeps track of the contents of each segment (a fixed-size block of the log). It lists all files, inodes, and blocks stored within that segment.
     * Role: Helps in locating specific data within the log and is crucial for garbage collection, as it identifies live data that needs to be preserved when cleaning old segments.
   * Inode Map (Imap):
@@ -172,6 +172,15 @@ Link: https://www.cs.wisc.edu/operating-systems-quals/
 * Cons:
   * Increased Complexity: The need to maintain additional data structures (like the segment summary and checkpoint regions) and handle segment cleaning adds complexity to the file system.
   * Write Amplification: Segment cleaning can introduce write amplification, potentially reducing the lifespan of SSDs (though this is less of an issue with HDDs).
+
+### Crash Recovery: LFS vs. FFS
+
+* LFS: roll forward since the last consistent checkpoint (we have Checkpoint region!)
+  * Segment cleaning.
+* FFS: runs `fsck`, scan the file system metadata and fix any inconsistencies (fixing partially updated inodes and directories).
+  * LFS has faster recovery time compared to FFS due to the log-based approach and the ability to replay operations from the last checkpoint, avoiding full file system scans, which can be time-consuming when disk is large.
+* Trade-off:
+  * Complexity: garbage collections. 
 
 ## Isolation
 

@@ -51,3 +51,11 @@ Nodes and keys are hashed using a uniform hash function, placing them onto a cir
 ## Bounds
 
 * In the steady-state network, each node maintains routing information for only about $O(log N)$ other nodes, and resolves all lookups via $O(log N)$ messages to other nodes.
+
+## How does the stabilization protocol in Chord maintain the consistency of the finger table and successor lists in the presence of node joins and failures?
+
+* Answer: The stabilization protocol in Chord ensures that each node periodically verifies and updates its successor and predecessor pointers. When a node joins, it informs its immediate predecessor and successor, allowing them to update their pointers. The stabilization process also updates the finger table by checking whether the fingers still point to the correct nodes, considering the new node joins or departures. This protocol maintains consistency and ensures that the Chord ring remains correctly connected, even as nodes join or leave.
+
+## How does Chord handle data replication, and what challenges arise in ensuring consistency across replicas?
+
+* Answer: Chord handles data replication by replicating data on a node and its successors. This ensures availability even if a node fails. However, challenges include maintaining consistency across replicas, particularly during node joins, departures, or failures. The system must ensure that updates are propagated correctly to all replicas, and mechanisms like versioning or consensus protocols might be needed to manage conflicts, especially in highly dynamic environments.

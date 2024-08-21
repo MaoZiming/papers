@@ -6,7 +6,7 @@ Helpful Youtube: https://www.youtube.com/watch?v=2moUsgMOie4
 
 Read: July 10th, 2024.
 
-This paper proposes a practical design for **paravirtualized** virtual machine. The main goal of the design is performance. 
+This paper proposes a practical design for **paravirtualized** virtual machine. The main goal of the design is performance. Avoid the full hardware emulation in full virtualizaiton. 
 
 ## Motivation: inefficiency of full virtualization 
 
@@ -40,8 +40,8 @@ This paper proposes a practical design for **paravirtualized** virtual machine. 
       *  Guest OS doesn't have access to these addresses. 
 * CPU
    *  replaces nonvirtualizable instructions with **hypercalls** that communicate directly with the VMM
-      * Hypercall vs. Systems call. 
-      * Making hypercall is expensive, at least a context switch. 
+      * **Hypercall** vs. **Systems call**. 
+      * **Making hypercall is expensive, at least a context switch.**
    *  x86 has four protection rings, but typically only two are used. Nobody uses them before Xen. 
    *  Guest OS uses Ring 1, Xen uses Ring 0. Guest OS needs to run at lower priviledge levels. 
       *  Guest OS (on Ring 1) is prevented from directly executing privileged instructions.
@@ -63,3 +63,43 @@ This paper proposes a practical design for **paravirtualized** virtual machine. 
 Bad portability and maintenance cost **because of the need to modify guest OS.**
 
 Luckily, it does not require changes to the application binary interface (ABI). No need to change source code **and the binary!**
+
+
+## Type I vs. Type II.
+
+* Xen is a Type I hypervisor, which means it runs directly on the hardware.
+  * Better performance and security. 
+* Type II hypervisors run on a conventional operating system just like other computer programs.
+
+## I/O rings
+* Shared memory ring buffer. 
+* I/O rings is a circular queue of descriptors allocated by a domain but accessible from within Xen. 
+* Access to each ring is based around two pairs of producer-consumer pointers: domains place requests on a ring, advancing a request producer pointer, and Xen removes these requests for handling, advancing an associated request consumer pointer. Responses are placed back on the ring similarly, save with Xen as the producer and the guest OS as the consumer.
+* Producer-consumer model: DomU acts as a producer, placing I/O requests into the ring, and Dom0 acts as a consumer, processing these requests. After processing, Dom0 places responses back into the ring for DomU to consume.
+* Grant Tables: Used for sharing memory between domains. A grant table entry allows a domain to grant another domain access to a page of its memory, which is crucial for setting up the I/O rings.
+Event Channels: These are used to notify domains when there's new data in the I/O ring, allowing for asynchronous I/O operations.
+
+## Domain:
+
+Xen uses a concept called "domains." Domain 0 (Dom0) is the first domain to start, which has direct access to hardware and manages other domains (DomU). Each DomU runs a guest OS, and resources like CPU, memory, and I/O devices are managed through Xen's hypervisor, which ensures isolation and fair resource distribution.
+
+* Domain U: 
+* I/O data is transferred to and from each domain via Xen, using shared-memory, asynchronous buffer- descriptor rings.
+
+## Compared to KVM
+
+* KVM is Linux's default hypervisor. runs inside the kernel. Type 1 hypervisor.
+* Full virtualization. Binary translation has overhead. 
+
+## Page Table
+
+* Full virtualization requires shadow page tables. 
+* Although full virtualization forces the use of shadow page tables, to give the illusion of contiguous physical memory, Xen is not so constrained. Indeed, Xen need only be involved in page table updates, to prevent guest OSes from making unacceptable changes.
+* Guest OS registers updates to page tables through hypercalls. The requests are validated by Xen. 
+
+## Paging:
+* **Guest OS has direct read access to hardware page tables, but updates are batched and validated by the hypervisor. A domain may be allocated discontiguous machine pages.**
+
+## Exception handler:
+* Guest OS registers a descriptor table for execption handling with Xen. 
+* Guest OS can install a fast handler for system calls, allowing direct calls from an application into its guest OS and avoiding indirecting through Xen on every calls. 

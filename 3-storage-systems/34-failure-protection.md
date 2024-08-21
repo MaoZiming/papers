@@ -44,7 +44,7 @@
 * Primary mechanism in modern storage system to preserve data integrity is called the **checksum**
 * **Common checksum function:** vary in strength and speed
     * XOR: XOR’ing each chunk of the data block being checksumed, produce a single value that represents the XOR of the entire block
-        * Cons: If, for example, two bits in the same position within each checksummed unit change, the checksum will not detect the corruption
+        * Cons: If, for example, two bits **in the same position** within each checksummed unit change, the checksum will not detect the corruption
     * Addition
         * Pros: fast, 2’s complement addition
         * It can detect many changes, but not good if the data, e.x., is shifted

@@ -142,15 +142,79 @@ For devices, there is higher diversity, and there is lack of specificaiton of de
 * What are the trade-offs between virtulization and container?
 * How does exokernel compared to hypervisors?
 
+## Answer to these questions
+
+## What is Virtualization?
+- **Definition:** Virtualization is the creation of a virtual (rather than actual) version of something, such as a hardware platform, operating system, storage device, or network resources. This allows multiple operating systems and applications to run on the same physical hardware simultaneously.
+
+### How are they used today?
+- **Server Consolidation:** Reducing the number of physical servers by running multiple virtual machines (VMs) on a single server.
+- **Testing and Development:** Creating isolated environments for software development and testing.
+- **Cloud Computing:** Providing scalable, on-demand resources in cloud environments.
+- **Security:** Isolating applications to enhance security through compartmentalization.
+
+### How do you virtualize hardware (CPU, memory, device)?
+- **CPU:** Virtualization software (hypervisor) manages CPU time, allowing each VM to think it has its own CPU. Techniques include time-slicing and binary translation.
+- **Memory:** Physical memory is abstracted into virtual memory spaces for each VM. Memory management units (MMUs) help in mapping virtual to physical addresses.
+- **Devices:** I/O devices are virtualized through emulation or paravirtualization, where devices appear as if they are physical to the guest OS.
+
+## Xen: Design Goals and Implementation
+- **Design Goal:** To provide a scalable, efficient virtualization solution with minimal overhead.
+- **How it Accomplishes This:**
+  - **Microkernel Design:** Xen uses a microkernel approach where the hypervisor is minimal, providing only the necessary services for virtualization.
+  - **Paravirtualization:** Allows guest OS to be modified for direct hypercalls, reducing the need for full hardware emulation.
+  - **Hardware Virtualization Support:** Leverages CPU virtualization extensions for better performance when available.
+
+## What is a Container?
+- **Definition:** Containers are lightweight, standalone, executable software packages that include everything needed to run an application: code, runtime, system tools, system libraries, settings, etc.
+
+### How are they used today?
+- **Microservices Architecture:** Running each service in its own container for scalability and isolation.
+- **Continuous Integration/Continuous Deployment (CI/CD):** For consistent environments from development to production.
+- **Cloud Native Applications:** Designed for cloud environments, leveraging container orchestration tools like Kubernetes.
+
+### How do you implement containerization?
+- **Operating System Level Virtualization:** Containers share the host OS kernel, reducing overhead compared to full virtualization.
+- **Container Runtimes:** Tools like Docker, rkt, or containerd manage the lifecycle of containers.
+- **Isolation:** **Uses namespaces for process isolation and cgroups for resource control.**
+
+### Centralized vs. Decentralized Schedulers for Containers
+- **Centralized:** Easier management, but can become a bottleneck or single point of failure.
+- **Decentralized:** More scalable, but can be complex to manage and coordinate.
+
+### Problems Associated with Containers
+- **Security:** Shared kernel can lead to vulnerabilities if not properly isolated.
+- **Resource Management:** Containers can consume host resources unpredictably if not properly configured.
+- **Networking:** Complex networking setups can be challenging to manage.
+
+## Trade-offs Between Virtualization and Containerization
+- **Isolation:** VMs offer stronger isolation since **each has its own OS**, whereas containers **share the host OS kernel**.
+- **Performance:** Containers are generally faster to start and use fewer resources due to shared kernel.
+- **Portability:** Containers are more portable across different environments due to their lightweight nature.
+- **Complexity:** VMs require more setup and maintenance but are simpler in terms of isolation and security.
+
+## Exokernel vs. Hypervisors
+- **Exokernel:** 
+  - **Goal:** To provide minimal abstraction between hardware and applications, allowing applications to manage hardware resources directly.
+  - **Advantage:** Potentially higher performance due to less abstraction layers.
+  - **Challenge:** Requires applications to be aware of and manage hardware details, increasing complexity.
+
+- **Hypervisors:**
+  - **Goal:** To create a layer of abstraction that allows multiple operating systems to run on a single hardware platform.
+  - **Advantage:** Simplifies application development by abstracting hardware details, providing strong isolation.
+  - **Challenge:** Adds overhead due to the abstraction layer, which can impact performance.
+
+Both approaches aim to optimize resource usage and performance but differ significantly in their design philosophy regarding abstraction and control over hardware resources.
+
 ## Containers 
 * Containers are lightweight, encapsulated environments that run applications and their dependencies.
 * Unlike virtual machines, **containers share the host system’s kernel**, rather than needing their own operating system.
-* Mechanisms: kernel featurers like namespace and cgroups 
-    *  Namespacing: isolates process trees, networking user IDs, and mounts
-    *  Cgroups: limit and prioritize CPU, memory, block I/Os, and network resources
+* Mechanisms: kernel featurers like **namespace** and **cgroups** 
+    *  **Namespacing**: isolates process trees, networking user IDs, and mounts
+    *  **Cgroups**: limit and prioritize CPU, memory, block I/Os, and network resources
 *  Used in microservices
 *  Pros: lightweight, fast, and portable 
-*  Cons: weaker isolation and security guarantees 
+*  Cons: **weaker isolation and security guarantees**
 
 ## Virtualization v.s Containers
 * VM: virtualize hardware
@@ -184,3 +248,110 @@ For example, UNIX provides isolation:
 * Type 2 hypervisor
   * A type 2 hypervisor, or hosted hypervisor, interacts with the underlying host machine hardware through the host machine’s operating system. You install it on the machine, where it runs as an application.
   * The type 2 hypervisor negotiates with the operating system to obtain underlying system resources. However, the host operating system prioritizes its own functions and applications over the virtual workloads.
+
+## VMWare ESX's Full Virtualization
+* This approach uses hardware-assisted virtualization (like VT-x or AMD-V) or binary translation if hardware support isn't available.
+* Performance: While modern hardware has reduced the performance gap, full virtualization initially had overhead due to the need for emulation or translation of certain instructions. However, with hardware support, it's now very efficient.
+
+## How does Paravirtualization reduce latency.
+
+### 1. **Reduced Overhead of Virtualization:**
+   - **Direct Calls:** In traditional virtualization, guest OS operations often go through a trap to the hypervisor, which then emulates the hardware. Paravirtualization allows the guest OS to make direct calls to the hypervisor for certain operations, bypassing the need for emulation. This direct communication reduces the overhead associated with context switches and hardware emulation.
+
+### 2. **Optimized System Calls:**
+   - **Modified Guest OS:** Paravirtualization involves modifying the guest OS to be aware of the hypervisor. This means system calls that would normally require complex hardware emulation can be replaced with more efficient hypercalls. These hypercalls are specifically designed for the virtualized environment, reducing the number of steps and thus the latency.
+
+### 3. **Efficient I/O Handling:**
+   - **Paravirtualized Drivers:** Traditional virtualized environments use emulated hardware, which can be slow. Paravirtualized drivers are designed to work directly with the hypervisor's I/O model, allowing for more efficient data transfer. For instance, network and disk I/O can be significantly faster because they use optimized paths rather than emulating physical devices.
+
+### 4. **Reduced Context Switches:**
+   - **Less Trapping:** In a paravirtualized environment, the guest OS knows it's running on a hypervisor, so it can avoid unnecessary traps to the hypervisor for operations that can be handled more efficiently. This reduces the number of context switches, which are inherently latency-inducing.
+
+## Trap in full virtualization vs. Hypercall in paravirtualization
+
+## Hypercalls in Paravirtualization
+
+**Definition:**
+- A hypercall is a direct call from a guest operating system (OS) to the hypervisor in a paravirtualized environment.
+
+**Advantages:**
+- **Reduced Latency:** Since there's no need for the guest OS to emulate hardware, operations are faster.
+- **Efficiency:** Fewer layers of abstraction mean less overhead.
+
+**Example:**
+- In Xen paravirtualization, the guest OS might use hypercalls for memory management or I/O operations, directly interacting with Xen's hypervisor.
+
+## Traps into the Hypervisor in Full Virtualization
+
+**Definition:**
+- A trap into the hypervisor occurs when the guest OS, unaware of being virtualized, attempts to perform an operation that requires privileged access or hardware interaction, triggering a trap to the hypervisor.
+
+**Mechanism:**
+- **Emulation:** The hypervisor intercepts these operations, emulates the hardware behavior, and then returns control to the guest OS.
+- **Context Switch:** Each trap involves a context switch from the guest to the hypervisor and back, which incurs overhead.
+
+**Advantages:**
+- **Compatibility:** No modification to the guest OS is required, allowing any OS to run without changes.
+- **Isolation:** Provides a high level of isolation as the guest OS believes it's running on real hardware.
+
+**Disadvantages:**
+- **Increased Latency:** The emulation process adds significant overhead due to the need for context switches and hardware emulation.
+- **Performance Impact:** Full virtualization can be less efficient due to these extra steps.
+
+**Example:**
+- In VMware or KVM, when a guest OS tries to access hardware directly (like changing a page table), it triggers a trap, and the hypervisor handles the request by emulating the hardware response.
+
+## Summary Comparison
+
+- **Hypercalls (Paravirtualization):**
+  - **Speed:** Faster due to direct calls.
+  - **Guest OS:** Requires modification to be hypervisor-aware.
+  - **Use Case:** Best for environments where guest OS can be modified for performance.
+
+- **Traps (Full Virtualization):**
+  - **Speed:** Slower due to emulation and context switching.
+  - **Guest OS:** No modification needed, any OS can run.
+  - **Use Case:** Ideal for running unmodified guest OS or when compatibility is paramount over performance.
+
+## TLB Virtualization
+
+Virtualizing the Translation Lookaside Buffer (TLB) is crucial for maintaining efficient memory management in virtualized environments. Below is an explanation of how TLB virtualization is handled in various contexts:
+
+## 1. Shadow Page Tables
+- **Concept:** Hypervisors use **shadow page tables** to manage TLB entries in early virtualization techniques.
+- **Mechanism:** 
+  - The hypervisor maintains page tables that map guest virtual addresses (GVAs) directly to host physical addresses (HPAs).
+  - When the guest OS modifies its page tables (GVA to GPA), the hypervisor intercepts and updates the shadow page tables.
+  - The TLB caches these shadow page table entries to allow direct translation from GVA to HPA.
+- **Performance Impact:** 
+  - This approach can be slow because every guest page table update must be intercepted by the hypervisor.
+
+## 2. Hardware-Assisted TLB Virtualization (Nested/Extended Page Tables)
+- Modern CPUs provide hardware-assisted memory virtualization:
+  - **Nested Page Tables (NPT)** in AMD processors.
+  - **Extended Page Tables (EPT)** in Intel processors.
+- **Two-Level Translation:**
+  1. Guest OS handles GVA → GPA translation.
+  2. Hypervisor handles GPA → HPA translation.
+- **TLB Management:**
+  - The TLB can cache two-level translations (GVA → HPA) directly.
+  - The hardware manages both page table levels, reducing the need for hypervisor intervention.
+- **TLB Flushes:** Hardware-assisted virtualization minimizes full TLB flushes by using tagged TLBs (discussed below).
+
+## 3. Tagged TLB (Process-Context Identifiers - PCIDs)
+- **Concept:** Tagged TLBs associate entries with unique identifiers (e.g., process IDs or VM IDs).
+- **Usage in Virtualization:** 
+  - Allows storing TLB entries from multiple address spaces simultaneously.
+  - Reduces the need for full TLB flushes during context switches, improving performance.
+
+## 4. TLB Shootdowns in Virtualization
+- **TLB Shootdowns:** When page tables are modified, corresponding TLB entries need to be invalidated.
+- **Handling in Hypervisors:** The hypervisor may intercept TLB shootdown requests from the guest OS and coordinate with hardware to invalidate the correct TLB entries across all cores and threads.
+
+## 5. Emulation and Paravirtualization
+- **Emulated TLB Management:** 
+  - Hypervisors may need to emulate TLB operations for privileged instructions related to memory management.
+  - This can be slower but is necessary in fully virtualized environments.
+- **Paravirtualized TLB Management:**
+  - In paravirtualized environments (e.g., Xen's PV mode), the guest OS interacts directly with the hypervisor for TLB management.
+  - The guest OS explicitly notifies the hypervisor when TLB entries need to be flushed or modified, improving efficiency.

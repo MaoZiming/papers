@@ -284,6 +284,8 @@ reads.
   * Accurately captures causality and concurrency.
   * Detects concurrent events, which Lamport clocks cannot do.
 
+* Vector clock: network failures and message lost. 
+
 ### Matrix Clock
 * Matrix clocks extend vector clocks by maintaining a matrix where each entry captures the history of vector clocks. This allows for more detailed tracking of causality relationships.
 
@@ -310,10 +312,10 @@ reads.
 
 * Two-Phase Commit (2PC) is a distributed algorithm that ensures all participants in a distributed system agree on a transaction before it is committed
 * Phases of Two-Phase Commit:
-    * Prepare Phase (Voting Phase):
-    * The coordinator sends a "prepare" request to all participants.
+    * **Prepare Phase** (Voting Phase):
+    * The coordinator sends a "**prepare**" request to all participants.
     * Each participant performs the necessary operations to ensure it can commit the transaction (e.g., locking resources, writing data to a log).
-    * Participants respond with either "vote-commit" (if they can commit) or "vote-abort" (if they cannot commit).
+    * Participants respond with either "**vote-commit**" (if they can commit) or "**vote-abort**" (if they cannot commit).
 * Commit Phase:
     * If all participants respond with "vote-commit," the coordinator sends a "commit" message to all participants, instructing them to commit the transaction.
     * If any participant responds with "vote-abort," the coordinator sends an "abort" message to all participants, instructing them to roll back the transaction.
@@ -321,4 +323,83 @@ reads.
 * How does the Two-Phase Commit protocol handle failures during the commit phase?
     * If a failure occurs during the commit phase, the coordinator must ensure that the transaction is completed once the system recovers. The protocol assumes that the coordinator and participants can eventually recover and re-attempt the commit or abort based on the decision recorded before the failure. This might involve logging or other recovery mechanisms.
 * What is the primary disadvantage of the Two-Phase Commit protocol?
-    * The primary disadvantage of the Two-Phase Commit protocol is its blocking nature. If the coordinator crashes after sending the prepare message but before sending the commit/abort decision, participants can be left in an uncertain state, blocking further transactions until the coordinator recovers. This can lead to inefficiencies and delays in distributed systems.
+    * The primary disadvantage of the Two-Phase Commit protocol is its **blocking nature**. If the coordinator crashes after sending the prepare message but before sending the commit/abort decision, participants can be left in an uncertain state, blocking further transactions until the coordinator recovers. This can lead to inefficiencies and delays in distributed systems.
+* Can be used for replication with strong consistency. 
+
+## Weak Consistency
+
+### Consistency Model of Dynamo
+
+Amazon's Dynamo is a highly available and scalable key-value store, and its consistency model is based on the principles of **eventual consistency**. However, it provides tunable consistency, allowing applications to choose different consistency levels based on their requirements. Here’s a breakdown of Dynamo's consistency model:
+
+1. **Eventual Consistency**: Dynamo ensures that if no new updates are made to a data item, eventually all replicas will converge to the same value. This means that reads may not return the most recent write immediately, but over time, the system guarantees consistency.
+
+2. **Tunable Consistency**: Dynamo allows developers to adjust the consistency vs. availability trade-off by configuring two parameters:
+   - **R (Read Quorum)**: The number of replicas that must agree on a value for a read to be considered successful.
+   - **W (Write Quorum)**: The number of replicas that must acknowledge a write for it to be considered successful.
+
+   By adjusting the values of `R`, `W`, and `N` (the total number of replicas), the system can be tuned for different levels of consistency:
+   - **Strong Consistency**: Can be achieved by setting `R + W > N`, meaning that there is at least one replica overlap between read and write operations, ensuring that a read always sees the most recent write.
+   - **Weaker Consistency**: By setting `R + W <= N`, Dynamo allows for higher availability and lower latency, at the cost of potentially stale reads.
+
+3. **Vector Clocks and Conflict Resolution**: Dynamo uses vector clocks to track the causality of updates across replicas. When divergent versions of an object are detected, they are presented to the application for reconciliation. This means that conflicts are resolved at the application level, often by using techniques like last-write-wins (LWW) or custom reconciliation logic.
+
+In summary, Dynamo follows an **eventual consistency** model with **tunable consistency**, allowing applications to choose between stronger consistency and higher availability.
+
+
+# Strong Consistency Protocols in Distributed Systems
+
+## 1. Paxos
+- **Overview**: Paxos is a consensus protocol that ensures strong consistency by allowing a group of nodes to agree on a single value even in the presence of failures. Once a decision is made, it cannot be changed.
+- **Usage**: Widely used in distributed databases and coordination services (e.g., Google Chubby, Google Spanner).
+- **Trade-offs**: Complex to implement and introduces performance overhead due to multiple rounds of communication.
+
+## 2. Raft
+- **Overview**: Raft is a consensus algorithm similar to Paxos but designed to be more understandable and easier to implement. Raft elects a leader, and the leader replicates updates to other nodes.
+- **Usage**: Used in systems like etcd, Consul, and Kubernetes for distributed consensus and leader election.
+- **Trade-offs**: While simpler than Paxos, Raft still introduces latency during leader elections and failures.
+
+## 3. Viewstamped Replication (VR)
+- **Overview**: VR is a protocol for replicating services across nodes, ensuring strong consistency by using a primary node that manages updates. A new primary is elected if the original primary fails.
+- **Usage**: Commonly used in replicated state machines and distributed databases.
+- **Trade-offs**: Coordination overhead and complexity during view changes.
+
+## 4. Zookeeper's Zab Protocol
+- **Overview**: Zab (Zookeeper Atomic Broadcast) is a consensus protocol used by Zookeeper to ensure strong consistency. The leader manages updates, and followers replicate them in the same order.
+- **Usage**: Specifically designed for Zookeeper, which provides distributed coordination services.
+- **Trade-offs**: May experience delays during leader elections, like other leader-based protocols.
+
+## 5. Multi-Paxos
+- **Overview**: An extension of Paxos optimized for handling multiple decisions, with leader election to streamline the process of committing multiple commands.
+- **Usage**: Used in distributed databases requiring a sequence of consistent decisions (e.g., Google Spanner, Microsoft Azure Cosmos DB).
+- **Trade-offs**: More efficient than standard Paxos for multiple operations, but still carries communication overhead.
+
+## 6. Chubby's Lease-Based Protocol
+- **Overview**: Chubby, Google's distributed lock service, uses a lease-based protocol where a primary node manages updates. The primary holds a lease and renews it to maintain authority.
+- **Usage**: Internally used at Google for distributed coordination, leader election, and lock management.
+- **Trade-offs**: Lease-based systems rely on timely lease renewals, and network partitions or delays can complicate recovery.
+
+## 7. Two-Phase Commit (2PC)
+- **Overview**: 2PC is a distributed transaction protocol that ensures all participating replicas either commit or roll back a transaction in a coordinated manner, guaranteeing strong consistency.
+- **Usage**: Commonly used in distributed databases, transaction processing systems, and services where atomic transactions are required.
+- **Trade-offs**: 2PC suffers from the blocking problem, where replicas can be left in an uncertain state if the coordinator fails, impacting availability and performance.
+
+## 8. Spanner’s TrueTime and Synchronous Replication
+- **Overview**: Google Spanner combines the Paxos consensus algorithm with TrueTime, which provides globally synchronized timestamps to achieve strong consistency, even in globally distributed systems.
+- **Usage**: Google Spanner is a globally distributed, strongly consistent database that supports SQL semantics and distributed transactions.
+- **Trade-offs**: Spanner requires specialized hardware (atomic clocks and GPS) for TrueTime and has higher latencies due to synchronous replication.
+
+## 9. Chain Replication
+- **Overview**: Chain replication organizes nodes in a chain, where updates are sequentially propagated from the head to the tail. The tail node acknowledges commits, ensuring that all preceding nodes have applied the update.
+- **Usage**: Used in systems requiring strong consistency with simpler replication models, such as distributed key-value stores.
+- **Trade-offs**: Efficient for write-heavy workloads, but introduces latency for read operations if reads must be served by the tail for consistency.
+
+## 10. Quorum-Based Protocols (e.g., Quorum Reads/Writes)
+- **Overview**: Quorum-based protocols ensure strong consistency by requiring a majority of replicas to agree on a value before a read or write is considered successful. Overlapping reads and writes ensure consistency across distributed nodes.
+- **Usage**: Used in distributed databases like Apache Cassandra (when configured for strong consistency) and DynamoDB (with appropriate R/W settings).
+- **Trade-offs**: Quorum-based systems can experience increased latency due to the need to contact multiple replicas, and may reduce availability during network partitions or failures.
+
+## 11. Primary-Backup Replication (with Strong Consistency Guarantees)
+- **Overview**: In primary-backup replication, a primary node handles all updates, and backups replicate the primary's state. Strong consistency is ensured by routing all reads and writes through the primary, with synchronous updates to the backups.
+- **Usage**: Used in distributed systems like databases, file systems, and services requiring strong consistency.
+- **Trade-offs**: The primary can become a bottleneck, and failure of the primary requires a failover, which can introduce downtime or latency. Synchronous replication adds communication overhead.

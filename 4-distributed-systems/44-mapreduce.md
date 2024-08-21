@@ -6,6 +6,8 @@ Read: April 16th, 2024
 
 Map Reduce is a simple data-parallel programming model designed for **scalability and fault-tolerance**. It provides a limited but general functional API including map, reduce, and sort, and it requires no other synchronization and communication. It achieve fault recovery, and straggler mitigation through retries. 
 
+Two main phases: map and reduce. 
+
 ![alt text](images/44-mapreduce/mapreduce.png)
 
 ## Key Motivation 
@@ -118,3 +120,12 @@ Map Reduce is a simple data-parallel programming model designed for **scalabilit
 
 * Custom partitioning / dynamic partitioning
 * Using combiners. 
+
+## Join
+
+* Map-Side Join:
+  * Requires one dataset to fit in memory.
+  * Join is performed in the map phase, reducing the amount of data sent to the reducers.
+* Reducer-Side Join:
+  * Does not require any dataset to fit in memory, making it more scalable for large datasets.
+  * The join operation happens in the reduce phase, after the shuffle and sort phase, which can be more network-intensive but is necessary for very large datasets.

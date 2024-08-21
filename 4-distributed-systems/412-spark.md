@@ -9,7 +9,7 @@ Read: April 14th, 2024
 * Those that reuse intermediate results (or working sets) across multiple computations. **Data reuse is common in many iterative machine learning and graph algorithm**. 
   * Unfortunately, in most current frameworks, the only way to reuse data between computations (e.g., between two MapReduce jobs) is to write it to an external stable storage system, e.g., a distributed file system.
 * Resilient Distributed Datasets (RDDs), a distributed memory abstraction that lets programmers perform in-memory computations on large clusters in a fault-tolerant manner.
-* RDDs are motivated by two types of applications that current computing frameworks handle inefficiently: iterative algorithms and interactive data mining tools.
+* RDDs are motivated by two types of applications that current computing frameworks handle inefficiently: **iterative algorithms and interactive data mining tools**.
 * RDDs provide an interface based on coarse-grained transformations (e.g., map, filter and join) that apply the same operation to many data items. This allows them to efficiently **provide fault tolerance by logging the transformations used to build a dataset (its lineage)** rather than the actual data.
 * Partition. **Dataset is partitioned (default size of 128MB.) for parallelism. The number of tasks equals the number of partitions.** 
   * **Narrow transformations**: These are transformations in which data in each partition does not require access to data in other partitions in order to be fully executed. For example, functions like map, filter, and union are narrow transformations.
@@ -92,4 +92,38 @@ Read: April 14th, 2024
 * Spark’s resilient distributed datasets can be viewed as an abstraction for distributed shared memory (DSM), which has been studied extensively
 * First, RDDs provide a much more restricted programming model, but one that lets datasets be rebuilt efficiently if cluster nodes fail. This means that only the lost partitions need to be recomputed, and that they can be recomputed in parallel on different nodes, without requiring the program to revert to a checkpoint (How to recover data in DSM). In addition, there is no overhead if no nodes fail.
 * RDDs push computation to the data as in MapReduce [11], rather than letting arbitrary nodes access a global address space.
-  
+
+
+## RDD vs. Hadoop Datasets
+
+* How are RDDs different from traditional datasets in Hadoop MapReduce?
+
+  * Immutability: RDDs are immutable, which means once created, they cannot be changed.
+  * Resilience: RDDs can be reconstructed if a node fails, thanks to lineage information.
+  * In-Memory: Spark can keep RDDs in memory, reducing disk I/O, which is a significant performance boost over Hadoop's disk-based approach.
+  * Lazy Evaluation: Transformations on RDDs are not computed immediately but are executed when an action is called. => Helps with interactive applications. 
+
+## What are the actions you can perform on RDD.
+
+* Transformations: Operations that create a new RDD from an existing one, like map, filter, flatMap, etc.
+* Actions: Operations that return a value to the driver program or write data to external storage, like collect, count, saveAsTextFile, etc.
+
+## Spark can also do joins.
+
+* `join(otherDataset, numPartitions=None)`: Performs an inner join across two RDDs.
+
+
+## Describe the process of checkpointing in Spark. Why is it useful?
+
+* Process: Checkpointing involves saving the lineage of an RDD to a reliable storage system. This can be done using `rdd.checkpoint()` followed by an action to trigger the checkpoint.
+* Why is it useful?
+  * `Performance`: Reduces the lineage graph size, which can become large for complex operations, thus speeding up subsequent operations.
+  * `Fault Tolerance`: If a node fails, Spark can recompute from the checkpoint rather than from the original data, reducing computation time.
+  * `Long Lineage`: For long-running jobs or iterative algorithms, checkpointing can prevent lineage graphs from becoming too large, which might otherwise lead to stack overflows or performance degradation.
+
+## How does Spark handle data locality
+
+* Data Locality: Spark tries to schedule tasks on nodes where the data resides to minimize data transfer over the network:
+  * Process: Spark's scheduler uses information about data location to decide where to run tasks.
+  * Levels: Spark has different levels of data locality like `PROCESS_LOCAL`, `NODE_LOCAL`, `RACK_LOCAL`, and `ANY` (no locality).
+  * Optimization: If data is not local, Spark might wait for a short period for a better locality match or run the task on a less optimal node if waiting would cause significant delay.

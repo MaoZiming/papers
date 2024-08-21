@@ -18,6 +18,8 @@ Assume you are asked to develop a new OS for a machine that uses exclusively 3D 
 
 * The OS might need to incorporate wear leveling algorithms to distribute write and erase cycles evenly across the memory to prolong its lifespan.
 * Persistent memory retains data even when powered off, increasing the risk of unauthorized data access. More encryption schemes might be needed to protect data.
+* No need to use log (LRVM). 
+* No need for page cache. 
 
 ### Question 2: MapReduce
 
@@ -66,6 +68,85 @@ We are building a storage system in which the actual storage is somewhat distinc
 
 * Use additional metadata blocks to store hashes and digital signatures for blocks. This might involve creating a hierarchical structure similar to Merkle trees.
 
+
+### Alternative answers from Grok-2
+
+# Secure Storage System Design Considerations
+
+## 1) Ensuring File Integrity
+
+**Solution: Cryptographic Hashing**
+
+- **Method:** Use cryptographic hash functions (like SHA-256) to generate a unique hash for each file. Store these hashes securely, either in a separate, tamper-proof storage or in a blockchain for immutability.
+  
+- **Verification:** When accessing a file, compute its hash on-the-fly and compare it with the stored hash. If they match, the file has not been modified.
+
+- **Additional Measures:**
+  - **Digital Signatures:** Use digital signatures to verify the authenticity of files. This ensures not only integrity but also that the file comes from a trusted source.
+  - **HMAC:** Use Hash-based Message Authentication Codes to verify both the integrity and authenticity of data.
+
+## 2) Lazy Loading with Demand Paging
+
+**Problems Introduced:**
+
+- **Security:** Loading parts of a file on demand means that the entire file isn't immediately checked for integrity.
+- **Consistency:** If parts of the file are modified or tampered with after initial loading, subsequent pages might be inconsistent.
+
+**Addressing These Issues:**
+
+- **Partial Hash Verification:** 
+  - Compute and store hashes for each page or block of the file. When a page is loaded, verify its hash before use.
+
+- **Delayed Integrity Check:**
+  - Perform a full integrity check when the file is completely loaded or when certain conditions are met (e.g., after a certain number of pages have been accessed).
+
+- **Secure Paging:**
+  - Implement secure demand paging where each page load includes an integrity check. This might introduce some latency but ensures ongoing security.
+
+## 3) Multiple Copies for Disaster Tolerance
+
+**Leveraging for Tamper Detection:**
+
+- **Redundancy for Verification:** 
+  - Store multiple copies of the file in different locations. Compare the hashes of these copies periodically or upon access to detect tampering.
+
+- **Consensus Mechanism:**
+  - If multiple copies exist, use a majority vote or consensus mechanism to determine the correct version of the file if discrepancies are found.
+
+- **Distributed Hash Tables (DHT):**
+  - Use DHT to distribute file hashes across the network, making tampering more difficult as it would require altering multiple distributed hash entries.
+
+## 4) Block-Device Model Changes for Secure Access
+
+**Modifications:**
+
+- **Encrypted Storage:**
+  - Implement block-level encryption. Each block is encrypted, and only decrypted when needed, adding a layer of security against tampering.
+
+- **Integrity Metadata:**
+  - Add metadata to each block that includes a hash of the block's content. This metadata can be stored in a separate area or integrated into the block structure.
+
+- **Journaling:**
+  - Use journaling to log all write operations. This can help in reconstructing the original state if tampering is detected.
+
+- **Immutable Block Design:**
+  - Design blocks to be immutable once written. Any change requires creating a new block, which can be tracked through a blockchain-like structure for each file or block.
+
+- **Access Control:**
+  - Implement strict access controls at the block level, ensuring that only authorized operations can modify or read blocks.
+
+- **Versioning:**
+  - Maintain versions of blocks. If tampering is detected, you can roll back to a previous, verified version.
+
+**Implementation Considerations:**
+
+- **Performance vs. Security:** Balance the need for security with performance. Techniques like partial hash verification or delayed integrity checks can mitigate performance impacts.
+
+- **Scalability:** Ensure that the security measures scale with the storage system, considering both the number of files and the size of each file.
+
+- **Audit Trails:** Keep detailed logs of all access and modifications, which can be crucial for forensic analysis in case of security breaches.
+
+By implementing these strategies, you can enhance the security of your storage system against tampering, while also managing the complexities introduced by demand paging and leveraging redundancy for both disaster recovery and security purposes.
 
 
 ## (Spring 2012 - Joseph & Culler):

@@ -106,3 +106,13 @@ Exokernels and hypervisors have many similarities, in that they **multiplex and 
 * Exokernel Advantage: If each application will manage its own resources closely with its own library OS, exokernels would offer better performance and customization opportunities. The exokernel is designed to offload as much policy as possible to the application or library OS level, thereby providing more flexibility.
 
 * Hypervisor Advantage: If isolation between different applications (running in their own library OS) is a major concern, then a hypervisor would be better suited because it's designed to fully isolate multiple guest operating systems.
+
+## How to ensure security.
+
+How does an Exokernel ensure security when giving direct hardware access to applications?
+Answer: An Exokernel ensures security through mechanisms such as secure bindings, visible resource revocation, and abort protocols. Secure bindings prevent applications from unauthorized access to hardware resources. Visible revocation allows the Exokernel to notify applications when resources need to be reallocated or revoked. Abort protocols ensure that the Exokernel can safely terminate or interrupt applications that misuse or monopolize resources.
+
+What is the concept of 'safe resource revocation' in Exokernels?
+Answer: Safe resource revocation is a process where the Exokernel can reclaim resources that were previously allocated to an application in a way that prevents the application from continuing to use them. This is done transparently, without corrupting the application’s state. The Exokernel may notify the application that a resource is being revoked, allowing it to release or reallocate the resource gracefully.
+
+

@@ -41,6 +41,17 @@
     * Role-based access control (RBAC)
         * Organizing access control on the basis of such roles and then assigning particular users to the roles they are allowed to perform makes implementation of many security policies easier
 
+## PKI: Public Key Infrastructure
+
+* Specifically, the most common form of encryption used today involves a public key, which anyone can use to encrypt a message, and a private key (also known as a secret key), which only one person should be able to use to decrypt those messages.
+* Common examples of PKI security today are SSL certificates on websites so that site visitors know they’re sending information to the intended recipient, digital signatures, and authentication for Internet of Things devices.
+
+## Symmetric vs. asymmetric encryption
+
+* Symmetric: encrypt and decrypt with the same key. Think about imitation game.
+* Asymmetric: Involving two different keys: a private key and a public key. 
+  * Public key to encrypt, private key to decrypt. 
+
 ## Others
 
 * Security failures due to faulty access control mechanisms are rare
@@ -71,6 +82,8 @@
         * If opponent fiddles with the data in transit, decrypt the hash and repeating the hashing operation on data, find mismatch
 
 ### Digital Signatures
+
+* Digital signature is one example of encrypting with private key, decrypting with public key. It is different from Public Key Infrastructure, where you encrypt with public key and decrypt with private key.
 
 **Digital signatures** are a cryptographic technique that ensures the authenticity and integrity of a message or file. Here's how they work:
 
