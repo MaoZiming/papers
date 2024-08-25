@@ -10,6 +10,18 @@ Recently IBM and Micron have introduced a revolutionary storage technology, call
 
 Assume you are asked to develop a new OS for a machine that uses exclusively 3D XPoint technology, i.e., no disk drives, and no SSDs. 
 
+
+#### New stab of the answer
+
+* Simplify read and write buffer.
+* Simplify I/O operations (byte addressable, access are at cacheline granularity just like the main DRAM rather tha block addressable). No block layer. 
+  * Writes to PM are cache-line level. 
+* Write-ahead logging is not needed.
+* Unified memory and storage -> Unified address space.
+* In-memory data structure with persistence. 
+
+#### Questions
+
 1) Discuss how you can simplify the design of your OS? Think about files system, virtual memory, etc.
 
 * The OS can treat 3D XPoint as a single large pool of memory, eliminating the need for separate memory management for RAM and storage management for disks/SSDs. Files can be accessed directly from 3D XPoint, reducing the need for extensive caching mechanisms and simplifying file system design. Maintain a single unified address space. 

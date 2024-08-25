@@ -6,7 +6,7 @@ Read: June 28th, 2024
 
 * The paper proposes Epidemic Routing, a routing protocol designed for ad hoc networks where connectivity is intermittent.
 
-* The goals of Epidemic Routing: 
+* The goals of **Epidemic Routing**: 
   * Maximize message delivery rate
   * Minimize message latency
   * Minimize the total resources consumed in message delivery.
@@ -42,6 +42,7 @@ Read: June 28th, 2024
     * Then each host requires copies of messages that it has not yet seen
 * Each message: a unique message identifier, a hop count, and an optional ack request
     * Hop: determines max # of epidemic exchanges that a particular message is subject to
+      * Assign a larger hop count for more important messages. 
     * Also limit per-node buffer space
       
 ## Limitations

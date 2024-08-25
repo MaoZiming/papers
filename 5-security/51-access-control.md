@@ -141,7 +141,7 @@
     - When a client (e.g., a web browser) connects to a server (e.g., a website), the SSL/TLS handshake begins.
     - The client and server agree on the encryption methods and protocols to use.
     - The server sends its SSL/TLS certificate, which includes its public key.
-    - The client verifies the certificate's authenticity against a trusted Certificate Authority (CA).
+    - The client verifies the certificate's authenticity against a trusted Certificate Authority **(CA)**.
     - If verified, the client generates a session key, encrypts it with the server's public key, and sends it to the server.
     - The server decrypts the session key using its private key, establishing a secure encrypted session.
 

@@ -23,3 +23,5 @@
   * Simplicity is key; size constraint leads to simplicity as the design. 
   * Internal requirements led to good design, rather than any particular customer
   * Designed for programmers, which makes it capable for more users as an interactive system (versus batch)
+* Use staleless signals to indicate which resources are free as opposed to stateful semaphores. 
+* Introducing fork and exec. 

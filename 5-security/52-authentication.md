@@ -20,7 +20,7 @@
         * Shut off access to an account when too many wrong guesses
         * Slow down process of password checking after a few wrong guesses
     * **Salt**
-        * Before hashing a new password and storing it in password file, generate a big random number and concatenate it into the password
+        * Before hashing a new password and storing it in password file, **generate a big random number and concatenate it into the password**
         * Random number is called a **salt**
           * Salt is mainly to prevent hash collision. Since each user's password is salted with a unique value, the attacker has to compromise each password individually.
 * **Multi-factor authentication**

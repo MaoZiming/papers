@@ -84,7 +84,7 @@ time
   * Ticket currency
     * allows user with a set of tickets to allocate tickets among their jobs in whatever currency they would like
     * system converts per-user currency into correct global value
-  * Ticket transfer
+  * **Ticket transfer**
     * A process can temporarily hand off its tickets to another process
     * E.x. client server setting, a client process sends a message to a server asking it to do some work on the client’s behalf
   * Ticket inflation
@@ -111,7 +111,7 @@ time
 
 * Linux CFS: highly efficient and scalable fair-share scheduler
 * Goal: fairly divide CPU evenly among competing processes
-* use virtual runtime (vruntime), weight with niceness to assign priorities
+* use virtual runtime (**vruntime**), weight with niceness to assign priorities
 * As each process runs, it accumulates vruntime. In the most basic case, each process’s vruntime increases at the same rate, in proportion with physical (real) time. When a scheduling decision occurs, CFS will pick the process with the lowest vruntime to run next.
 * if CFS switches too often, fairness is increased, as CFS will ensure that each process receives its share of CPU even over miniscule time windows, but at the cost of performance (too much context switching); if CFS switches less often, performance is increased (reduced context switching), but at the cost of near-term fairness.
 * weighted round-robin with dynamic time slices
@@ -141,7 +141,7 @@ time
     * Positive: lower priority (too nice)
     * Negative: higher priority (less nice)
     * CFS maps the nice value (-20 to +19, negative weight implies a higher priority) of each process to a weight
-    * Time slices are adjusted based on the weights and `sched_latency`
+    * Time slices are adjusted based on the **weights** and `sched_latency`
     * `vruntime` has to be adapted. scale actual runtime inversely by the weight of the process, by dividing the default weight by its weight.
       * $vruntime_i = vruntime_i + \frac{weight_0}{weight_i} runtime_i$
   * Use red-black trees

@@ -12,11 +12,14 @@ Read: June 17th.
 * **Key idea**: Include **code pointer in messages** which avoids buffering latency. Code is run immediately on server, thus avoiding as much queueing as possible. Handlers must be fast. Get communication onto network ASAP and off the network into computation ASAP.
 * The underlying idea is simple: each message contains at its head the address of a user-level handler which is executed on message arrival with the message body as argument.
   * In contrast to running handling logic at the message handler. 
+* Active Message handler is not to perform computation on the data, but to extract the data from the network and integrate it into the ongoing computation with a small amount of work. 
+* Handler interrupt computation immediately upon message arrival and execute to completion. 
+* Eliminating buffering on the receiving end is possible because either storage for arriving data is pre-allocated in the user program or the message holds a simple request to which the handler can immediately reply.
 
 ## Key techniques: active messages
 
 * **User-Level Handler**: This is essentially a code pointer that indicates a specific, small piece of code that needs to be executed when the message is received. **The handler is shared and known across all machines in the network.**
-* **Message Body**: This portion contains **the actual data or arguments** that the handler will use when it executes its code.
+* **Message Body**: This portion contains **the actual data or arguments** that the handler will **use when it executes its code**.
 
 ## Workflows
 

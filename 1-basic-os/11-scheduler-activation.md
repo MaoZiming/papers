@@ -65,7 +65,7 @@ Read: June 16th, 12:55AM.
   * The crucial distinction between scheduler activations and kernel threads is that once an activation's user-level thread is stopped by the kernel, the thread is never directly resumed by the kernel. 
     * Instead, **a new scheduler activation is created to notify the user-level thread system that the thread has been stopped**. 
     * The user-level thread system then removes the state of the thread from the old activation, tells the kernel that the old activation can be reused, and finally decides which thread to run on the processor. 
-  * By contrast, in a traditional system, when the kernel stops a kernel thread, even one running a user-level thread in its context, the kernel never notifies the user level of the event. 
+  * **By contrast, in a traditional system, when the kernel stops a kernel thread, even one running a user-level thread in its context, the kernel never notifies the user level of the event.**
     * Later, the kernel directly resumes the kernel thread (and by implication, its user-level thread), again without notification. 
   * By using scheduler activations, the kernel is able to maintain the invariant that there are always exactly as many running scheduler activations (vessels for running user-level threads) as there are processors assigned to the address space.
   * When an upcall informs the user-level thread system that a thread has been preempted or unblocked, the thread system checks if the thread was executing in a critical section. 

@@ -278,7 +278,6 @@
 
 ### Solution 2: Journal File Systems
 
-
 * Journal File System
     * Basic idea: when updating the disk, before overwriting structures in place, first write down a little note (i.e. log) describing what you are about to do
     * Steps (data journaling)
@@ -396,3 +395,9 @@ Sweep back and forth, from one end of disk other, serving requests as pass that 
 * Delay block allocation: 
 * Some files never actually make it all the way to disk
 
+
+### Design a distributed storage system
+* Requirements:
+  * High availability
+  * scalability
+  * consistency. 

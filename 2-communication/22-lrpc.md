@@ -21,7 +21,7 @@ Read: June 17th, 2024.
 ## Main Ideas 
 * No need for marshaling on the same machine.
 * Eliminate the need for explicit message passing. Rather **memory** is employed as means of communication.
-* The stub can utilize the run-time flag to determine if TCP/IP or shared memory should be used.
+* The stub can utilize the **run-time flag** to **determine if TCP/IP or shared memory** should be used.
 * Not necessary to use external data representation (XDR, data serialization format).
 
 ## Steps of LRPC
@@ -97,7 +97,11 @@ Read: June 15 202*
 
 ### A-Stack and E-stack
 
+* When the client invokes a remote procedure, the call transfers control directly to the server, which starts executing on the client’s stack. The server's execution uses the same stack frames created by the client’s procedure call.
+* After the server completes the procedure, control is returned back to the client, continuing from where the client left off, again using the shared stack.
 * A-Stack: Argument stack
+  * the kernel pairwise allocates in the client and server domains a number of A-stacks equal to the number of simultaneous calls allowed. These A-stacks are mapped read-write and shared by both domains.
+
 * E-stack: Execution stack
 * Rather than statically allocating E-stacks, LRPC delays the A-stack/E-stack association until it is needed, that is, until a call is made with an A-stack not having an associated E-stack. 
 * When this happens, the kernel checks if there is an E-stack already allocated in the server domain, but currently unassociated with any A-stack. 

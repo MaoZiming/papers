@@ -43,7 +43,7 @@ Increasing heterogenity and scalability in hardware (i.e. CPU cores) motivates m
 
 ## Message passing v.s shared memory 
 * Ousterhout describes that core speed is increasing faster than disk and memory latency. So operating systems still block on memory and disk. **Message passing is more efficient than shared memory at scale. So the multikernel embraces message passing (much like Mach).**
-  * Message passing - copying message out of a buffer. When a process sends a message, the message is copied from the sender’s address space into a buffer managed by the kernel or IPC service. The receiving process retrieves the message by reading it from this buffer.
+  * Message passing - copying message out of a buffer. When a process sends a message, the message is **copied** from the sender’s address space into a buffer managed by the kernel or IPC service. The receiving process retrieves the message by **reading** it from this buffer.
 
 * Consider a set of cores that are row updating a shared array, the cache coherence protocol of the processor has to migrate the cachelines between all the cores performing the updates. The overall updates is limited by the latency of fetching cachelines. 
 

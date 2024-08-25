@@ -78,7 +78,7 @@ Cons
 ### Others
 Today’s trends is that hardware is becoming faster, this might make exokernel design principals more valuable 
 * E.x DB system that needs high performance often completely forgo FS all together and manage raw block
-* **DPDK** in Linux: let application bypass kernel abstraction (i.e. storage, networking stack) and go directly to the raw hardware.
+* **DPDK** in Linux: **let application bypass kernel abstraction (i.e. storage, networking stack) and go directly to the raw hardware.**
   * E.g. Poll Mode Drivers (PMDs): These drivers are used to interact directly with network interface cards (NICs) to process packets without the overhead of kernel space processing.
 
 # Sample Questions 
@@ -110,7 +110,7 @@ Exokernels and hypervisors have many similarities, in that they **multiplex and 
 ## How to ensure security.
 
 How does an Exokernel ensure security when giving direct hardware access to applications?
-Answer: An Exokernel ensures security through mechanisms such as secure bindings, visible resource revocation, and abort protocols. Secure bindings prevent applications from unauthorized access to hardware resources. Visible revocation allows the Exokernel to notify applications when resources need to be reallocated or revoked. Abort protocols ensure that the Exokernel can safely terminate or interrupt applications that misuse or monopolize resources.
+Answer: **An Exokernel ensures security through mechanisms such as secure bindings, visible resource revocation, and abort protocols. Secure bindings prevent applications from unauthorized access to hardware resources. Visible revocation allows the Exokernel to notify applications when resources need to be reallocated or revoked. Abort protocols ensure that the Exokernel can safely terminate or interrupt applications that misuse or monopolize resources.**
 
 What is the concept of 'safe resource revocation' in Exokernels?
 Answer: Safe resource revocation is a process where the Exokernel can reclaim resources that were previously allocated to an application in a way that prevents the application from continuing to use them. This is done transparently, without corrupting the application’s state. The Exokernel may notify the application that a resource is being revoked, allowing it to release or reallocate the resource gracefully.

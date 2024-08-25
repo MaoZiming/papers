@@ -4,7 +4,7 @@ Link: https://sosp.org/2001/papers/welsh.pdf
 
 Read: June 16th, 10:41AM. 
 
-* Staged **event-driven** architecture (SEDA), a new design for highly concurrent Internet services. 
+* Staged **event-driven** architecture (SEDA), a new design for **highly concurrent** Internet services. 
 * Key components:
     * **Stages**: The application is divided into multiple stages, each associated with an incoming event queue.
     * **Dynamic Resource Controllers**: Controllers dynamically adjust the number of threads and the batching sizes within each stage to adapt to workload changes.
@@ -45,7 +45,7 @@ Read: June 16th, 10:41AM.
 
 ### Event-based concurrency
 ![alt text](images/12-seda/event-based-concurrency.png)
-* A server consists of a small # of threads (i.e. one per CPU) that loop continuously, processing events of different types from a queue
+* A server consists of **a small #** of threads (i.e. one per CPU) that loop continuously, processing events of different types from a queue
 * Instead of blocking, the program registers a callback function that the event loop should call when the I/O operation is complete. While waiting for this to happen, the event loop can handle other tasks or events. When the I/O operation is finally complete, the event loop simply calls the previously registered callback function to process the data.
 * Processing of each task is a **finite state machine (FSM)**
     * Transition between state in FSM are triggered by events
@@ -103,5 +103,9 @@ Read: June 16th, 10:41AM.
 Rather this might be concerns over event-based system as well:
 * Difficult to understand the cause-effect relationship 
     * I.e. when examining source code or debugging, event system invoke a method in another module by sending “call” event and waiting for a “return” event in response. Programmer needs to manually match these pairs in order to understand the application. 
-* Manually save and restore live state is a pain 
+* **Manually save and restore live state is a pain**
     * V.s. thread-based system: each thread maintains its own stack, which simplify the state management
+
+## Threads vs. Events and duality argument
+
+* https://berb.github.io/diploma-thesis/original/043_threadsevents.html

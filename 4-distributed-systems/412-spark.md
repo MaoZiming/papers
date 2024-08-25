@@ -127,3 +127,8 @@ Read: April 14th, 2024
   * Process: Spark's scheduler uses information about data location to decide where to run tasks.
   * Levels: Spark has different levels of data locality like `PROCESS_LOCAL`, `NODE_LOCAL`, `RACK_LOCAL`, and `ANY` (no locality).
   * Optimization: If data is not local, Spark might wait for a short period for a better locality match or run the task on a less optimal node if waiting would cause significant delay.
+
+## Spark runs on Hadoop
+
+* HDFS: Hadoop Distributed File System
+  * Underlying storage lyer. 

@@ -17,9 +17,9 @@ _definition_: a specialized area in computing that's **isolated** from everythin
 
 ### Comparisons with traditional encryption 
 * Data protection types 
-  * Data-at-rest: stored data (e.g. hard drives) 
-  * Data-in-motion: data being transferred (e.g. over internet) 
-  * Data-in-use: data being actively used or processed
+  * **Data-at-rest**: stored data (e.g. hard drives) 
+  * **Data-in-motion**: data being transferred (e.g. over internet) 
+  * **Data-in-use**: data being actively used or processed
 * _Current state_: most systems protect data-at-rest and data-in-motion with encryption technologies like SSL/TLS
 * _Problem_: *data-in-use* is vulnerable, **you must trust the application and the platform it runs on**
     *  Access control: suspectible for human error, does not protect against info leakage
@@ -36,7 +36,7 @@ Intel's Software Guard Extensions (SGX) offers **hardware-based** security.
 ![intel-sgx](images/54-secure-enclave/intel-sgx.png)
 
 
->At runtime, Intel SGX instructions build and execute the enclave into **a special encrypted memory region** with **restricted entry/exit location** defined by the developer.
+> At runtime, Intel SGX instructions build and execute the enclave into **a special encrypted memory region** with **restricted entry/exit location** defined by the developer.
 
 To use SGX, BIOS needs to enable it. 
 

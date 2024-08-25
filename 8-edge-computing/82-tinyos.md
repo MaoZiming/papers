@@ -22,7 +22,7 @@ _The key requirements_ under this type of low power wireless communication envir
     * **Event-driven** architecture: high performance in concurrency intensive application! 
       * No polling.
       * Unused CPU cycles are spent in the sleep state as opposed to actively looking for an interesting event. 
-    * Events are driven by hardware interrupts. TinyOS executes short tasks and event handlers that are triggered by these events.
+    * **Events are driven by hardware interrupts.** TinyOS executes short tasks and event handlers that are triggered by these events.
       * This allows TinyOS to be in low power states when no events are pending.
     * Why not thread?
        * stack-based: reserved for each execution context
@@ -37,13 +37,15 @@ _The key requirements_ under this type of low power wireless communication envir
     *  Get done quickly and then sleep
     *  Static memory allocation
         *  No heap (malloc), no function pointers, no dynamic runtime allocation    
+*  Each component can do command (downwards) and signal (upwards). 
+*  ![alt text](images/82-tinyos/network-sensor-config.png)
 
 ### Component
 A component is an independent computational entity that exposes one or more interfaces. It has the following four interrelated parts: 
 
 * Frame (storage) 
   * The fixed size frames are statically allocated which allows us to know the memory requirements of a component at compile time. 
-* A set of command handlers: cause actions to be initiated 
+* A set of **command handlers**: cause actions to be initiated 
    * deposit request parameters into frame, post tasks 
 * Event: 
    * notify action has occured
@@ -53,7 +55,7 @@ A component is an independent computational entity that exposes one or more inte
    * background computation, not time critical 
    * task scheduler: FIFO  
 * Layers of components: **higher level components issue commands to lower level components, and lower level components signal events to the higher level components. Physical hardware represents the lowest level of components.**
-* TinyOS achieves high concurrency by allowing tasks and events to run in small, non-blocking chunks, which allows the system to handle multiple operations 'simultaneously' without needing a heavy-weight OS layer
+* TinyOS achieves high concurrency by allowing tasks and events to run in **small, non-blocking chunks**, which allows the system to handle multiple operations 'simultaneously' without needing a heavy-weight OS layer
   * The lowest level components have handlers connected directly to hardware interrupts, which may be external interrupts, timer events, or counter events.
 * Commands are non-blocking calls to the lower level components. 
 * An event handler can deposit information into its frame, post tasks, signal higher level events or call lower level commands.
@@ -62,7 +64,7 @@ A component is an independent computational entity that exposes one or more inte
 ### Component Types
 
 * Hardware abstractions
-  * The RFM radio component. This component exports commands to ma- nipulate the individual I/O pins connected to the RFM transceiver and posts events informing other components about the transmission and reception of bits.
+  * The RFM radio component. This component exports commands to manipulate the individual I/O pins connected to the RFM transceiver and posts events informing other components about the transmission and reception of bits.
 * Synthetic hardware
   * It shifts data into or out of the underlying RFM module and signals when an entire **byte** has completed.
   * This component is an enhanced state machine that could be directly cast into hardware.
@@ -97,7 +99,7 @@ A component is an independent computational entity that exposes one or more inte
   * TinyOS is specifically designed for low-power, resource-constrained devices such as wireless sensor nodes. The event-driven model allows TinyOS to remain in a low-power state when no events are pending, only waking up to process events such as sensor readings or network packets.
 * In both Seda and TinyOS, the threads sleep when there is no event, conserving systems resources. 
 
-* Static Frame allows us to know the memory footprint at compile time; as well as knowing the variable locations statically at compile time rather than accessing state via pointers. 
+* **Static Frame** allows us to know the memory footprint at compile time; as well as knowing the variable locations statically at compile time rather than accessing state via pointers. 
 
 * The communication across the components takes the form of a function call, which has low overhead and provides compile time type checking.
 

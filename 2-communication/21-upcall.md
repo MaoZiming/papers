@@ -4,6 +4,8 @@ Read: June 17th, 2024.
 
 Link: https://dl.acm.org/doi/pdf/10.1145/323627.323645
 
+Prior works focus on downcalls (with asynchronous calls and data buffering). For many applications, the natural flow of information is upwards. 
+
 The paper introduces a mechanism allowing **control to be transferred from lower layer to upper layer**. By allowing synchronous calls between layers instead of using downcalls (i.e. async communication), performance can be greatly enhanced. 
 
 ## Baselines: Layer as Processes

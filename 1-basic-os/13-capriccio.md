@@ -97,12 +97,12 @@ Goals:
 There are three parts:
 
 * Scalability
-    * User-level threads + **cooperative** scheduling 
-    * This is the main technique for addressing the overhead of context switching. 
-    * Since Capriccio manages threads within user space, the context switch operations do not require expensive system calls or kernel interventions.
+    * **User-level threads** + **cooperative** scheduling 
+    * This is the main technique for addressing the overhead of **context switching**. 
+    * Since Capriccio manages threads within user space, **the context switch operations do not require expensive system calls or kernel interventions.**
 * Linked stack 
     * Stack allocation for large # of threads
-    * Compile-time analysis + runtime checks 
+    * **Compile-time analysis + runtime checks** 
 * Resource-aware scheduler 
     * Application-specific scheduling based on predicted resource 
 
@@ -140,20 +140,25 @@ There are three parts:
         * Benchmark: Benefits outweigh drawbacks
 * Main thing
     * Cooperative scheduling
-    * Async I/O
+    * **Async I/O**
     * Efficient thread operations - O(1)
 
+### Why does user-level threads do not require the kernel to manage or schedule them.
+* No kernel involvement. User-level threads do not require the kernel to manage or schedule them. Context switching between these threads happens entirely in user space without needing to invoke the kernel's scheduler. This avoids the overhead of switching between user mode and kernel mode, which is required for switching kernel-level threads.
+
 ### #2: Linked Stack
+
+### Use weighted call graphs (whole program analysis); each function is a node; each edge is a function call; node weights are calculated with stack frames. 
 
 * Problem: conservative stack allocation per thread are unsuitable for programs with many threads
     * Abstraction of unbounded call stack for each thread
     * While in reality stack bounds are chosen conservatively large
     * E.x. 1GB virtual memory with just 500 threads
       * For example, LinuxThreads allocates two megabytes per stack by default; 
-* Most threads consume only a few kilobytes of stack space at any given time
+* Most threads consume only a **few kilobytes of stack space** at any given time
   * Significantly reduce the size of virtual memory dedicated to stacks if we adopt a **dynamic stack allocation policy** wherein stack space is allocated to threads on demand in **relatively small increments** and is deallocated when the thread requires less stack space.
     * Stack grows and shrinks dynamically based on the needs of the thread. 
-* Idea: dynamic stack allocation with linked chunks
+* Idea: dynamic stack allocation with **linked chunks**
     * Alleviates VM pressure and improve paging behavior
 * Method: compile-time analysis and checkpoint injection
     * **Small non-contiguous stack chunks** grow and shrink at runtime
@@ -173,6 +178,13 @@ There are three parts:
                 * Scan nodes to ensure path between checkpoints within desired bound (set as compile-time parameter)
 
 ### #3: Resource-aware Scheduler
+
+
+### Blocking graphs: node is a location in program that is blocked. Node is composed of call chain used to reach blocking point. Resource-aware scheduling: edges are annotated with average running time - time it took the thread to pass between nodes. Nodes are annotated with resources used on its outgoing edge. 
+
+> In this sense, Capriccio’s scheduler is quite similar to an event-based system’s scheduler. Our methods are more powerful, however, in that they deduce the stages automat- ically and have direct knowledge of the resources used by each stage, thus enabling finer-grained dynamic scheduling decisions.
+
+### Basically fine-grained graphs (down to function calls `main`, `thread_create`) allow more fine-grained resource-aware scheduling. It also adapts to the current resource usage of the system. 
 
 * Propose: application-specific scheduling for thread-based applications
 * Key abstraction: ***blocking graph***
