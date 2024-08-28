@@ -355,3 +355,46 @@ Virtualizing the Translation Lookaside Buffer (TLB) is crucial for maintaining e
 - **Paravirtualized TLB Management:**
   - In paravirtualized environments (e.g., Xen's PV mode), the guest OS interacts directly with the hypervisor for TLB management.
   - The guest OS explicitly notifies the hypervisor when TLB entries need to be flushed or modified, improving efficiency.
+
+
+## Process Migration
+
+* Typically move the process and leave some support for it back on the original machine
+* E.g., old host handles local disk access, forwards network traffic
+* these are “residual dependencies” – old host must remain up and in use
+
+## VM Migration
+
+VM migration typically involves transferring a running virtual machine (VM) from one physical host to another. The process can be broken down into different phases:
+
+### 1. Push Phase
+In the **push phase**, the memory pages of the VM are copied from the source machine to the destination machine while the VM is still running. This phase is also referred to as **pre-copy migration**. During this phase:
+
+- The memory pages are iteratively copied to the destination.
+- Pages that are modified (dirtied) during the copying process are tracked and re-copied in the next iteration.
+- The goal is to reduce the amount of data that needs to be transferred during the actual switchover.
+
+The push phase allows the VM to continue running with minimal disruption, but the migration process can take longer if the VM's memory is being modified frequently.
+
+### 2. Stop-and-Copy Phase
+The **stop-and-copy phase** involves stopping the VM on the source host, copying any remaining dirty memory pages to the destination, and then resuming the VM on the destination host. In this phase:
+
+- The VM is temporarily halted to ensure no further memory changes occur while the final set of pages is transferred.
+- The stop-and-copy phase is usually very brief to minimize downtime.
+- Once the transfer is complete, the VM starts running on the destination machine, and the migration process finishes.
+
+This phase is critical for consistency, as it ensures that the VM's memory state is fully synchronized between the source and destination. However, this phase introduces downtime, as the VM must be paused.
+
+### 3. Pull Phase
+In the **pull phase**, the VM is started on the destination machine, but it may still require some memory pages that are not yet available locally. During this phase:
+
+- When the VM tries to access a page that hasn't been transferred, it generates a page fault.
+- The destination host requests the missing page from the source host, which sends it over the network.
+- This continues until all necessary pages are present on the destination host.
+
+The pull phase reduces downtime because the VM can start running on the destination before all memory pages are transferred. However, it can degrade performance initially, as the VM may experience frequent page faults and network delays while retrieving missing pages.
+
+### Summary
+- **Push phase**: Memory pages are transferred while the VM continues running.
+- **Stop-and-copy phase**: The VM is stopped, remaining memory pages are copied, and the VM is resumed on the destination host (brief downtime).
+- **Pull phase**: The VM starts running on the destination, and missing memory pages are fetched as needed (potential performance impact initially).

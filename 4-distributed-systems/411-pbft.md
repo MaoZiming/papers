@@ -6,6 +6,19 @@ https://pmg.csail.mit.edu/papers/vr-to-bft.pdf
 
 Data: June 30th, 202* 
 
+
+## Byzantine General Problem
+* The abstract Problem:
+  * There are $n$ generals. 
+  * Some of them are traitors. 
+  * Requirements:
+    * All loyal generals must reach the same decision.
+    * A small number of traitors cannot cause the loyal generals to adopt a bad decision.
+  * The problem is to reach an agreement on a value, even if some of the generals are traitors and send different values to different generals.
+  * Note: do not have to identify the traitors. 
+
+## PBFT
+
 * PBFT is **efficient** replication protocol extended from Viewstamp Replication that allows the group to survice **Byzantine (arbitrary) failures**. By this time, there was a realization that malicious attacks and Byzantine behavior needed to be dealt with.
 * Asynchronous environment (no timeouts). Prior works are either too inefficient to be used in practice, or assumes synchrony (relying on known bounds on message delays and process speed). **Synchrony assumption** is dangerous, as delaying non-faulty nodes or the communication between them until they are tagged as faulty and excluded from the replica group. 
 * Describes the first state-machine replication protocol that correctly survives Byzantine faults in asynchronous networks.
@@ -47,7 +60,7 @@ Data: June 30th, 202*
 
 ### Normal case operation:
 
-* In PBFT, a quorum is of size $2f+1$. In VR, the quorum is $f+1$. 
+* **In PBFT, a quorum is of size $2f+1$. In VR, the quorum is $f+1$.**
 * pre-prepare, prepare and commit. 
 * Pre-prepare (**FROM the primary**):
   * The request is assigned a **sequence number** $n$ in **view** $v$ (This is the same as viewstamp replication).

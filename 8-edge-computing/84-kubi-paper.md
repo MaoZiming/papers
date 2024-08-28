@@ -12,6 +12,7 @@
 
 ### DOLR Networking API
 
+* Decentralized Object Location and Routing (DOLR)
 * Tapestry nodes participate in the overlay and are assigned `nodeIDs` uniformaly at random from a large distribution space.
 * Application-specific endpoints are assigned globally unique identifiers (GUIDs). 
 * `PublishObject`
@@ -68,3 +69,17 @@
 ### Partition Virtualization
 * Partitions can be virtualized and multiplexed on physical hardware by a global partition manager. 
 
+
+## Data Capsules
+* Standardized metadata wrapped around opaque data transactions
+* Uniquely named and globally findable.
+* Every transaction explicitly sequenced in a hash-chain history
+* Provenance enforced through signatures
+* Anyone can verify validity, membership, and sequencing of transactions (like blockchain)
+
+
+* ![alt text](images/84-kubi-paper/data-capsules.png)
+
+
+## VM Handoff.
+* Rapid and transparent placement changes to executing code in edge computing use cases. 

@@ -84,7 +84,7 @@ Event Channels: These are used to notify domains when there's new data in the I/
 Xen uses a concept called "domains." Domain 0 (Dom0) is the first domain to start, which has direct access to hardware and manages other domains (DomU). Each DomU runs a guest OS, and resources like CPU, memory, and I/O devices are managed through Xen's hypervisor, which ensures isolation and fair resource distribution.
 
 * Domain U: 
-* I/O data is transferred to and from each domain via Xen, using shared-memory, asynchronous buffer- descriptor rings.
+* I/O data is transferred to and from each domain via Xen, using shared-memory, asynchronous buffer-descriptor rings.
 
 ## Compared to KVM
 

@@ -189,7 +189,7 @@
     * It does not guarantee all the replicas of a chunk are byte-wise identical 
     * What it does guarantee is that every piece of data stored will be written at least once in each replica (i.e. the replica may contain duplicates, and it is up to the application to deal with anomalies)
     * GFS may insert padding or record duplicates in between. GFS assumes that client applications can handle the inconsistent state: i.e. filter out occasional padding and duplicate using checksums (or unique IDs in the records). This also helps improving performance. 
-    * Benefit: simplification of the file system (but in what ways?)
+    * Benefit: **simplification** of the file system (but in what ways?)
       * Atomic append can return quickly. 
       * Reducing coordination?
     * My uneducated guess is that this is to increase throughput for concurrent appends. If the primary wanted to be able to move back the pointer in the case of a failure, it would not be able to accept other record appends while one is in progress. If it increases the pointer even for failed mutations, it is then able to accept other appends right away.
@@ -212,12 +212,16 @@
 * Not useful: bursty workloads, real time system (guarantee time-sensitive operations is more critical than proportional sharing)
 
 ### B. MLFQ
-* Homogenous CPU burst requirements and behavior, more likely to be scheduled proportionally 
-* Prior knowledge on CPU requirement: static priority assignment 
+* Homogenous CPU burst requirements and behavior (Processes have similar burst lengths and I/O patterns), more likely to be scheduled proportionally 
+* Prior knowledge on CPU requirement: static priority assignment.
+* CPU-bound, less I/O bound.
+* Steady workload behavior. 
 
 ### C. Lottery scheduling
 * Benefits
    * Simplicity: easy to implement and understand
+   * No need for global state. 
+   * Support for dynamic adjustment. 
    * Lightweight: randomness, comparison
 * Drawback
    * Predictability: lack predictability that applications might need
@@ -264,16 +268,23 @@
 ### Two communication patterns that LRPC leverages
 
 * local communication pattern: eliminate the need for network-related overheads, no need for marshaling / unmarshaling, no need for explicit message passing (i.e. memory can use as mean of communication) and going through the network stacks
-* short-lived interactions: quick, transient interactions than long-lived stateful sessions 
+* **short-lived interactions**: quick, transient interactions than long-lived stateful sessions 
 
 ### How LRPC leverages these two patterns
 * elimination of network overheads: shared directly without serialization and deserialization or network transmission
-* lightweight context managements: shared memory regions, trap to kernel create shared pages, OS upcall to execute procedure in server’s domain, return to client 
+* lightweight context managements: shared memory regions, trap to kernel create shared pages, **OS upcall** **to execute procedure in server’s domain**, return to client 
 
 
 ### E-stack (Execution Stack)
 
 * Estack: allow threads to efficiently context switch and perform computations, each e-stack contains contexual info to particular procedure (local variables, return addresses), sharing will corrupt contextual information 
+* Each A-stack is associated with a E-stack. 
+
+### E-stack and A-stack
+
+* E-stack (Execution Stack): Stores the execution context for a thread, including function call frames, local variables, return addresses, and intermediate results during the execution of RPC server code.
+* A-stack (Argument Stack): Stores the arguments passed to and returned from RPC calls, effectively handling the marshaling and unmarshaling of data between the client and server.
+
 
 ### What doesn't work
 
@@ -287,7 +298,7 @@
 * **Hot-Cold Data Separation**: Store frequently accessed ("hot") data on the SSD and infrequently accessed ("cold") data on the HDD.
 * **Metadata on SSD**: To speed up file lookups, store metadata and file system indexes on the SSD.
 * **Write Buffering on SSD**: Use the SSD as a write cache. New data is initially written to the SSD and then moved to the HDD during periods of lower activity.
-*  To minimize the wear-out of SSD cells, write-heavy operations should ideally be directed to the HDD.
+*  To minimize the wear-out of SSD cells, **write-heavy operations should ideally be directed to the HDD**.
 *  Automated mechanisms could move data between SSD and HDD based on access patterns.
 *  The filesystem's journal could be placed on the SSD for faster metadata operations while bulk data resides on the HDD.
   
@@ -360,7 +371,7 @@ The result of this XOR operation gives you the value of the missing data block.
     * Unix achieves isolation primarily through process boundaries. Each process operates in its own address space, preventing direct access to another process's memory, which helps ensure reliability and security. Unix has cgroup and namespace. Bug in device driver code might bring down the whole kernel
   * **Microkernel**:
     * Flexibility: kernel only keeps IPC, scheduling, and virtual memory. Services like (FS and different processes) communicate to the microkernel through IPC. 
-    * Bug in dievice driver might not bring down the whole kernel.
+    * Bug in device driver might not bring down the whole kernel.
   * **Exokernel**:
     * Exposing hardware resources directly to applications. Applications use libOSes. 
     * Same isolation property as microkernel.

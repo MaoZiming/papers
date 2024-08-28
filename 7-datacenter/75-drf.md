@@ -65,3 +65,11 @@ DRF can be applied to general resource allocation in multi-tenant setup to ensur
 
 ### What if the same bottlenecked resource?
 * In scenarios where one resource becomes a bottleneck for all users, DRF essentially reduces to max-min fairness for that resource. 
+
+### Asset fairness
+
+* Equal shares of different resources are worth the same. 
+
+### Online DRF scheduler
+
+* Whenever there are available resources and tasks to run: Schedule a task to the user with smallest dominant share

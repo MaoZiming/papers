@@ -23,7 +23,7 @@ Increasing heterogenity and scalability in hardware (i.e. CPU cores) motivates m
 
 * Protocol: think of multi-core as a distributed system.
 
-  * Message passing is good for non-coherent interconnect (PCIe) and hetereogenous cores (arm-offload process).
+  * Message passing is good for **non-coherent interconnect** (PCIe) and hetereogenous cores (arm-offload process).
 
 * instead of sequentially manipulating shared data structures, which is limited by the latency of remote data access, the ability to **pipeline and batch messages encoding remote operations** allows a single core to achieve greater throughput. 
 * This is the paper on **Barrelfish**

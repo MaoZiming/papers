@@ -6,6 +6,9 @@ Read on: June 26th, 2024
 
 Mechanism explained: https://www.youtube.com/watch?v=5N242XcKAsM&t=94s
 
+
+
+
 * Kerberos is an authentication network protocol developed by MIT to provide robust and **secure authentication system in an open network** where **users at workstations** wish to access **services on network servers**. Open networks are susceptible to various kinds of attacks, such as eavesdropping, replay attacks, and impersonation. 
 
 

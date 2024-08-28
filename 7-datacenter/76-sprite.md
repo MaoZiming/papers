@@ -2,17 +2,19 @@
 
 Link: https://citeseerx.ist.psu.edu/document?repid=rep1&type=pdf&doi=fe17a38a8174a93c3b85cf752d789723ba2a5177
 
+Summary: http://www.nicemice.net/amc/os-prelim/summaries/transpar-proc-migrat.var
+
 Read: June 29th, 2024.
 
 * The paper talks about design of process migration in the Sprite OS. The objective is to utilize idle workstations in a network by migrating processes from busy to idle machines, without disrupting user experience. The authors balance four key factors: **transparency**, residual dependencies, performance, and complexity.
 
-* A remote process will just appear as a local process to the user, with the same process ID, appears in process listings on the home machine, file descriptors, and memory contents. 
+* **A remote process will just appear as a local process to the user**, with the same process ID, appears in process listings on the home machine, file descriptors, and memory contents. 
 
 * All the hosts on the network share a common high-performance file system.
 
 * Four design aspects:
-  * Idle hosts are plentiful.
-  * Users 'own' their workstations. 
+  * **Idle hosts are plentiful.**
+  * **Users 'own' their workstations**. 
   * Sprite uses kernel calls -- how to handle the transparent issue?
   * Existing network support. Network wide space of process identifiers. reuse the kernel-to-kernel remote procedure calls. 
 
@@ -31,10 +33,10 @@ Read: June 29th, 2024.
 
 * Some states cannot be transferred:
   * Frame buffer associated with a display **(stay with source device)**
-  * I/O device (OS can arrange for output requests to be passed back from the process to device)
-  * Message channel (require changing sender and receiver addresses)
+  * **I/O device** (OS can arrange for output requests to be passed back from the process to device)
+  * **Message channel** (require changing sender and receiver addresses)
 
-* An approach based entirely on forwarding kenrel calls or forwarding messages does not work.
+* An approach based entirely on forwarding kernel calls or forwarding messages does not work.
   * Some services must be necessarily provided on the machine where a process is executing: e.g., page table
   * Cost. If a service is availabile locally on the *remote machine*, that's much faster. 
 
@@ -45,6 +47,9 @@ Read: June 29th, 2024.
 * V system allows pre-copying: rather than freezing the process at the beginning, **allowing the process to continue to execute while its address space is transferred.**
 
 * Sprite disallows shared writable shared memory. The overhead of a process on local machine and remote machine accessing shared writable pages is too much.
+
+* Sprite freezes the process on the source, flushes its dirty pages to disk, then starts the process on the target, which pages from the disk. The requires slightly more total work than Accent, because a few pages may make two hops, but there are no residual dependencies on the source after the process has started on the target. This scheme depends on the fact that normal network files are used as backing store for virtual memory.
+
 
 * State migration for files is trickier:
   * File reference

@@ -97,7 +97,7 @@ A component is an independent computational entity that exposes one or more inte
 
 * Why does TinyOS use an event-driven model
   * TinyOS is specifically designed for low-power, resource-constrained devices such as wireless sensor nodes. The event-driven model allows TinyOS to remain in a low-power state when no events are pending, only waking up to process events such as sensor readings or network packets.
-* In both Seda and TinyOS, the threads sleep when there is no event, conserving systems resources. 
+* In both Seda and TinyOS, **the threads sleep when there is no event, conserving systems resources.**
 
 * **Static Frame** allows us to know the memory footprint at compile time; as well as knowing the variable locations statically at compile time rather than accessing state via pointers. 
 

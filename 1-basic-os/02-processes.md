@@ -216,6 +216,9 @@
 
 ### IPC
 
+* Shared memory vs. message passing;
+
+
 * Consider an in-memory queue.
 * Data written by process A is held in memory until process B reads it. 
   * If producer (A) tries to write when buffer full, it blocks (Put sleep until space)

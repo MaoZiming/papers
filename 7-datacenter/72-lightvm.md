@@ -8,7 +8,7 @@ Read: July 10th, 2024.
 * The paper addresses the trade-off between isolation and efficiency in Virtual Machines (VMs) and containers. While containers are lightweight, they lack the security guarantees that VMs provide. The paper proposes techniques **LightVM** based on Xen to make VMs as efficient as containers without compromising on security.
 
 * Lightweight VMs use **unikernels**.
-* A unikernel is a machine image that contains everything necessary for application execution, including the operating system component. This property makes unikernels completely self-sufficient and able to run independently on top of **a bare metal hypervisor**.
+* A **unikernel is a machine image that contains everything necessary for application execution**, including the operating system component. This property makes unikernels completely self-sufficient and able to run independently on top of **a bare metal hypervisor**.
 
 ## Tradeoffs 
 * Containers are lightweight but less secure, while VMs offer strong isolation at the expense of being resource-heavy and slow to boot.

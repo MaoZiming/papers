@@ -65,20 +65,20 @@ We are building a storage system in which the actual storage is somewhat distinc
 
 * Cryptographic hashes of the file when it is first stored. Verify it is the same file by comparing the hashes. 
   * Compute a cryptographic hash (e.g., SHA-256) of each file when it is initially stored. 
-  * Store these hashes securely, possibly in a tamper-proof database or secure ledger.
+  * Store these hashes securely, possibly in a tamper-proof database (once written, cannot be altered or deleted) or secure ledger.
   * Each time a file is accessed, recompute its hash and compare it with the stored hash. If the hashes match, the file has not been modified.
 
 1) Now we would like to load the file lazily using demand paging. What problems does this introduce and how might we address them?
 
 * Verifying the integrity of the entire file upon each page load can be inefficient. If only a portion of the file is loaded initially, tampering with unloaded parts may not be detected immediately.
 
-3) If we are storing multiple copies anyway for disaster tolerance, how might  this help us with tampering?
+1) If we are storing multiple copies anyway for disaster tolerance, how might this help us with tampering?
 
 * Detect inconsistencies among multiple copies by directly comparing the content or the cryptographic hashes of the files.
 
 4) Assuming a block-device model, what changes might we make to support these kinds of secure accesses?
 
-* Use additional metadata blocks to store hashes and digital signatures for blocks. This might involve creating a hierarchical structure similar to Merkle trees.
+* Use additional metadata blocks to store hashes and digital signatures for blocks. This might involve creating a hierarchical structure similar to **Merkle trees**.
 
 
 ### Alternative answers from Grok-2

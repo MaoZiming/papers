@@ -2,13 +2,13 @@
 
 Link: https://people.eecs.berkeley.edu/~alig/papers/mesos.pdf
 
-* It seems clear that new cluster computing frameworks will continue to emerge, and that no framework will be optimal for all applications. Therefore, organizations will want to run multiple frameworks in the same cluster, picking the best one for each application.
+* It seems clear that new cluster computing frameworks will continue to emerge, and that no framework will be optimal for all applications. Therefore, organizations will want to run **multiple frameworks** in the same cluster, picking the best one for each application.
   * Multiplexing a cluster between frameworks
 
 ## Summary
 
 * Enables fine-grained sharing across diverse cluster computing frameworks, by giving frameworks a common interface for accessing cluster resources.
-* Mesos decides how many resources to offer to each framework, while framework decides which resources to accept and which computation to run on them. 
+* **Mesos decides how many resources to offer to each framework, while framework decides which resources to accept and which computation to run on them.** 
 
 ## Challenges
 

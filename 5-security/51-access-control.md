@@ -170,3 +170,20 @@
 ### Conclusion
 
 SSL/TLS is essential for ensuring the **security and privacy of online communications**. With the continuous evolution of security threats, TLS has become the standard for secure communication, replacing the older SSL protocol.
+
+
+### Side channels
+
+* Non-oblivious storage leaks information via side channels. Access pattern. 
+* This type of leakage is classified as a side-channel because the attacker is not breaking the cryptography but instead is using secondary information (the access patterns) to infer details about the data.
+
+* Time attacks
+  * Example: An attacker measures the time it takes for a cryptographic operation (like decryption or signing) to complete. Small variations in execution time can leak information about secret keys or other sensitive data.
+* Cache Timing Attacks:
+  * Example: Modern CPUs use caches to speed up memory access. An attacker sharing the same hardware can analyze cache hit/miss patterns to infer data being processed by another user or virtual machine.
+* Branch Prediction Attacks:
+  * Example: Attacks like Spectre exploit the CPU's branch prediction mechanism. By manipulating the speculative execution of instructions, an attacker can gain access to sensitive data stored in the CPU's memory.
+* Out-of-order Prediction attack:
+  * Example: Modern CPUs use out-of-order execution to improve performance by executing instructions as soon as their operands are ready, rather than strictly following the program order. This means that the CPU can speculatively execute instructions that it predicts might be needed, even if previous instructions (e.g., memory access checks) haven’t completed yet.
+  * The attack involves executing instructions that attempt to access kernel memory from a user-space process. Even though this access would normally trigger a fault and be blocked, the CPU speculatively executes the subsequent instructions before realizing that the memory access is unauthorized.
+  * Although the speculative execution results are discarded once the CPU realizes the access was illegal, Meltdown leverages cache side effects to extract the information.

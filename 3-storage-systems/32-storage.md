@@ -401,3 +401,17 @@ Sweep back and forth, from one end of disk other, serving requests as pass that 
   * High availability
   * scalability
   * consistency. 
+
+### Cache coherence protocol
+* Snoopying;
+* Directory-based;
+
+## Small I/O in RAID
+
+* ![alt text](images/32-storage/raid-small-writes.png)
+
+
+### Consistency vs. Coherence
+
+* Coherence ensures that all processors agree on the value of individual memory locations.
+* Consistency defines the overall order of memory operations, across multiple locations, that all processors observe.

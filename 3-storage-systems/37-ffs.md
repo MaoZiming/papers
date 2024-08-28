@@ -87,11 +87,11 @@ The old UNIX file system data structures look like this:
 * Rules
     * Put directory entries near directory inodes
     * Put inodes near directory entries 
-    * Put data blocks near inodes 
+    * **Put data blocks near inodes**
 * Problems: file system is one big tree, all directories and files have a common root
     * All data in same FS is related in some way!
 * **Revised strategy**
-    * File inodes: allocate in the same group with directory
+    * **File inodes**: allocate in the same group with directory
     * Directory inodes: allocate in **new** group with fewer used inodes than average group
     * First data block: allocate near inodes
     * Other data blocks: allocate **near previous block**

@@ -79,6 +79,10 @@ Read June 30th, 2024.
 * Asynchronous IO
   * All methods and properties of an actor interface are asynchronous, returning promises for the results. 
   * Orleans method calls return immediately with a promise for a future result, rather than blocking until the result is returned. 
+* Spawn on a machine that already has the data. 
+
+## Actors
+* No shared memory. All through message passing.
 
 ## Reminder
 

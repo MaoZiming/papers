@@ -3,7 +3,7 @@
 Link: https://static.googleusercontent.com/media/research.google.com/en//archive/gfs-sosp2003.pdf
 Useful notes: https://pages.cs.wisc.edu/~thanhdo/qual-notes/fs/fs4-gfs.txt
 
-Read: Dec 25th, 202* 
+Read: Dec 25th, 2024 
 
 GFS is a **scalable distributed file system** for large distributed data-intensive applications. It provides **fault tolerance** running on inexpensive commodity hardware, and it delivers high aggregate performance to large number of clients. 
 

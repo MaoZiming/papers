@@ -132,3 +132,7 @@ Read: April 14th, 2024
 
 * HDFS: Hadoop Distributed File System
   * Underlying storage lyer. 
+
+## RDD will not work on:
+
+* Will not work well for apps where processes asynchronously update shared state
